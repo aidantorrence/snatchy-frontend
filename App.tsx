@@ -1,9 +1,13 @@
 import { Image, View, Text, SafeAreaView, FlatList, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { icons } from "./utils/icons";
 import ProfileScreen from "./Screens/ProfileScreen";
-import CreateScreen from "./Screens/CreateScreen";
+import DetailsScreen from "./Screens/DetailsScreen";
+import QuestionsScreen from "./Screens/QuestionsScreen";
+
+const Stack = createStackNavigator();
 
 const DATA = [
 	{
@@ -119,6 +123,15 @@ function Icon({ imgSrc }: any) {
 	);
 }
 
+function CreateScreenStackNavigation() {
+	return (
+		<Stack.Navigator>
+		  <Stack.Screen name="Details" options={{headerTitle: 'Create a Listing'}} component={DetailsScreen} />
+		  <Stack.Screen name="Questions" options={{ headerBackTitle: '', title: '' }} component={QuestionsScreen} />
+		</Stack.Navigator>
+	);
+  }
+
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -139,8 +152,8 @@ export default function App() {
 					}}
 				/>
 				<Tab.Screen
-					name="Post"
-					component={CreateScreen}
+					name="CreateStack"
+					component={CreateScreenStackNavigation}
 					options={{
 						tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.createFocused : icons.create} />,
 					}}
