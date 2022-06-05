@@ -1,0 +1,144 @@
+import { useEffect } from "react";
+import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { useQuery } from "react-query";
+import { fetchListings, fetchUser } from "../data/api";
+
+const DATA = [
+  {
+    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
+    name: "ADIDAS YEEZY BOOST 360 V2 “ZEBRA”",
+    images: [
+      "https://www.domusweb.it/content/dam/domusweb/it/speciali/assoluti-del-design/gallery/2021/gli-assoluti-20-sneaker-imperdibili/gallery/domus-assoluti-sneaker-converse-all-star.jpg.foto.rmedium.png",
+    ],
+    size: "11",
+    price: '379',
+    condition: "Brand New",
+    canTrade: true,
+    sellerName: "genevieve",
+    userImage: "https://picsum.photos/200/300",
+  },
+];
+
+function ListHeader() {
+  return (
+    <View style={styles.title}>
+      <Text style={styles.titleText}>INSTAHEAT</Text>
+    </View>
+  );
+}
+export default function HomeScreen({ navigation }: any) {
+  const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery("listings", fetchListings);
+
+  console.log("isLoading", isLoadingListings);
+  console.log("data", listingsData);
+
+  return (
+    <>
+      {isLoadingListings ? (
+        <Text>Loading</Text>
+      ) : (
+        <SafeAreaView style={styles.container}>
+          <FlatList
+            data={listingsData}
+            renderItem={({ item }: any) => (
+              <TouchableOpacity onPress={() => navigation.navigate("CreateStack", { screen: "ViewListing" })} style={styles.item}>
+                <View style={styles.userInfo}>
+                  <Image source={{ uri: item.owner.userImage }} style={styles.userImage} />
+                  <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
+                </View>
+                <Image source={{ uri: item.images[0] }} style={styles.image} />
+                <View style={styles.detailsContainer}>
+                  <View style={styles.nameConditionSizeContainer}>
+                    <Text style={styles.name}>{item.name}</Text>
+                    <Text style={styles.conditionAndSize}>
+                      {item.condition} Size {item.size}
+                    </Text>
+                  </View>
+                  <View style={styles.priceCanTradeContainer}>
+                    <Text style={styles.price}>{item.price}</Text>
+                    {item.canTrade ? <Image style={styles.canTrade} source={require("../Trade.png")} /> : null}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={ListHeader}
+          />
+        </SafeAreaView>
+      )}
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  item: {
+    alignItems: "center",
+    paddingBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    paddingBottom: 10,
+  },
+  conditionAndSize: {
+    fontSize: 16,
+    color: "gray",
+  },
+  nameConditionSizeContainer: {
+    width: "75%",
+  },
+  priceCanTradeContainer: {
+    width: "25%",
+    alignItems: "center",
+  },
+  price: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  detailsContainer: {
+    flexDirection: "row",
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  title: {
+    alignItems: "center",
+    paddingBottom: 20,
+  },
+  titleText: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  image: {
+    width: "100%",
+    height: 300,
+  },
+  userImage: {
+    borderRadius: 50,
+    width: 25,
+    height: 25,
+    marginRight: 10,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    width: "100%",
+    paddingBottom: 10,
+  },
+  sellerName: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  canTrade: {
+    width: 25,
+    height: 25,
+    resizeMode: "contain",
+  },
+});
