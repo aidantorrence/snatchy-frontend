@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8081"
+// const API_URL = "http://localhost:8081"
+const API_URL = "https://instaheat-server.herokuapp.com"
 
 export async function fetchListings() {
   const { data } = await axios.get(`${API_URL}/listings`);

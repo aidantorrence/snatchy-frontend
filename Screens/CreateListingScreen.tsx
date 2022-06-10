@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  Switch,
-  TextInput,
   Dimensions,
   ScrollView,
   TouchableOpacity,
@@ -12,6 +10,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Button,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -20,6 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQueryClient } from "react-query";
 import { postListing } from "../data/api";
 import { DropDownForm, InputForm } from "../Components/Forms";
+import uploadImageAsync from "../utils/firebase/uploadImage";
 
 const modalOptions = {
   condition: ["", "Brand New", "Used - Excellent", "Used - Good", "Used - Fair"],
@@ -111,12 +111,12 @@ export default function CreateListingScreen({ navigation }: any) {
 
   const validateForm = () => {
     let isValid = true;
-		if (!formData.images.length) {
-			setError({ ...error, images: "A photo is required" });
-			isValid = false;
-		}
+    if (!formData.images.length) {
+      setError({ ...error, images: "A photo is required" });
+      isValid = false;
+    }
     for (const key in formData) {
-			if (['timesWorn', 'scuffMarks', 'discoloration', 'looseThreads', 'heelDrag', 'toughStains'].includes(key)) continue;
+      if (["timesWorn", "scuffMarks", "discoloration", "looseThreads", "heelDrag", "toughStains"].includes(key)) continue;
       if (formData[key] === "") {
         setError((err: any) => ({ ...err, [key]: "This field is required" }));
         isValid = false;
@@ -127,7 +127,7 @@ export default function CreateListingScreen({ navigation }: any) {
 
   const handleSubmit = () => {
     const isValid = validateForm();
-		console.log(isValid)
+    console.log(isValid);
     if (isValid) setConfirmModalIsVisible(true);
   };
 
@@ -154,33 +154,53 @@ export default function CreateListingScreen({ navigation }: any) {
     ownerId: 1,
   };
 
-  const pickImage = async () => {
-		// clear form error
-		setError({ ...error, images: "" });
-
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
-
-    if (!result.cancelled) {
-      setFormData({ ...formData, images: [...formData.images, result.uri] });
-    }
+  const launchPhotosAlert = (index?: number) => {
+    Alert.alert("Take a Photo", "Select from Camera Roll", [
+      {
+        text: "Take a Photo",
+        onPress: () => pickImage(true, index),
+      },
+      {
+        text: "Select from Camera Roll",
+        onPress: () => pickImage(false, index),
+      },
+    ]);
   };
 
-  const handleImageReselect = async (index: number) => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
+  const pickImage = async (takePhoto: boolean, index: number | undefined) => {
+    // clear form error
+    setError({ ...error, images: "" });
+
+    let result: any;
+
+    if (takePhoto) {
+      // take a photo
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      // if permission not granted, return
+      if (status !== "granted") return;
+      
+      result = await ImagePicker.launchCameraAsync();
+    } else {
+      // No permissions request is necessary for launching the image library
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+    }
+
     if (!result.cancelled) {
-      formData.images[index] = result.uri;
-      setFormData({ ...formData, images: [...formData.images] });
+      uploadImageAsync(result.uri).then((url) => {
+        console.log(url);
+        if (index !== undefined) {
+          formData.images[index] = url;
+          setFormData({ ...formData, images: [...formData.images] });
+        } else {
+          setFormData({ ...formData, images: [...formData.images, url] });
+        }
+      });
     }
   };
 
@@ -210,24 +230,24 @@ export default function CreateListingScreen({ navigation }: any) {
             {/* <Text style={styles.detailsTitle}>Photos</Text> */}
             <ScrollView style={styles.imageContainer} horizontal={true}>
               {formData.images.map((image: string, index: number) => (
-                <TouchableOpacity key={index} onPress={() => handleImageReselect(index)}>
+                <TouchableOpacity key={index} onPress={() => launchPhotosAlert(index)}>
                   <Image source={{ uri: image }} style={styles.images} />
                 </TouchableOpacity>
               ))}
               {[0, 1, 2, 3].map((val) => (
-                <TouchableOpacity key={val} onPress={pickImage}>
+                <TouchableOpacity key={val} onPress={() => launchPhotosAlert()}>
                   <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
-						{error.images ? <Text style={styles.error}>{error.images}</Text> : null}
+            {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
           </View>
           <InputForm
             formData={formData}
             setFormData={setFormData}
             focusedState={focusedState}
             setFocusedState={setFocusedState}
-						setError={setError}
+            setError={setError}
             error={error}
             field="name"
           />
@@ -236,12 +256,18 @@ export default function CreateListingScreen({ navigation }: any) {
             setFormData={setFormData}
             focusedState={focusedState}
             setFocusedState={setFocusedState}
-						setError={setError}
+            setError={setError}
             error={error}
             field="price"
             keyboardType="numeric"
           />
-          <DropDownForm formData={formData} error={error} setError={setError} field="condition" openOptionsModal={openOptionsModal} />
+          <DropDownForm
+            formData={formData}
+            error={error}
+            setError={setError}
+            field="condition"
+            openOptionsModal={openOptionsModal}
+          />
           {formData.condition && formData.condition !== "Brand New" ? (
             <>
               <InputForm
@@ -249,7 +275,7 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="timesWorn"
                 keyboardType="numeric"
@@ -259,7 +285,7 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="scuffMarks"
               />
@@ -268,7 +294,7 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="discoloration"
               />
@@ -277,7 +303,7 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="looseThreads"
               />
@@ -286,7 +312,7 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="heelDrag"
               />
@@ -295,25 +321,43 @@ export default function CreateListingScreen({ navigation }: any) {
                 setFormData={setFormData}
                 focusedState={focusedState}
                 setFocusedState={setFocusedState}
-								setError={setError}
+                setError={setError}
                 error={error}
                 field="toughStains"
               />
             </>
           ) : null}
-          <DropDownForm formData={formData} error={error} setError={setError} field="gender" openOptionsModal={openOptionsModal} />
+          <DropDownForm
+            formData={formData}
+            error={error}
+            setError={setError}
+            field="gender"
+            openOptionsModal={openOptionsModal}
+          />
           <InputForm
             formData={formData}
             setFormData={setFormData}
             focusedState={focusedState}
             setFocusedState={setFocusedState}
-						setError={setError}
+            setError={setError}
             error={error}
             field="size"
             keyboardType="numeric"
           />
-          <DropDownForm formData={formData} error={error} setError={setError} field="boxCondition" openOptionsModal={openOptionsModal} />
-          <DropDownForm formData={formData} error={error} setError={setError} field="canTrade" openOptionsModal={openOptionsModal} />
+          <DropDownForm
+            formData={formData}
+            error={error}
+            setError={setError}
+            field="boxCondition"
+            openOptionsModal={openOptionsModal}
+          />
+          <DropDownForm
+            formData={formData}
+            error={error}
+            setError={setError}
+            field="canTrade"
+            openOptionsModal={openOptionsModal}
+          />
           <TouchableOpacity onPress={handleSubmit} style={styles.buttonContainer}>
             <LinearGradient
               // Background Linear Gradient
