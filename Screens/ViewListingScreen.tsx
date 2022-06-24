@@ -1,60 +1,116 @@
-import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { deleteListing, fetchUser } from "../data/api";
 
-const defaultProfile = "https://creativeloafing.com/dl39257?display&x=1040&y=780";
-const sneakerImage =
-  "https://www.domusweb.it/content/dam/domusweb/it/speciali/assoluti-del-design/gallery/2021/gli-assoluti-20-sneaker-imperdibili/gallery/domus-assoluti-sneaker-converse-all-star.jpg.foto.rmedium.png";
+export default function ViewListingScreen({ navigation, route }: any) {
+  const { id, ownerId } = route.params;
+  const { data, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
+  const queryClient = useQueryClient();
+  const mutation: any = useMutation(() => deleteListing({ id }), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("user");
+      queryClient.invalidateQueries("listings");
+    },
+  });
 
-const userImages = [defaultProfile, defaultProfile, defaultProfile];
+  const handlePress = (val: string) => {
+    if (val === "Edit") {
+      navigation.navigate("EditListing", {
+        id,
+      });
+    } else {
+      Alert.alert("Are you sure you want to delete this listing?", "", [
+        {
+          text: "Cancel",
+        },
+        { text: "OK", onPress: () => handleDelete() },
+      ]);
+    }
+  };
 
-export default function ViewListingScreen({ navigation }: any) {
+  const handleDelete = () => {
+    mutation.mutate()
+    navigation.goBack()
+  }
+
+  const handleAlert = () => {
+    Alert.alert("", "", [
+      {
+        text: "Edit Listing",
+        onPress: () => handlePress("Edit"),
+      },
+      {
+        text: "Delete Listing",
+        onPress: () => handlePress("Delete"),
+      },
+    ]);
+  };
+
+  const listing = data?.listings?.find((listing: any) => listing.id === id);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <TouchableOpacity onPress={() => navigation.navigate("ViewProfile")} style={styles.userContainer}>
-          <Image source={{ uri: defaultProfile }} style={{ width: 20, height: 20, borderRadius: 40 }} />
-          <Text style={styles.username}>Sneak Seller ATL</Text>
-        </TouchableOpacity>
-        <View style={{ alignItems: "center" }}>
-          <Image source={{ uri: sneakerImage }} style={{ width: 300, height: 300 }} />
-        </View>
-        <Text style={styles.name}>Converse 500s</Text>
-        <View style={styles.subHeader}>
-          <Text style={[styles.description, styles.subHeaderText]}> $379</Text>
-          <Text style={[styles.description, styles.subHeaderText]}>Size: 11</Text>
-          <Text style={styles.description}>No box</Text>
-        </View>
-        <View>
-          <Text style={styles.description}>Condition: Used - Excellent</Text>
-          <Text style={styles.description}>Details:</Text>
-          <Text style={styles.body}>Heel drag at the bottom</Text>
-          <Text style={styles.body}>Discoloration</Text>
-          <Text style={styles.body}>Small stain on the front</Text>
-        </View>
-        <Text style={styles.header}>Other listings</Text>
-        <View style={styles.userImagesContainer}>
-          {userImages.map((image, index) => (
-            <Image key={index} source={{ uri: image }} style={styles.userImages} />
-          ))}
-        </View>
-      </ScrollView>
-        <View style={styles.footerButtons}>
-          <TouchableOpacity style={[styles.button, { backgroundColor: "white" }]}>
-            <Text style={styles.buttonText}>Trade</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, { backgroundColor: "gray" }]}>
-            <Text style={styles.buttonText}>Make Offer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, { backgroundColor: "red" }]}>
-            <Text style={styles.buttonText}>Buy Now</Text>
-          </TouchableOpacity>
-        </View>
-    </SafeAreaView>
+    !isLoading && (
+      <>
+        <SafeAreaView style={styles.container}>
+          <ScrollView>
+            <View style={styles.item}>
+              <TouchableOpacity onPress={() => navigation.navigate("ViewProfile")} style={styles.userContainer}>
+                <View style={styles.userInfo}>
+                  <Image source={{ uri: data.userImage }} style={styles.userImage} />
+                  <Text style={styles.sellerName}>{data.sellerName}</Text>
+                </View>
+                {/* <Text style={{ padding: 10, fontSize: 20, color: "gray" }}>Edit Listing</Text> */}
+                <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
+                  <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+              <Image source={{ uri: listing.images[0] }} style={styles.image} />
+              <View style={styles.detailsContainer}>
+                <View style={styles.nameConditionSizeContainer}>
+                  <Text style={styles.name}>{listing.name}</Text>
+                  <Text style={styles.description}>
+                    Condition: {listing.condition} Size {listing.size}
+                  </Text>
+                  <Text style={styles.description}>Size: {listing.size}</Text>
+                  <Text style={styles.description}>No box</Text>
+                  {listing.condition !== "Brand New" && <Text style={styles.description}>Defects:</Text>}
+                </View>
+                <View style={styles.priceCanTradeContainer}>
+                  <Text style={styles.price}>{listing.price}</Text>
+                  {listing.canTrade ? <Image style={styles.canTrade} source={require("../Trade.png")} /> : null}
+                </View>
+              </View>
+            </View>
+            <Text style={styles.header}>Other Listings</Text>
+            <View style={styles.userImagesContainer}>
+              {data.listings
+                .filter((listing: any) => listing.id !== id)
+                .map((listing: any) => (
+                  <Image key={listing.id} source={{ uri: listing.images[0] }} style={styles.userImages} />
+                ))}
+            </View>
+          </ScrollView>
+          <View style={styles.footerButtons}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "white" }]}>
+              <Text style={styles.buttonText}>Trade</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "gray" }]}>
+              <Text style={styles.buttonText}>Make Offer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "red" }]}>
+              <Text style={styles.buttonText}>Buy Now</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </>
+    )
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    margin: 20,
+    backgroundColor: "white",
+    flex: 1,
   },
   subHeader: {
     flexDirection: "row",
@@ -64,7 +120,9 @@ const styles = StyleSheet.create({
   },
   footerButtons: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   buttonText: {
     fontSize: 20,
@@ -84,12 +142,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 1,
     elevation: 2,
-    marginRight: 15,
   },
   userContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    width: "100%",
   },
   userImagesContainer: {
     flexDirection: "row",
@@ -101,8 +159,9 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   name: {
+    fontSize: 24,
     fontWeight: "bold",
-    fontSize: 28,
+    paddingBottom: 10,
   },
   username: {
     fontWeight: "bold",
@@ -112,15 +171,15 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   header: {
+    fontSize: 24,
     fontWeight: "bold",
-    fontSize: 28,
-    marginTop: 10,
-    marginBottom: 5,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
   },
-  description: {
-    fontWeight: "bold",
-    fontSize: 20,
-  },
+  // description: {
+  //   fontWeight: "bold",
+  //   fontSize: 20,
+  // },
   body: {
     fontSize: 22,
   },
@@ -132,5 +191,58 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
+  },
+  image: {
+    width: "100%",
+    height: 300,
+  },
+  userImage: {
+    borderRadius: 50,
+    width: 25,
+    height: 25,
+    marginRight: 10,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 10,
+    paddingLeft: 10,
+  },
+  sellerName: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  canTrade: {
+    width: 25,
+    height: 25,
+    resizeMode: "contain",
+  },
+  detailsContainer: {
+    flexDirection: "row",
+    padding: 10,
+  },
+  description: {
+    fontSize: 20,
+    color: "gray",
+    paddingBottom: 7,
+  },
+  nameConditionSizeContainer: {
+    width: "75%",
+  },
+  priceCanTradeContainer: {
+    width: "25%",
+    alignItems: "center",
+  },
+  price: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  item: {
+    alignItems: "center",
+    // paddingBottom: 20,
+    // paddingLeft: 20,
+    // paddingRight: 20,
   },
 });

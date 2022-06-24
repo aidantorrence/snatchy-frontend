@@ -83,6 +83,8 @@ export default function CreateListingScreen({ navigation }: any) {
       queryClient.invalidateQueries("listings");
     },
   });
+
+  const photosToAdd = 10 - formData?.images?.length || 0
   // const validateForm = () => {
   // switch (form) {
   //   case "images":
@@ -141,8 +143,9 @@ export default function CreateListingScreen({ navigation }: any) {
     size: formData.size,
     price: formData.price,
     images: formData.images,
+    gender: formData.gender,
     boxCondition: formData.boxCondition,
-    canTrade: formData.canTrade,
+    canTrade: formData.canTrade === 'Yes',
     description: "",
     listingDefects: [
       `scuffMarks: ${formData.discoloration}`,
@@ -152,6 +155,28 @@ export default function CreateListingScreen({ navigation }: any) {
       `toughStains: ${formData.toughStains}`,
     ],
     ownerId: 1,
+  };
+
+  const editPhoto = (index?: number) => {
+    if (index !== undefined) {
+      Alert.alert("Replace photo / delete photo", "", [
+        {
+          text: "Replace photo",
+          onPress: () => launchPhotosAlert(index),
+        },
+        {
+          text: "Delete photo",
+          onPress: () => handleDeletePhoto(index),
+        },
+      ]);
+    } else {
+      launchPhotosAlert();
+    }
+  };
+
+  const handleDeletePhoto = (index: number) => {
+    const filteredImages = formData.images.filter((img: any, idx: number) => idx !== index);
+    setFormData({ ...formData, images: filteredImages });
   };
 
   const launchPhotosAlert = (index?: number) => {
@@ -212,6 +237,7 @@ export default function CreateListingScreen({ navigation }: any) {
     setModalValue(val);
   };
   const handleConfirmButtonClick = () => {
+    console.log('listing', listing)
     mutation.mutate(listing);
     setConfirmModalIsVisible(false);
     navigation.navigate("Profile");
@@ -230,12 +256,12 @@ export default function CreateListingScreen({ navigation }: any) {
             {/* <Text style={styles.detailsTitle}>Photos</Text> */}
             <ScrollView style={styles.imageContainer} horizontal={true}>
               {formData.images.map((image: string, index: number) => (
-                <TouchableOpacity key={index} onPress={() => launchPhotosAlert(index)}>
+                <TouchableOpacity key={index} onPress={() => editPhoto(index)}>
                   <Image source={{ uri: image }} style={styles.images} />
                 </TouchableOpacity>
               ))}
-              {[0, 1, 2, 3].map((val) => (
-                <TouchableOpacity key={val} onPress={() => launchPhotosAlert()}>
+              {Array(photosToAdd).fill('').map((val, idx) => (
+                <TouchableOpacity key={idx} onPress={() => editPhoto()}>
                   <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
                 </TouchableOpacity>
               ))}

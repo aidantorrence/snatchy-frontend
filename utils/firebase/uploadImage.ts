@@ -4,8 +4,9 @@ import Constants from "expo-constants";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
+export let app;
 if (!getApps().length) {
-  initializeApp(Constants.manifest?.extra as any);
+  app = initializeApp(Constants.manifest?.extra as any);
 }
 
 export default async function uploadImageAsync(uri: string) {

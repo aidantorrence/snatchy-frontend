@@ -9,8 +9,21 @@ const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
 
 export default function EditProfileScreen({ navigation }: any) {
   const { data: userData, isLoading } = useQuery("user", () => fetchUser(1));
-	console.log(userData);
+  console.log(userData);
 
+  const handlePress = (id: any) => {
+    navigation.navigate("ViewListing", {
+      id,
+      ownerId: userData.id
+    });
+    // navigation.navigate("CreateStack", {
+    //   screen: "EditListing",
+    //   params: {
+    //     screen: "EditListing",
+    //     id,
+    //   },
+    // });
+  };
   return (
     <>
       {isLoading ? (
@@ -27,18 +40,16 @@ export default function EditProfileScreen({ navigation }: any) {
               <Text style={styles.header}>Description</Text>
               <Button title="Edit"></Button>
             </View>
-            <Text style={styles.bio}>
-              {userData.description}
-            </Text>
+            <Text style={styles.bio}>{userData.description}</Text>
           </View>
           <View>
             <View style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
               <Text style={styles.header}>Listings</Text>
             </View>
             <View style={styles.userImagesContainer}>
-              {userData.listings.map((image: string, index: number) => (
-                <TouchableOpacity onPress={() => navigation.navigate("CreateStack", { screen: "Listing" })} key={index}>
-                  <Image source={{ uri: image.images[0] }} style={styles.userImages} />
+              {userData.listings.map((listing: any, index: number) => (
+                <TouchableOpacity onPress={() => handlePress(listing.id)} key={index}>
+                  <Image source={{ uri: listing.images[0] }} style={styles.userImages} />
                   {/* <Button onPress={() => navigation.navigate("CreateStack", { screen: "Listing" })} title="Edit"></Button> */}
                 </TouchableOpacity>
               ))}
@@ -52,7 +63,8 @@ export default function EditProfileScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   profileScreenContainer: {
-    margin: 20,
+    flex: 1,
+    backgroundColor: "white",
   },
   userImagesContainer: {
     flexDirection: "row",

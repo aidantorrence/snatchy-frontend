@@ -1,7 +1,7 @@
-import { useEffect } from "react";
 import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useQuery } from "react-query";
 import { fetchListings, fetchUser } from "../data/api";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
 const DATA = [
   {
@@ -11,7 +11,7 @@ const DATA = [
       "https://www.domusweb.it/content/dam/domusweb/it/speciali/assoluti-del-design/gallery/2021/gli-assoluti-20-sneaker-imperdibili/gallery/domus-assoluti-sneaker-converse-all-star.jpg.foto.rmedium.png",
     ],
     size: "11",
-    price: '379',
+    price: "379",
     condition: "Brand New",
     canTrade: true,
     sellerName: "genevieve",
@@ -28,9 +28,21 @@ function ListHeader() {
 }
 export default function HomeScreen({ navigation }: any) {
   const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery("listings", fetchListings);
-
-  console.log("isLoading", isLoadingListings);
-  console.log("data", listingsData);
+  const user = useAuthentication();
+  
+  const handlePress = (listing: any) => {
+    navigation.navigate("ViewListing", {
+      id: listing.id,
+      ownerId: listing.ownerId,
+    });
+    // navigation.navigate("CreateStack", {
+    //   screen: "ViewListing",
+    //   params: {
+    //     screen: "ViewListing",
+    //     id,
+    //   },
+    // });
+  };
 
   return (
     <>
@@ -41,7 +53,7 @@ export default function HomeScreen({ navigation }: any) {
           <FlatList
             data={listingsData}
             renderItem={({ item }: any) => (
-              <TouchableOpacity onPress={() => navigation.navigate("CreateStack", { screen: "ViewListing" })} style={styles.item}>
+              <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
                 <View style={styles.userInfo}>
                   <Image source={{ uri: item.owner.userImage }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
@@ -77,9 +89,9 @@ const styles = StyleSheet.create({
   },
   item: {
     alignItems: "center",
-    paddingBottom: 20,
-    paddingLeft: 20,
-    paddingRight: 20,
+    // paddingBottom: 20,
+    // paddingLeft: 20,
+    // paddingRight: 20,
   },
   name: {
     fontSize: 24,
@@ -91,10 +103,10 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   nameConditionSizeContainer: {
-    width: "75%",
+    width: "85%",
   },
   priceCanTradeContainer: {
-    width: "25%",
+    width: "15%",
     alignItems: "center",
   },
   price: {
@@ -104,8 +116,7 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flexDirection: "row",
-    paddingTop: 10,
-    paddingBottom: 10,
+    padding: 10,
   },
   title: {
     alignItems: "center",
@@ -130,7 +141,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     width: "100%",
-    paddingBottom: 10,
+    paddingVertical: 10,
+    paddingLeft: 10,
   },
   sellerName: {
     fontSize: 20,

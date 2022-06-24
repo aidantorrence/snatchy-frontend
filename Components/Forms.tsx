@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const fieldTitles = {
   name: "Name",
@@ -53,13 +53,84 @@ export function DropDownForm({ formData, error, setError, field, openOptionsModa
   };
   return (
     <TouchableOpacity style={styles.detailsContainer} onPress={handlePress}>
-      <View style={styles.dropDownContainer}>
+      <View>
         <Text style={formData[field] ? styles.detailsTitle : styles.detailsPlaceholder}>{fieldTitles[field]}</Text>
-        <Image source={require("../assets/dropDownCaret.png")} style={styles.dropDownCaret} />
+        {formData[field] ? <Text style={styles.detailsAnswer}>{formData[field]}</Text> : null}
       </View>
-      {formData[field] ? <Text style={styles.detailsAnswer}>{formData[field]}</Text> : null}
+      <Image source={require("../assets/dropDownCaret.png")} style={styles.dropDownCaret} />
       {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
     </TouchableOpacity>
+  );
+}
+
+export function EditInputForm({
+  data,
+  formData,
+  setFormData,
+  editMode,
+  setEditMode,
+  error,
+  field,
+  keyboardType,
+  setError,
+  openInputModal,
+}: any) {
+  const handleChange = (text: string) => {
+    setFormData({ ...formData, [field]: text });
+  };
+  const handleFocus = () => {
+    setError({ ...error, [field]: "" });
+    setEditMode({ ...editMode, [field]: true });
+  };
+  const handleBlur = () => {
+    setEditMode({ ...editMode, [field]: false });
+  };
+  return (
+    <View style={styles.detailsContainer}>
+      <View>
+        <Text style={styles.detailsTitle}>{fieldTitles[field]}</Text>
+        {editMode[field] ? (
+          <TextInput
+            value={formData[field]}
+            onChangeText={handleChange}
+            style={formData[field] ? styles.detailsAnswer : styles.detailsPlaceholder}
+            placeholder={editMode[field] ? "" : fieldTitles[field]}
+            placeholderTextColor="gray"
+            autoCorrect={false}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            keyboardType={keyboardType}
+          />
+        ) : (
+          <Text style={styles.detailsAnswer}>{data[field]}</Text>
+        )}
+        {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
+      </View>
+      <Button title="Edit" onPress={() => openInputModal(field)} />
+    </View>
+  );
+}
+
+export function EditDropDownForm({ data, formData, editMode, setEditMode, error, setError, field, openOptionsModal }: any) {
+  const parseData = () => {
+    if (typeof data[field] === "boolean") {
+      return data[field] ? "Yes" : "No";
+    }
+    return data[field];
+  };
+  const handlePress = () => {
+    openOptionsModal(field);
+    setEditMode({ ...editMode, [field]: true });
+  };
+  return (
+    <View style={styles.detailsContainer}>
+      <View>
+        <Text style={styles.detailsTitle}>{fieldTitles[field]}</Text>
+        <Text style={styles.detailsAnswer}>{parseData()}</Text>
+      </View>
+      <Button title="Edit" onPress={handlePress} />
+      {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
+    </View>
   );
 }
 
@@ -89,8 +160,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#aaa",
     paddingVertical: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  dropDownContainer: {
+  flexContainer: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
