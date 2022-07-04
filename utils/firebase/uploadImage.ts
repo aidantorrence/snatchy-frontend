@@ -1,10 +1,10 @@
-import { getApps, initializeApp } from "firebase/app";
+import { FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Constants from "expo-constants";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
-export let app;
+export let app: FirebaseApp;
 if (!getApps().length) {
   app = initializeApp(Constants.manifest?.extra as any);
 }

@@ -1,63 +1,206 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { SafeAreaView, StyleSheet, TextInput, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useMutation, useQueryClient } from "react-query";
+import { InputForm } from "../Components/Forms";
+import { updateUser } from "../data/api";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
-export default function ShippingDetailsScreen() {
+export default function ShippingDetailsScreen({ navigation, route }: any) {
+  const { id, ownerId } = route.params;
+  const user = useAuthentication();
   const [formData, setFormData] = useState({
-    address: '',
-    city: '',
-    state: '',
-    zipcode: '',
-    country: 'US',
-  })
-  
+    address: "",
+    optionalAddress: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    country: "United States",
+  });
+  const [focusedState, setFocusedState] = useState({
+    name: false,
+    price: false,
+    size: false,
+    timesWorn: false,
+    scuffMarks: false,
+    discoloration: false,
+    looseThreads: false,
+    heelDrag: false,
+    toughStains: false,
+  });
+  const [error, setError] = useState({
+    images: "",
+    name: "",
+    condition: "",
+    size: "",
+    price: "",
+    canTrade: "",
+    gender: "",
+    boxCondition: "",
+    timesWorn: "",
+    scuffMarks: "",
+    discoloration: "",
+    looseThreads: "",
+    heelDrag: "",
+    toughStains: "",
+  }) as any;
+  const queryClient = useQueryClient();
+  const mutation: any = useMutation((data) => updateUser(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(`user-${user.uid}`);
+    },
+  });
+  const handleBuy = () => {
+    const isValid = validateForm();
+    if (!isValid) return
+    mutation.mutate({
+      uid: user.uid,
+      ...formData,
+    });
+    // if come from offer button do something vs buy button
+    navigation.navigate("PaymentStack", {
+      screen: "Payment",
+      params: {
+        screen: "Payment",
+        id,
+        ownerId,
+      },
+    });
+  }
+  const validateForm = () => {
+    let isValid = true;
+    for (const key in formData) {
+      if (formData[key] === "") {
+        setError((err: any) => ({ ...err, [key]: "This field is required" }));
+        isValid = false;
+      }
+    }
+    return isValid;
+  };
+
   return (
-    <SafeAreaView>
-      <View style={styles.container}>
-        <TextInput
-          value={formData.address}
-          onChangeText={(value) => setFormData({ ...formData, address: value })}
-          style={styles.textInput}
-          autoCorrect={false}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.shippingContainer}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Shipping Details</Text>
+        </View>
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="address"
         />
-        <TextInput
-          value={formData.city}
-          onChangeText={value => setFormData({ ...formData, city: value})}
-          style={styles.textInput}
-          autoCorrect={false}
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="optionalAddress"
         />
-        <TextInput
-          value={formData.state}
-          onChangeText={value => setFormData({ ...formData, state: value})}
-          style={styles.textInput}
-          autoCorrect={false}
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="city"
         />
-        <TextInput
-          value={formData.zipcode}
-          onChangeText={value => setFormData({ ...formData, zipcode: value})}
-          style={styles.textInput}
-          autoCorrect={false}
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="state"
         />
-        <TextInput
-          value={formData.country}
-          onChangeText={value => setFormData({ ...formData, country: value})}
-          style={styles.textInput}
-          autoCorrect={false}
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="zipcode"
         />
-        <TextInput />
+        <InputForm
+          formData={formData}
+          setFormData={setFormData}
+          focusedState={focusedState}
+          setFocusedState={setFocusedState}
+          setError={setError}
+          error={error}
+          field="country"
+        />
+        <TouchableOpacity onPress={handleBuy} style={styles.buttonContainer}>
+          <LinearGradient
+            colors={["#aaa", "#aaa", "#333"]}
+            locations={[0, 0.3, 1]}
+            style={styles.confirmButton}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.completeButtonText}>Add</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  textInput: {
-    
+  shippingContainer: {
+    width: "100%",
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    textAlign: "center",
+  },
+  titleContainer: {
+    borderBottomWidth: 1,
+    borderColor: "#aaa",
+    marginHorizontal: 20,
+    paddingVertical: 15,
   },
   container: {
     flex: 1,
-    justifyContent: "center",
-    margin: 20,
+    backgroundColor: "white",
+    alignItems: "center",
   },
+  completeButtonText: {
+    fontSize: 20,
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  confirmButton: {
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 27,
+    margin: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+  },
+  buttonContainer: {
+    alignItems: "center",
+  },
+  completeButton: {
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 27,
+    margin: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+    width: 160,
+  },
+  textInput: {},
   input: {
     backgroundColor: "#efefefef",
     borderRadius: 8,

@@ -16,10 +16,11 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
-import { useMutation, useQueryClient } from "react-query";
-import { postListing } from "../data/api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { fetchUser, postListing } from "../data/api";
 import { DropDownForm, InputForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
 const modalOptions = {
   condition: ["", "Brand New", "Used - Excellent", "Used - Good", "Used - Fair"],
@@ -29,6 +30,8 @@ const modalOptions = {
 } as any;
 
 export default function CreateListingScreen({ navigation }: any) {
+  const user = useAuthentication();
+  const { data: userData, isLoading } = useQuery("user", () => fetchUser(user?.uid));
   const [formData, setFormData] = useState({
     images: ["https://picsum.photos/200/300"],
     name: "",
@@ -84,7 +87,7 @@ export default function CreateListingScreen({ navigation }: any) {
     },
   });
 
-  const photosToAdd = 10 - formData?.images?.length || 0
+  const photosToAdd = 10 - formData?.images?.length || 0;
   // const validateForm = () => {
   // switch (form) {
   //   case "images":
@@ -145,7 +148,7 @@ export default function CreateListingScreen({ navigation }: any) {
     images: formData.images,
     gender: formData.gender,
     boxCondition: formData.boxCondition,
-    canTrade: formData.canTrade === 'Yes',
+    canTrade: formData.canTrade === "Yes",
     description: "",
     listingDefects: [
       `scuffMarks: ${formData.discoloration}`,
@@ -154,7 +157,7 @@ export default function CreateListingScreen({ navigation }: any) {
       `heelDrag: ${formData.heelDrag}`,
       `toughStains: ${formData.toughStains}`,
     ],
-    ownerId: 1,
+    ownerId: user?.uid,
   };
 
   const editPhoto = (index?: number) => {
@@ -204,7 +207,7 @@ export default function CreateListingScreen({ navigation }: any) {
 
       // if permission not granted, return
       if (status !== "granted") return;
-      
+
       result = await ImagePicker.launchCameraAsync();
     } else {
       // No permissions request is necessary for launching the image library
@@ -237,7 +240,7 @@ export default function CreateListingScreen({ navigation }: any) {
     setModalValue(val);
   };
   const handleConfirmButtonClick = () => {
-    console.log('listing', listing)
+    console.log("listing", listing);
     mutation.mutate(listing);
     setConfirmModalIsVisible(false);
     navigation.navigate("Profile");
@@ -260,11 +263,13 @@ export default function CreateListingScreen({ navigation }: any) {
                   <Image source={{ uri: image }} style={styles.images} />
                 </TouchableOpacity>
               ))}
-              {Array(photosToAdd).fill('').map((val, idx) => (
-                <TouchableOpacity key={idx} onPress={() => editPhoto()}>
-                  <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
-                </TouchableOpacity>
-              ))}
+              {Array(photosToAdd)
+                .fill("")
+                .map((val, idx) => (
+                  <TouchableOpacity key={idx} onPress={() => editPhoto()}>
+                    <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
+                  </TouchableOpacity>
+                ))}
             </ScrollView>
             {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
           </View>

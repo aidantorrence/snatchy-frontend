@@ -1,10 +1,13 @@
 import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { deleteListing, fetchUser } from "../data/api";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
 export default function ViewListingScreen({ navigation, route }: any) {
   const { id, ownerId } = route.params;
   const { data, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
+  const user = useAuthentication();
+  const isUserListing = user.uid === ownerId;
   const queryClient = useQueryClient();
   const mutation: any = useMutation(() => deleteListing({ id }), {
     onSuccess: () => {
@@ -29,9 +32,9 @@ export default function ViewListingScreen({ navigation, route }: any) {
   };
 
   const handleDelete = () => {
-    mutation.mutate()
-    navigation.goBack()
-  }
+    mutation.mutate();
+    navigation.goBack();
+  };
 
   const handleAlert = () => {
     Alert.alert("", "", [
@@ -44,6 +47,36 @@ export default function ViewListingScreen({ navigation, route }: any) {
         onPress: () => handlePress("Delete"),
       },
     ]);
+  };
+  const handleMakeOffer = () => {
+    navigation.navigate("PaymentStack", {
+      screen: "Offer",
+      params: {
+        screen: "Offer",
+        id,
+        ownerId,
+      },
+    });
+  };
+  const handleBuy = () => {
+    navigation.navigate("PaymentStack", {
+      screen: "Payment",
+      params: {
+        screen: "Payment",
+        id,
+        ownerId,
+      },
+    });
+  };
+  const handleTrade = () => {
+    navigation.navigate("TradeStack", {
+      screen: "ItemsWanted",
+      params: {
+        screen: "ItemsWanted",
+        id,
+        ownerId,
+      },
+    });
   };
 
   const listing = data?.listings?.find((listing: any) => listing.id === id);
@@ -59,10 +92,9 @@ export default function ViewListingScreen({ navigation, route }: any) {
                   <Image source={{ uri: data.userImage }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{data.sellerName}</Text>
                 </View>
-                {/* <Text style={{ padding: 10, fontSize: 20, color: "gray" }}>Edit Listing</Text> */}
-                <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
+                {isUserListing ? <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
                   <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
-                </TouchableOpacity>
+                </TouchableOpacity> : null}
               </TouchableOpacity>
               <Image source={{ uri: listing.images[0] }} style={styles.image} />
               <View style={styles.detailsContainer}>
@@ -91,13 +123,13 @@ export default function ViewListingScreen({ navigation, route }: any) {
             </View>
           </ScrollView>
           <View style={styles.footerButtons}>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "white" }]}>
+            <TouchableOpacity onPress={handleTrade} style={[styles.button, { backgroundColor: "white" }]}>
               <Text style={styles.buttonText}>Trade</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "gray" }]}>
+            <TouchableOpacity onPress={handleMakeOffer} style={[styles.button, { backgroundColor: "gray" }]}>
               <Text style={styles.buttonText}>Make Offer</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "red" }]}>
+            <TouchableOpacity onPress={handleBuy} style={[styles.button, { backgroundColor: "red" }]}>
               <Text style={styles.buttonText}>Buy Now</Text>
             </TouchableOpacity>
           </View>

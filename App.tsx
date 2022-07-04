@@ -7,8 +7,6 @@ import EditProfileScreen from "./Screens/EditProfileScreen";
 import ViewListingScreen from "./Screens/ViewListingScreen";
 import ViewProfileScreen from "./Screens/ViewProfileScreen";
 import EditListingScreen from "./Screens/EditListingScreen";
-import OfferScreen from "./Screens/OfferScreen";
-import TradeScreen from "./Screens/TradeScreen";
 import { useLayoutEffect } from "react";
 import HomeScreen from "./Screens/HomeScreen";
 import { QueryClient, QueryClientProvider, useQuery } from "react-query";
@@ -18,6 +16,11 @@ import SignUpScreen from "./Screens/SignUpScreen";
 import useAuthentication from "./utils/firebase/useAuthentication";
 import PaymentScreen from "./Screens/PaymentScreen";
 import ShippingDetailsScreen from "./Screens/ShippingDetailsScreen";
+import ItemsWantedScreen from "./Screens/ItemsWantedScreen";
+import OfferScreen from "./Screens/OfferScreen";
+import ItemsToTradeScreen from "./Screens/ItemsToTradeScreen";
+import TradeSummaryScreen from "./Screens/TradeSummaryScreen";
+import CheckoutScreen from "./Screens/CheckoutScreen";
 
 function Icon({ imgSrc }: any) {
   return (
@@ -37,6 +40,24 @@ function CreateScreenStackNavigation() {
     </Stack.Navigator>
   );
 }
+function PaymentScreenStackNavigation() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
+      <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
+      <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
+    </Stack.Navigator>
+  );
+}
+function TradeScreenStackNavigation() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="ItemsWanted" options={{ headerTitle: "", title: "" }} component={ItemsWantedScreen} />
+      <Stack.Screen name="ItemsToTrade" options={{ headerTitle: "", title: "" }} component={ItemsToTradeScreen} />
+      <Stack.Screen name="TradeSummary" options={{ headerTitle: "", title: "" }} component={TradeSummaryScreen} />
+    </Stack.Navigator>
+  );
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -45,9 +66,9 @@ export default function App({ navigation, route }: any) {
     <QueryClientProvider client={new QueryClient()}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
-          <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
           <Stack.Screen name="HomeTabs" options={{ headerTitle: "", title: "" }} component={HomeTabs} />
+          <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
+          <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
           <Stack.Screen name="ViewListing" options={{ headerTitle: "Listing", title: "" }} component={ViewListingScreen} />
           <Stack.Screen name="EditListing" options={{ headerTitle: "Edit Listing", title: "" }} component={EditListingScreen} />
           <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "" }} component={SignUpScreen} />

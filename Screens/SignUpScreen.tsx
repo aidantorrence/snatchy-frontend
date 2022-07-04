@@ -3,12 +3,20 @@ import { StyleSheet, Text, View, TextInput, Button } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { useMutation, useQueryClient } from "react-query";
+import { postUser } from "../data/api";
 
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
   const [value, setValue] = React.useState({
     email: "",
     password: "",
     error: "",
+  });
+  const queryClient = useQueryClient();
+  const mutation: any = useMutation((data) => postUser(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("user");
+    },
   });
 
   const auth = getAuth();
@@ -23,7 +31,11 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, value.email, value.password);
+      const { user } = await createUserWithEmailAndPassword(auth, value.email, value.password);
+      mutation.mutate({
+        uid: user.uid,
+        email: user.email,
+      });
       navigation.navigate("HomeTabs");
     } catch (error: any) {
       setValue({
@@ -60,7 +72,11 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
         />
 
         <Button title="Sign up" style={styles.control} onPress={signUp} />
-        <Button title="Already signed up?  Sign in instead" style={styles.control} onPress={() => navigation.navigate('SignIn')} />
+        <Button
+          title="Already signed up?  Sign in instead"
+          style={styles.control}
+          onPress={() => navigation.navigate("SignIn")}
+        />
       </View>
     </View>
   );

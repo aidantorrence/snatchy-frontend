@@ -1,4 +1,5 @@
 import { Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions } from "react-native";
 
 const fieldTitles = {
   name: "Name",
@@ -14,6 +15,12 @@ const fieldTitles = {
   gender: "Mens/Womens",
   boxCondition: "Box Condition",
   canTrade: "Allow Trades?",
+  address: "Address",
+  city: "City",
+  state: "State",
+  zipcode: "Zipcode",
+  country: "Country",
+  optionalAddress: "Apt/Suite/Other (optional)",
 } as any;
 
 export function InputForm({ formData, setFormData, focusedState, setFocusedState, error, field, keyboardType, setError }: any) {
@@ -29,19 +36,21 @@ export function InputForm({ formData, setFormData, focusedState, setFocusedState
   };
   return (
     <View style={styles.detailsContainer}>
-      {focusedState[field] || formData[field] ? <Text style={styles.detailsTitle}>{fieldTitles[field]}</Text> : null}
-      <TextInput
-        value={formData[field]}
-        onChangeText={handleChange}
-        style={formData[field] ? styles.detailsAnswer : styles.detailsPlaceholder}
-        placeholder={focusedState[field] ? "" : fieldTitles[field]}
-        placeholderTextColor="gray"
-        autoCorrect={false}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        keyboardType={keyboardType}
-      />
-      {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
+      <View>
+        {focusedState[field] || formData[field] ? <Text style={styles.detailsTitle}>{fieldTitles[field]}</Text> : null}
+        <TextInput
+          value={formData[field]}
+          onChangeText={handleChange}
+          style={formData[field] ? styles.detailsAnswer : styles.detailsPlaceholder}
+          placeholder={focusedState[field] ? "" : fieldTitles[field]}
+          placeholderTextColor="gray"
+          autoCorrect={false}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          keyboardType={keyboardType}
+        />
+        {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
+      </View>
     </View>
   );
 }
@@ -144,6 +153,7 @@ const styles = StyleSheet.create({
     fontSize: 25,
     color: "gray",
     paddingVertical: 3,
+    width: Dimensions.get("window").width,
   },
   detailsAnswer: {
     fontSize: 25,

@@ -1,6 +1,7 @@
 import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity } from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
 const defaultProfile = "https://creativeloafing.com/dl39257?display&x=1040&y=780";
 const yeezyZebra =
@@ -8,13 +9,13 @@ const yeezyZebra =
 const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
 
 export default function EditProfileScreen({ navigation }: any) {
-  const { data: userData, isLoading } = useQuery("user", () => fetchUser(1));
-  console.log(userData);
+  const user = useAuthentication();
+  const { data: userData, isLoading } = useQuery(`user-${user?.uid}`, () => fetchUser(user?.uid));
 
   const handlePress = (id: any) => {
     navigation.navigate("ViewListing", {
       id,
-      ownerId: userData.id
+      ownerId: userData.uid
     });
     // navigation.navigate("CreateStack", {
     //   screen: "EditListing",

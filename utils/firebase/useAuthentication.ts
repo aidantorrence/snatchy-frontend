@@ -1,17 +1,24 @@
-import { getAuth, initializeAuth, onAuthStateChanged, User } from 'firebase/auth';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { getReactNativePersistence } from 'firebase/auth/react-native';
+import { getAuth, initializeAuth, onAuthStateChanged, User } from "firebase/auth";
+import create from "zustand";
+import { useEffect } from "react";
+import { getReactNativePersistence } from "firebase/auth/react-native";
 
 // Import it from your preferred package.
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { app } from './uploadImage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { app } from "./uploadImage";
 
 // Provide it to initializeAuth.
 const auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
 
+const useStore = create((set: any) => ({
+  user: {} as any,
+  setUser: (input: any) => set({ user: input }),
+}));
+
 export default function useAuthentication() {
-  const [user, setUser] = useState<User>();
+  const setUser = useStore((state) => state.setUser);
+  const user = useStore((state) => state.user);
+
 
   useEffect(() => {
     const unsubscribeFromAuthStateChanged = onAuthStateChanged(auth, (user) => {
