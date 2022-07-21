@@ -16,6 +16,7 @@ import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
+import { ScreenStackHeaderSearchBarView } from "react-native-screens";
 
 const img = "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
 const userImages = [img, img, img];
@@ -44,7 +45,7 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
   const [isChecked, setIsChecked] = useState([true, ...new Array(data.listings.length - 1).fill(false)]);
 
   const handlePress = () => {
-    if (data.address) {
+    // if (data.address) {
     navigation.navigate("PaymentStack", {
       screen: "Payment",
       params: {
@@ -53,31 +54,35 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
         ownerId,
         itemsToTrade,
         itemsWanted,
+        additionalFunds,
       },
     });
-    } else {
-    navigation.navigate("PaymentStack", {
-      screen: "ShippingDetails",
-      params: {
-        screen: "ShippingDetails",
-        id,
-        ownerId,
-      },
-    });
-    }
+    // } else {
+    // navigation.navigate("PaymentStack", {
+    //   screen: "ShippingDetails",
+    //   params: {
+    //     screen: "ShippingDetails",
+    //     id,
+    //     ownerId,
+    //   },
+    // });
+    // }
   };
   const handleChange = (index: number) => {
     const newIsChecked = isChecked.slice();
     newIsChecked[index] = !isChecked[index];
     setIsChecked(newIsChecked);
   };
-  const addCash = () => {
-
-  }
+  const addAdditionalFunds = (e: string) => {
+    setAdditionalFunds(e);
+  };
+  const askForAdditionalFunds = (e: string) => {
+    setAdditionalFunds((parseInt(e) * -1).toString());
+  };
 
   return (
-      <View style={styles.container}>
-    <SafeAreaView>
+    <View style={styles.container}>
+      <SafeAreaView>
         <FlatList
           data={itemsToTrade}
           renderItem={({ item, index }: any) => (
@@ -124,7 +129,8 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
             style={styles.input}
             keyboardType="numeric"
             placeholder="$"
-            onChangeText={(e): any => addCash(e)}
+            onChangeText={(e): any => addAdditionalFunds(e)}
+            value={parseInt(additionalFunds, 10) >= 0 ? additionalFunds : ""}
           />
         </View>
         <View style={styles.inputContainer}>
@@ -133,7 +139,8 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
             style={styles.input}
             keyboardType="numeric"
             placeholder="$"
-            onChangeText={(e): any => addCash(e)}
+            onChangeText={(e): any => askForAdditionalFunds(e)}
+            value={parseInt(additionalFunds, 10) < 0 ? (-1 * parseInt(additionalFunds, 10)).toString() : ""}
           />
         </View>
         <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
@@ -147,8 +154,8 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
             <Text style={styles.buttonText}>Continue</Text>
           </LinearGradient>
         </TouchableOpacity>
-    </SafeAreaView>
-      </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -159,8 +166,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 7,
   },
-  inputContainer: {
-  },
+  inputContainer: {},
   detailsText: {
     fontSize: 16,
     marginVertical: 3,

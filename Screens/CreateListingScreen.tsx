@@ -29,25 +29,26 @@ const modalOptions = {
   canTrade: ["", "Yes", "No"],
 } as any;
 
+const initialFormState = {
+  images: ["https://picsum.photos/200/300"],
+  name: "",
+  condition: "",
+  size: "",
+  price: "",
+  canTrade: "",
+  gender: "",
+  boxCondition: "",
+  timesWorn: "",
+  scuffMarks: "",
+  discoloration: "",
+  looseThreads: "",
+  heelDrag: "",
+  toughStains: "",
+};
 export default function CreateListingScreen({ navigation }: any) {
   const user = useAuthentication();
   const { data: userData, isLoading } = useQuery("user", () => fetchUser(user?.uid));
-  const [formData, setFormData] = useState({
-    images: ["https://picsum.photos/200/300"],
-    name: "",
-    condition: "",
-    size: "",
-    price: "",
-    canTrade: "",
-    gender: "",
-    boxCondition: "",
-    timesWorn: "",
-    scuffMarks: "",
-    discoloration: "",
-    looseThreads: "",
-    heelDrag: "",
-    toughStains: "",
-  }) as any;
+  const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
     images: "",
     name: "",
@@ -243,7 +244,12 @@ export default function CreateListingScreen({ navigation }: any) {
     console.log("listing", listing);
     mutation.mutate(listing);
     setConfirmModalIsVisible(false);
+    setFormData(initialFormState)
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
     navigation.navigate("Profile");
+    }
   };
   const handleOptionsModalClose = () => {
     formData[currentModal] = modalValue;

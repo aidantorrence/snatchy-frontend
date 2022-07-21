@@ -3,11 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { deleteListing, fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
+const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
+
 export default function ViewListingScreen({ navigation, route }: any) {
   const { id, ownerId } = route.params;
   const { data, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const user = useAuthentication();
-  const isUserListing = user.uid === ownerId;
+  const isUserListing = user?.uid === ownerId;
   const queryClient = useQueryClient();
   const mutation: any = useMutation(() => deleteListing({ id }), {
     onSuccess: () => {
@@ -49,6 +51,10 @@ export default function ViewListingScreen({ navigation, route }: any) {
     ]);
   };
   const handleMakeOffer = () => {
+    if (!user) {
+      navigation.navigate("SignUp");
+      return;
+    }
     navigation.navigate("PaymentStack", {
       screen: "Offer",
       params: {
@@ -59,6 +65,10 @@ export default function ViewListingScreen({ navigation, route }: any) {
     });
   };
   const handleBuy = () => {
+    if (!user) {
+      navigation.navigate("SignUp");
+      return;
+    }
     navigation.navigate("PaymentStack", {
       screen: "Payment",
       params: {
@@ -69,6 +79,10 @@ export default function ViewListingScreen({ navigation, route }: any) {
     });
   };
   const handleTrade = () => {
+    if (!user) {
+      navigation.navigate("SignUp");
+      return;
+    }
     navigation.navigate("TradeStack", {
       screen: "ItemsWanted",
       params: {
@@ -89,12 +103,14 @@ export default function ViewListingScreen({ navigation, route }: any) {
             <View style={styles.item}>
               <TouchableOpacity onPress={() => navigation.navigate("ViewProfile")} style={styles.userContainer}>
                 <View style={styles.userInfo}>
-                  <Image source={{ uri: data.userImage }} style={styles.userImage} />
+                  <Image source={{ uri: data.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{data.sellerName}</Text>
                 </View>
-                {isUserListing ? <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
-                  <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
-                </TouchableOpacity> : null}
+                {isUserListing ? (
+                  <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
+                    <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
+                  </TouchableOpacity>
+                ) : null}
               </TouchableOpacity>
               <Image source={{ uri: listing.images[0] }} style={styles.image} />
               <View style={styles.detailsContainer}>
@@ -122,17 +138,19 @@ export default function ViewListingScreen({ navigation, route }: any) {
                 ))}
             </View>
           </ScrollView>
-          <View style={styles.footerButtons}>
-            <TouchableOpacity onPress={handleTrade} style={[styles.button, { backgroundColor: "white" }]}>
-              <Text style={styles.buttonText}>Trade</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleMakeOffer} style={[styles.button, { backgroundColor: "gray" }]}>
-              <Text style={styles.buttonText}>Make Offer</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleBuy} style={[styles.button, { backgroundColor: "red" }]}>
-              <Text style={styles.buttonText}>Buy Now</Text>
-            </TouchableOpacity>
-          </View>
+          {!isUserListing ? (
+            <View style={styles.footerButtons}>
+              { listing.canTrade ? <TouchableOpacity onPress={handleTrade} style={[styles.button, { backgroundColor: "white" }]}>
+                <Text style={styles.buttonText}>Trade</Text>
+              </TouchableOpacity> : null }
+              <TouchableOpacity onPress={handleMakeOffer} style={[styles.button, { backgroundColor: "gray" }]}>
+                <Text style={styles.buttonText}>Make Offer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleBuy} style={[styles.button, { backgroundColor: "red" }]}>
+                <Text style={styles.buttonText}>Buy Now</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </SafeAreaView>
       </>
     )
@@ -187,7 +205,6 @@ const styles = StyleSheet.create({
   userImages: {
     width: 80,
     height: 80,
-    resizeMode: "contain",
     margin: 10,
   },
   name: {

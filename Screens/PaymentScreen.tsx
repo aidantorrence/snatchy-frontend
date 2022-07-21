@@ -1,34 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Alert, SafeAreaView, Image, TouchableOpacity } from "react-native";
-import { CardField, StripeProvider, useConfirmPayment } from "@stripe/stripe-react-native";
+import { CardField, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
-import { useQuery } from "react-query";
-import { fetchUser } from "../data/api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { fetchListing, fetchPaymentSheetParams, fetchUser, updateUser } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
-
-//ADD localhost address of your server
-const API_URL = "http://localhost:8081";
+import useAuthentication from "../utils/firebase/useAuthentication";
 
 export default function PaymentScreen({ route, navigation }: any) {
-  const [email, setEmail] = useState("");
-  const [cardDetails, setCardDetails] = useState(null) as any;
-  const { confirmPayment, loading } = useConfirmPayment();
-  const { id, ownerId, isOffer, offerPrice } = route.params;
-  const { data, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
-  const listing = data?.listings?.find((listing: any) => listing.id === id);
-  const price = isOffer ? offerPrice : listing.price;
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const { id, ownerId, isOffer, offerPrice, itemsWanted, additionalFunds } = route.params;
+  const user = useAuthentication();
+  const { data, isLoading: isUserLoading } = useQuery(`user-${user.uid}`, () => fetchUser(user.uid));
+  const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
+  const price = isOffer ? offerPrice : listingData?.price;
+  const { data: paymentSheetData, isLoading: isLoadingPaymentSheet } = useQuery(`payment-sheet`, () =>
+    fetchPaymentSheetParams(data?.customerId, itemsWanted, listingData)
+  );
+  const queryClient = useQueryClient();
+  const mutation: any = useMutation((data) => updateUser(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(`user-${user.uid}`);
+    },
+  });
 
-  const fetchPaymentIntentClientSecret = async () => {
-    const response = await fetch(`${API_URL}/create-payment-intent`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const initializePaymentSheet = async () => {
+    const { paymentIntent, ephemeralKey, customer } = paymentSheetData;
+    if (!data?.customerId) mutation.mutate({ uid: user.uid, customerId: customer });
+
+    const { error } = await initPaymentSheet({
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      paymentIntentClientSecret: paymentIntent,
     });
-    const { clientSecret, error } = await response.json();
-    return { clientSecret, error };
+    if (!error) {
+    }
   };
-const handleShippingDetails = () => {
+
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      Alert.alert("Success", "Your order is confirmed!");
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoadingPaymentSheet) initializePaymentSheet();
+  }, [isLoadingPaymentSheet]);
+  const handleShippingDetails = () => {
     navigation.navigate("PaymentStack", {
       screen: "ShippingDetails",
       params: {
@@ -37,61 +59,41 @@ const handleShippingDetails = () => {
         ownerId,
       },
     });
-}
-  const handlePayPress = async () => {
-    //1.Gather the customer's billing information (e.g., email)
-    if (!cardDetails?.complete || !email) {
-      Alert.alert("Please enter Complete card details and Email");
-      return;
-    }
-    const billingDetails = {
-      email,
-    };
-    //2.Fetch the intent client secret from the backend
-    try {
-      const { clientSecret, error } = await fetchPaymentIntentClientSecret();
-      //2. confirm the payment
-      if (error) {
-        console.log("Unable to process payment");
-      } else {
-        const { paymentIntent, error } = await confirmPayment(clientSecret, {
-          type: "Card",
-          billingDetails,
-        });
-        if (error) {
-          alert(`Payment Confirmation Error ${error.message}`);
-        } else if (paymentIntent) {
-          alert("Payment Successful");
-          console.log("Payment successful ", paymentIntent);
-        }
-      }
-    } catch (e) {
-      console.log(e);
-    }
-    //3.Confirm the payment with the card details
   };
-
   return (
     <StripeProvider publishableKey={Constants?.manifest?.extra?.publishableKey}>
       <SafeAreaView style={styles.container}>
-        <View style={styles.listingContainer}>
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: listing.images[0] }} style={styles.image} />
+        {additionalFunds === undefined ? (
+          <View style={styles.listingContainer}>
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: listingData?.images[0] }} style={styles.image} />
+            </View>
+            <View style={styles.listingDetailsContainer}>
+              <Text style={styles.title}>{listingData?.name}</Text>
+              <Text style={styles.detailTitle}>
+                <Text>Size: </Text>
+                <Text style={styles.detailValue}>{listingData?.size}</Text>
+              </Text>
+            </View>
           </View>
-          <View style={styles.listingDetailsContainer}>
-            <Text style={styles.title}>{listing.name}</Text>
-            <Text style={styles.detailTitle}>
-              <Text>Size: </Text>
-              <Text style={styles.detailValue}>{listing.size}</Text>
-            </Text>
-          </View>
-        </View>
+        ) : null}
         <View style={styles.calcContainer}>
           <View style={styles.detailContainer}>
-            <Text style={styles.detailTitle}>{`${isOffer ? "Offer " : "Listing "}Price`}</Text>
-            <View style={styles.detailValueContainer}>
-              <Text style={styles.detailValue}>${Math.round(price)}</Text>
-            </View>
+            {additionalFunds === undefined ? (
+              <>
+                <Text style={styles.detailTitle}>{`${isOffer ? "Offer " : "Listing "}Price`}</Text>
+                <View style={styles.detailValueContainer}>
+                  <Text style={styles.detailValue}>${Math.round(price)}</Text>
+                </View>
+              </>
+            ) : additionalFunds ? (
+              <>
+                <Text style={styles.detailTitle}>{"Added Cash"}</Text>
+                <View style={styles.detailValueContainer}>
+                  <Text style={styles.detailValue}>${Math.round(additionalFunds)}</Text>
+                </View>
+              </>
+            ) : null}
           </View>
         </View>
         <View style={styles.calcContainer}>
@@ -102,24 +104,26 @@ const handleShippingDetails = () => {
             </View>
           </View>
         </View>
-        <View style={styles.calcContainer}>
-          <View style={styles.detailContainer}>
-            <Text style={styles.detailTitle}>Sales Tax</Text>
-            <View style={styles.detailValueContainer}>
-              <Text style={styles.detailValue}>${Math.round(price * 0.07)}</Text>
+        {additionalFunds !== undefined ? (
+          <View style={styles.calcContainer}>
+            <View style={styles.detailContainer}>
+              <Text style={styles.detailTitle}>Sales Tax</Text>
+              <View style={styles.detailValueContainer}>
+                <Text style={styles.detailValue}>${Math.round(price * 0.0725)}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        ) : null}
         <View style={styles.divider} />
         <View style={styles.calcContainer}>
           <View style={styles.detailContainer}>
             <Text style={styles.detailTitle}>Total</Text>
             <View style={styles.detailValueContainer}>
-              <Text style={styles.detailValue}>${Math.round(price * 1.07 + 20)}</Text>
+              <Text style={styles.detailValue}>${Math.round(price * 1.0725 + 20)}</Text>
             </View>
           </View>
         </View>
-        {!data.address ? (
+        {data?.address ? (
           <>
             <View style={styles.cardTitleContainer}>
               <Text style={styles.cardTitle}>Shipping Details</Text>
@@ -128,7 +132,7 @@ const handleShippingDetails = () => {
             <View style={styles.cardContainer}>
               <View style={styles.addressContainer}>
                 <Text style={styles.addressText}>
-                  {data.address} {data.optionalAddress}{" "}
+                  {data?.address} {data.optionalAddress}{" "}
                 </Text>
                 <Text style={styles.addressText}>
                   {data.city}, {data.state} {data.zipcode}
@@ -142,34 +146,19 @@ const handleShippingDetails = () => {
             <Text style={styles.addShippingTitle}>Add Your Shipping Address</Text>
           </TouchableOpacity>
         )}
-        <View style={styles.cardTitleContainer}>
-          <Text style={styles.cardTitle}>Card Details</Text>
-          <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
-        </View>
-        <View style={styles.cardContainer}>
-          <CardField
-            postalCodeEnabled={true}
-            placeholder={{
-              number: "4242 4242 4242 4242",
-            }}
-            cardStyle={styles.cardColor}
-            style={styles.card}
-            onCardChange={(cardDetails) => {
-              setCardDetails(cardDetails);
-            }}
-          />
-        </View>
-        <TouchableOpacity style={styles.submitButtonContainer} onPress={handlePayPress}>
-          <LinearGradient
-            colors={["#aaa", "#aaa", "#333"]}
-            locations={[0, 0.3, 1]}
-            style={styles.submitButton}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.submitButtonText}>Submit</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        {data?.address ? (
+          <TouchableOpacity style={styles.submitButtonContainer} onPress={openPaymentSheet}>
+            <LinearGradient
+              colors={["#aaa", "#aaa", "#333"]}
+              locations={[0, 0.3, 1]}
+              style={styles.submitButton}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.submitButtonText}>Review Payment</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : null}
       </SafeAreaView>
     </StripeProvider>
   );
@@ -277,7 +266,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   addShippingContainer: {
-    backgroundColor: 'rgba(255,0,0,0.45)',
+    backgroundColor: "rgba(255,0,0,0.45)",
     margin: 20,
     borderRadius: 7,
     borderWidth: 1,

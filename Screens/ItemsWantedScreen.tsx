@@ -52,29 +52,27 @@ export default function ItemsWantedScreen({ navigation, route }: any) {
   };
 
   return (
-      <View style={styles.container}>
-    <SafeAreaView>
-        <FlatList
-          data={listings}
-          renderItem={({ item, index }: any) => (
-            <View style={styles.itemContainer}>
-              <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
-              <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
-                <View style={styles.detailsContainer}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.detailsText}>
-                    {item.size}
-                    {item.gender[0]} · {item.price}
-                  </Text>
-                  <Text style={styles.detailsText}>{item.condition}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={ListHeader}
-        />
+    <ScrollView style={styles.container}>
+      <SafeAreaView>
+        <View style={styles.listHeader}>
+          <Text style={styles.listHeaderText}>Select Listing(s) to Trade For</Text>
+        </View>
+        {listings.map((item, index) => (
+          <View key={item.id} style={styles.itemContainer}>
+            <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
+            <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
+              <Image source={{ uri: item.images[0] }} style={styles.image} />
+              <View style={styles.detailsContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.detailsText}>
+                  {item.size}
+                  {item.gender[0]} · {item.price}
+                </Text>
+                <Text style={styles.detailsText}>{item.condition}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
         <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
           <LinearGradient
             colors={["#aaa", "#aaa", "#333"]}
@@ -86,8 +84,8 @@ export default function ItemsWantedScreen({ navigation, route }: any) {
             <Text style={styles.buttonText}>Continue</Text>
           </LinearGradient>
         </TouchableOpacity>
-    </SafeAreaView>
-      </View>
+      </SafeAreaView>
+    </ScrollView>
   );
 }
 

@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
   userImages: {
     width: 80,
     height: 80,
-    resizeMode: "contain",
     margin: 10,
   },
   title: {

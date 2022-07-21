@@ -1,4 +1,5 @@
 import axios from "axios";
+import ItemsWantedScreen from "../Screens/ItemsWantedScreen";
 
 export const API_URL = "http://localhost:8081";
 // export const API_URL = "https://instaheat-server.herokuapp.com"
@@ -47,3 +48,21 @@ export async function updateUser(user: any) {
   const { data } = await axios.patch(`${API_URL}/user`, user);
   return data;
 }
+
+export const fetchPaymentSheetParams = async (customerId: string, itemsWanted: any[], listing: any) => {
+  let listingIds;
+  if (itemsWanted.length) {
+    listingIds = itemsWanted.map((item: any) => item.id);
+  } else {
+    listingIds = [listing.id];
+  }
+  try {
+    const { data } = await axios.post(`${API_URL}/payment-sheet`, {
+      customerId,
+      listingIds,
+    });
+    return data;
+  } catch (e) {
+    console.log(e);
+  }
+};

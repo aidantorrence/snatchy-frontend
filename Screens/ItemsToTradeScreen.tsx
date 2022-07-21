@@ -29,12 +29,10 @@ const ListHeader = () => {
 };
 
 export default function ItemsToTradeScreen({ navigation, route }: any) {
-  const [addedCash, setAddedCash] = useState(null) as any;
-  const [askedCash, setAskedCash] = useState(null) as any;
   const { id, ownerId, itemsWanted } = route.params;
   const user = useAuthentication();
   const { data, isLoading } = useQuery(`user-${user?.uid}`, () => fetchUser(user?.uid));
-  const [isChecked, setIsChecked] = useState(new Array(data.listings.length).fill(false));
+  const [isChecked, setIsChecked] = useState(new Array(data?.listings?.length).fill(false));
 
   const handlePress = () => {
     navigation.navigate("TradeStack", {
@@ -44,7 +42,7 @@ export default function ItemsToTradeScreen({ navigation, route }: any) {
         id,
         ownerId,
         itemsWanted,
-        itemsToTrade: data.listings.filter((l: any, i: number) => isChecked[i]),
+        itemsToTrade: data?.listings?.filter((l: any, i: number) => isChecked[i]),
       },
     });
   };
@@ -53,54 +51,58 @@ export default function ItemsToTradeScreen({ navigation, route }: any) {
     newIsChecked[index] = !isChecked[index];
     setIsChecked(newIsChecked);
   };
-  const addCash = (e: any) => {
-    setAddedCash(e.nativeEvent.text);
+  const handleCreateListing = () => {
+    navigation.navigate("HomeTabs", {
+      screen: "CreateStack",
+      params: {
+        screen: "CreateStack",
+      },
+    });
   };
 
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <FlatList
-          data={data.listings}
-          renderItem={({ item, index }: any) => (
-            <View style={styles.itemContainer}>
-              <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
-              <TouchableOpacity onPress={() => handlePress()} style={styles.card}>
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
-                <View style={styles.detailsContainer}>
-                  <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.detailsText}>
-                    {item.size}
-                    {item.gender[0]} · {item.price}
-                  </Text>
-                  <Text style={styles.detailsText}>{item.condition}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={ListHeader}
-        />
-        <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
-          <LinearGradient
-            colors={["#aaa", "#aaa", "#333"]}
-            locations={[0, 0.3, 1]}
-            style={styles.button}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.buttonText}>Continue</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        {/* <View style={styles.inputContainer}>
-        <Text style={styles.title}>Add Cash to your Offer</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          placeholder={`$${listing.price}`}
-          onChangeText={(e): any => setOfferPrice(e)}
-        />
-      </View> */}
+        {!data?.listings.length ? (
+          <TouchableOpacity style={styles.createListingButton} onPress={handleCreateListing}>
+            <Text style={styles.createListingButtonText}>Create a New Listing</Text>
+          </TouchableOpacity>
+        ) : (
+          <FlatList
+            data={data?.listings}
+            renderItem={({ item, index }: any) => (
+              <View style={styles.itemContainer}>
+                <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
+                <TouchableOpacity onPress={() => handlePress()} style={styles.card}>
+                  <Image source={{ uri: item.images[0] }} style={styles.image} />
+                  <View style={styles.detailsContainer}>
+                    <Text style={styles.name}>{item.name}</Text>
+                    <Text style={styles.detailsText}>
+                      {item.size}
+                      {item.gender[0]} · {item.price}
+                    </Text>
+                    <Text style={styles.detailsText}>{item.condition}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={ListHeader}
+          />
+        )}
+        {data?.listings.length ? (
+          <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
+            <LinearGradient
+              colors={["#aaa", "#aaa", "#333"]}
+              locations={[0, 0.3, 1]}
+              style={styles.button}
+              start={{ x: 0, y: 1 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.buttonText}>Continue</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : null}
       </SafeAreaView>
     </View>
   );
@@ -219,5 +221,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
+  },
+  createListingButton: {
+    backgroundColor: "rgba(255,0,0,0.45)",
+    margin: 20,
+    borderRadius: 7,
+    borderWidth: 1,
+  },
+  createListingButtonText: {
+    padding: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

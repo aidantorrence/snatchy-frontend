@@ -5,6 +5,7 @@ import { fetchListings, fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 import { QueryCache } from "react-query";
 const queryCache = new QueryCache({});
+const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
 
 const DATA = [
   {
@@ -60,7 +61,7 @@ export default function HomeScreen({ navigation }: any) {
             renderItem={({ item }: any) => (
               <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
                 <View style={styles.userInfo}>
-                  <Image source={{ uri: item.owner.userImage }} style={styles.userImage} />
+                  <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
                 </View>
                 <Image source={{ uri: item.images[0] }} style={styles.image} />

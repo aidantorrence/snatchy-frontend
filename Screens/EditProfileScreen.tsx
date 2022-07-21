@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
-const defaultProfile = "https://creativeloafing.com/dl39257?display&x=1040&y=780";
+const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
 const yeezyZebra =
   "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
 const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
@@ -33,15 +33,8 @@ export default function EditProfileScreen({ navigation }: any) {
         <SafeAreaView style={styles.profileScreenContainer}>
           <Button title="Edit"></Button>
           <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
-            <Image source={{ uri: userData.userImage }} style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }} />
+            <Image source={{ uri: userData.userImage || defaultProfile }} style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }} />
             <Text style={styles.title}>{userData.sellerName}</Text>
-          </View>
-          <View>
-            <View style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
-              <Text style={styles.header}>Description</Text>
-              <Button title="Edit"></Button>
-            </View>
-            <Text style={styles.bio}>{userData.description}</Text>
           </View>
           <View>
             <View style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
@@ -74,7 +67,6 @@ const styles = StyleSheet.create({
   userImages: {
     width: 80,
     height: 80,
-    resizeMode: "contain",
     margin: 10,
   },
   title: {

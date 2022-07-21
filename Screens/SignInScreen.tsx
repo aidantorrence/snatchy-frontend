@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { StackScreenProps } from "@react-navigation/stack";
 
@@ -33,8 +33,7 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text>Signin screen!</Text>
+    <SafeAreaView style={styles.container}>
 
       {!!value.error && (
         <View style={styles.error}>
@@ -58,13 +57,34 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
           secureTextEntry={true}
         />
 
-        <Button title="Sign in" style={styles.control} onPress={signIn} />
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={signIn}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#2b414d",
+    borderRadius: 50,
+    padding: 10,
+    width: 150,
+  },
   container: {
     flex: 1,
     paddingTop: 20,
@@ -75,10 +95,14 @@ const styles = StyleSheet.create({
 
   controls: {
     flex: 1,
+    width: '80%',
   },
 
   control: {
-    marginTop: 10,
+    paddingVertical: 10,
+    borderColor: "#2b414d",
+    borderBottomWidth: 1,
+    fontSize: 20,
   },
 
   error: {
