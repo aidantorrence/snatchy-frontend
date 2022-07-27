@@ -86,7 +86,7 @@ export default function PaymentScreen({ route, navigation }: any) {
                   <Text style={styles.detailValue}>${Math.round(price)}</Text>
                 </View>
               </>
-            ) : additionalFunds ? (
+            ) : additionalFunds > 0 ? (
               <>
                 <Text style={styles.detailTitle}>{"Added Cash"}</Text>
                 <View style={styles.detailValueContainer}>
@@ -104,12 +104,12 @@ export default function PaymentScreen({ route, navigation }: any) {
             </View>
           </View>
         </View>
-        {additionalFunds !== undefined ? (
+        {additionalFunds !== null ? (
           <View style={styles.calcContainer}>
             <View style={styles.detailContainer}>
               <Text style={styles.detailTitle}>Sales Tax</Text>
               <View style={styles.detailValueContainer}>
-                <Text style={styles.detailValue}>${Math.round(price * 0.0725)}</Text>
+                <Text style={styles.detailValue}>${Math.round((additionalFunds || price) * 0.0725)}</Text>
               </View>
             </View>
           </View>
@@ -119,7 +119,7 @@ export default function PaymentScreen({ route, navigation }: any) {
           <View style={styles.detailContainer}>
             <Text style={styles.detailTitle}>Total</Text>
             <View style={styles.detailValueContainer}>
-              <Text style={styles.detailValue}>${Math.round(price * 1.0725 + 20)}</Text>
+              <Text style={styles.detailValue}>${Math.round(additionalFunds === undefined ? price * 1.0725 + 20 : additionalFunds > 0 ? additionalFunds * 1.0725 + 20 : 20)}</Text>
             </View>
           </View>
         </View>
