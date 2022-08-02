@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { deleteListing, fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
-const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
+const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
 export default function ViewListingScreen({ navigation, route }: any) {
   const { id, ownerId } = route.params;
@@ -39,7 +39,7 @@ export default function ViewListingScreen({ navigation, route }: any) {
   };
 
   const handleAlert = () => {
-    Alert.alert("", "", [
+    Alert.alert("Select action", "", [
       {
         text: "Edit Listing",
         onPress: () => handlePress("Edit"),
@@ -47,6 +47,10 @@ export default function ViewListingScreen({ navigation, route }: any) {
       {
         text: "Delete Listing",
         onPress: () => handlePress("Delete"),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
       },
     ]);
   };
@@ -140,9 +144,11 @@ export default function ViewListingScreen({ navigation, route }: any) {
           </ScrollView>
           {!isUserListing ? (
             <View style={styles.footerButtons}>
-              { listing.canTrade ? <TouchableOpacity onPress={handleTrade} style={[styles.button, { backgroundColor: "white" }]}>
-                <Text style={styles.buttonText}>Trade</Text>
-              </TouchableOpacity> : null }
+              {listing.canTrade ? (
+                <TouchableOpacity onPress={handleTrade} style={[styles.button, { backgroundColor: "white" }]}>
+                  <Text style={styles.buttonText}>Trade</Text>
+                </TouchableOpacity>
+              ) : null}
               <TouchableOpacity onPress={handleMakeOffer} style={[styles.button, { backgroundColor: "gray" }]}>
                 <Text style={styles.buttonText}>Make Offer</Text>
               </TouchableOpacity>

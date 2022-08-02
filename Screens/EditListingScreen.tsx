@@ -121,7 +121,7 @@ export default function EditListingScreen({ navigation, route }: any) {
 
   const editPhoto = (index?: number) => {
     if (index !== undefined) {
-      Alert.alert("Replace photo / delete photo", "", [
+      Alert.alert("Select action", "", [
         {
           text: "Replace photo",
           onPress: () => launchPhotosAlert(index),
@@ -130,6 +130,7 @@ export default function EditListingScreen({ navigation, route }: any) {
           text: "Delete photo",
           onPress: () => handleDeletePhoto(index),
         },
+        { text: "Cancel", style: "cancel" },
       ]);
     } else {
       launchPhotosAlert();

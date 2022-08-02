@@ -30,7 +30,7 @@ const modalOptions = {
 } as any;
 
 const initialFormState = {
-  images: ["https://picsum.photos/200/300"],
+  images: [],
   name: "",
   condition: "",
   size: "",
@@ -163,7 +163,7 @@ export default function CreateListingScreen({ navigation }: any) {
 
   const editPhoto = (index?: number) => {
     if (index !== undefined) {
-      Alert.alert("Replace photo / delete photo", "", [
+      Alert.alert("Select action", "", [
         {
           text: "Replace photo",
           onPress: () => launchPhotosAlert(index),

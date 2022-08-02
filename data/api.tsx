@@ -1,8 +1,8 @@
 import axios from "axios";
 import ItemsWantedScreen from "../Screens/ItemsWantedScreen";
 
-export const API_URL = "http://localhost:8081";
-// export const API_URL = "https://instaheat-server.herokuapp.com"
+// export const API_URL = "http://localhost:8081";
+export const API_URL = "https://instaheat-server.herokuapp.com"
 
 export async function fetchListings() {
   try {
