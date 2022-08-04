@@ -37,6 +37,15 @@ function CreateScreenStackNavigation() {
     <Stack.Navigator>
       <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+      <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+    </Stack.Navigator>
+  );
+}
+function ProfileScreenStackNavigation() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+      <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
     </Stack.Navigator>
   );
 }
@@ -108,7 +117,7 @@ function HomeTabs() {
       />
       <Tab.Screen
         name="Profile"
-        component={user ? EditProfileScreen : SignUpScreen}
+        component={user ? ProfileScreenStackNavigation : SignUpScreen}
         options={{
           tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.profileFocused : icons.profile} />,
         }}
