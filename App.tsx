@@ -44,7 +44,7 @@ function CreateScreenStackNavigation() {
 function ProfileScreenStackNavigation() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+      {/* <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} /> */}
       <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
     </Stack.Navigator>
   );
