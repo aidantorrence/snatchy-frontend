@@ -31,7 +31,7 @@ const ListHeader = () => {
 export default function ItemsToTradeScreen({ navigation, route }: any) {
   const { id, ownerId, itemsWanted } = route.params;
   const user = useAuthentication();
-  const { data, isLoading } = useQuery(`user-${user?.uid}`, () => fetchUser(user?.uid));
+  const { data, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [isChecked, setIsChecked] = useState(new Array(data?.listings?.length).fill(false));
 
   const handlePress = () => {
@@ -61,16 +61,18 @@ export default function ItemsToTradeScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <SafeAreaView>
         {!data?.listings.length ? (
           <TouchableOpacity style={styles.createListingButton} onPress={handleCreateListing}>
             <Text style={styles.createListingButtonText}>Create a New Listing</Text>
           </TouchableOpacity>
         ) : (
-          <FlatList
-            data={data?.listings}
-            renderItem={({ item, index }: any) => (
+          <>
+            <View style={styles.listHeader}>
+              <Text style={styles.listHeaderText}>Select Listing(s) To Trade</Text>
+            </View>
+            {data?.listings.map((item: any, index: number) => (
               <View style={styles.itemContainer}>
                 <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
                 <TouchableOpacity onPress={() => handlePress()} style={styles.card}>
@@ -85,26 +87,22 @@ export default function ItemsToTradeScreen({ navigation, route }: any) {
                   </View>
                 </TouchableOpacity>
               </View>
-            )}
-            keyExtractor={(item) => item.id}
-            ListHeaderComponent={ListHeader}
-          />
+            ))}
+            <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
+              <LinearGradient
+                colors={["#aaa", "#aaa", "#333"]}
+                locations={[0, 0.3, 1]}
+                style={styles.button}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.buttonText}>Continue</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </>
         )}
-        {data?.listings.length ? (
-          <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
-            <LinearGradient
-              colors={["#aaa", "#aaa", "#333"]}
-              locations={[0, 0.3, 1]}
-              style={styles.button}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.buttonText}>Continue</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        ) : null}
       </SafeAreaView>
-    </View>
+    </ScrollView>
   );
 }
 

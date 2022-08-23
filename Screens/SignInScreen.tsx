@@ -2,10 +2,15 @@ import React from "react";
 import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { StackScreenProps } from "@react-navigation/stack";
+import { useQuery, useQueryClient } from "react-query";
+import { fetchUser } from "../data/api";
 
 const auth = getAuth();
 
-const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
+const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
+  let uid = "";
+  const { data: userData, isLoading, refetch } = useQuery(`currentUser`, () => fetchUser(uid));
+  const queryClient = useQueryClient();
   const [value, setValue] = React.useState({
     email: "",
     password: "",
@@ -22,8 +27,19 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, value.email, value.password);
-      navigation.navigate("HomeTabs");
+      const { user } = await signInWithEmailAndPassword(auth, value.email, value.password);
+      queryClient.invalidateQueries("currentUser");
+      refetch();
+      navigation.goBack();
+      // navigation.pop(1);
+      // navigation.navigate("HomeTabs", {
+      //   screen: "CreateStack",
+      //   //   params: {
+      //   //     screen: "ShippingDetails",
+      //   //     id,
+      //   //     ownerId,
+      //   //   },
+      // });
     } catch (error: any) {
       setValue({
         ...value,
@@ -34,7 +50,6 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-
       {!!value.error && (
         <View style={styles.error}>
           <Text>{value.error}</Text>
@@ -95,7 +110,7 @@ const styles = StyleSheet.create({
 
   controls: {
     flex: 1,
-    width: '80%',
+    width: "80%",
   },
 
   control: {

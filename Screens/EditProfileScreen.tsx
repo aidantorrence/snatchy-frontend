@@ -10,7 +10,7 @@ const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
 
 export default function EditProfileScreen({ navigation }: any) {
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery(`user-${user?.uid}`, () => fetchUser(user?.uid));
+  const { data: userData, isLoading } = useQuery('currentUser', () => fetchUser(user?.uid));
 
   const handlePress = (id: any) => {
     navigation.navigate("ViewListing", {

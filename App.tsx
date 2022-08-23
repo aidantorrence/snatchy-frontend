@@ -21,6 +21,12 @@ import OfferScreen from "./Screens/OfferScreen";
 import ItemsToTradeScreen from "./Screens/ItemsToTradeScreen";
 import TradeSummaryScreen from "./Screens/TradeSummaryScreen";
 import CheckoutScreen from "./Screens/CheckoutScreen";
+import { fetchUser } from "./data/api";
+import CreateSellerScreen from "./Screens/CreateSellerScreen";
+import OrderConfirmationScreen from "./Screens/OrderConfirmationScreen";
+import SetupPaymentsScreen from "./Screens/SetupPaymentsScreen";
+import MessagesScreen from "./Screens/MessagesScreen";
+import ViewOfferScreen from "./Screens/ViewOffersScreen";
 
 function Icon({ imgSrc }: any) {
   return (
@@ -32,7 +38,7 @@ function Icon({ imgSrc }: any) {
 
 const Stack = createStackNavigator();
 
-function CreateScreenStackNavigation() {
+export function CreateScreenStackNavigation() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
@@ -55,6 +61,8 @@ function PaymentScreenStackNavigation() {
       <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
       <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
       <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
+      <Stack.Screen name="SetupPayments" options={{ headerTitle: "", title: "" }} component={SetupPaymentsScreen} />
+      <Stack.Screen name="OrderConfirmation" options={{ headerTitle: "", title: "" }} component={OrderConfirmationScreen} />
     </Stack.Navigator>
   );
 }
@@ -79,7 +87,7 @@ export default function App({ navigation, route }: any) {
           <Stack.Screen name="HomeTabs" options={{ headerTitle: "", title: "" }} component={HomeTabs} />
           <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
           <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
-          <Stack.Screen name="ViewListing" options={{ headerTitle: "Listing", title: "" }} component={ViewListingScreen} />
+          <Stack.Screen name="ViewListing" options={{ headerTitle: "", title: "" }} component={ViewListingScreen} />
           <Stack.Screen name="EditListing" options={{ headerTitle: "Edit Listing", title: "" }} component={EditListingScreen} />
           <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "" }} component={SignUpScreen} />
           <Stack.Screen name="SignIn" options={{ headerTitle: "", title: "" }} component={SignInScreen} />
@@ -93,7 +101,12 @@ export default function App({ navigation, route }: any) {
 
 function HomeTabs() {
   const user = useAuthentication();
-  return (
+  const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  return isLoading ? (
+    <View>
+      <Text>Loading</Text>
+    </View>
+  ) : (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
@@ -109,10 +122,24 @@ function HomeTabs() {
         }}
       />
       <Tab.Screen
+        name="Offers"
+        component={user ? ViewOfferScreen : SignUpScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.offerFocused : icons.offer} />,
+        }}
+      />
+      <Tab.Screen
         name="CreateStack"
-        component={user ? CreateScreenStackNavigation : SignUpScreen}
+        component={!user ? SignUpScreen : !userData?.chargesEnabled ? CreateSellerScreen : CreateScreenStackNavigation}
         options={{
           tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.createFocused : icons.create} />,
+        }}
+      />
+      <Tab.Screen
+        name="Messages"
+        component={user ? MessagesScreen : SignUpScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.chatFocused : icons.chat} />,
         }}
       />
       <Tab.Screen

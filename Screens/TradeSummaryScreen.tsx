@@ -40,7 +40,7 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
   const [additionalFunds, setAdditionalFunds] = useState(null) as any;
   const user = useAuthentication();
   const { id, ownerId, itemsToTrade, itemsWanted } = route.params;
-  const { data, isLoading } = useQuery(`user-${user.uid}`, () => fetchUser(user.uid));
+  const { data, isLoading } = useQuery('currentUser', () => fetchUser(user.uid));
   const listings = [data.listings.find((l: any) => l.id === id), ...data.listings.filter((l: any) => l.id !== id)];
   const [isChecked, setIsChecked] = useState([true, ...new Array(data.listings.length - 1).fill(false)]);
 

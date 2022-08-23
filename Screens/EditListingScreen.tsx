@@ -192,7 +192,6 @@ export default function EditListingScreen({ navigation, route }: any) {
 
     if (!result.cancelled) {
       uploadImageAsync(result.uri).then((url) => {
-        console.log(url);
         if (index !== undefined) {
           handleReplacePhoto(url, index);
         } else {

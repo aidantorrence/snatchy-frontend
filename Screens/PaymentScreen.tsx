@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, Button, Alert, SafeAreaView, Image, 
 import { CardField, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { fetchListing, fetchPaymentSheetParams, fetchUser, updateUser } from "../data/api";
+import { fetchListing, fetchPaymentSheetParams, fetchUser, sendConfirmationEmail, updateUser } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
@@ -11,22 +11,24 @@ export default function PaymentScreen({ route, navigation }: any) {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { id, ownerId, isOffer, offerPrice, itemsWanted, additionalFunds } = route.params;
   const user = useAuthentication();
-  const { data, isLoading: isUserLoading } = useQuery(`user-${user.uid}`, () => fetchUser(user.uid));
+  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user.uid));
+  const { data: ownerData, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
   const price = isOffer ? offerPrice : listingData?.price;
   const { data: paymentSheetData, isLoading: isLoadingPaymentSheet } = useQuery(`payment-sheet`, () =>
-    fetchPaymentSheetParams(data?.customerId, itemsWanted, listingData)
+    fetchPaymentSheetParams(data?.customerId, id, ownerData.accountId)
   );
   const queryClient = useQueryClient();
-  const mutation: any = useMutation((data) => updateUser(data), {
+  const mutateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries(`user-${user.uid}`);
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("listings");
     },
   });
 
   const initializePaymentSheet = async () => {
     const { paymentIntent, ephemeralKey, customer } = paymentSheetData;
-    if (!data?.customerId) mutation.mutate({ uid: user.uid, customerId: customer });
+    if (!data?.customerId) mutateUser.mutate({ uid: user.uid, customerId: customer });
 
     const { error } = await initPaymentSheet({
       customerId: customer,
@@ -40,16 +42,20 @@ export default function PaymentScreen({ route, navigation }: any) {
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
 
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      Alert.alert("Success", "Your order is confirmed!");
+    if (!error) {
+      mutateUser.mutate({ uid: user.uid, sold: true });
+      sendConfirmationEmail(data, listingData);
+      Alert.alert("Your order is confirmed!", "Keep shopping!");
+      navigation.navigate("HomeTabs");
     }
   };
 
   useEffect(() => {
+    if (!data) return;
+    if (!paymentSheetData) return;
     if (!isLoadingPaymentSheet) initializePaymentSheet();
-  }, [isLoadingPaymentSheet]);
+  }, [isLoadingPaymentSheet, data]);
+
   const handleShippingDetails = () => {
     navigation.navigate("PaymentStack", {
       screen: "ShippingDetails",
@@ -119,7 +125,12 @@ export default function PaymentScreen({ route, navigation }: any) {
           <View style={styles.detailContainer}>
             <Text style={styles.detailTitle}>Total</Text>
             <View style={styles.detailValueContainer}>
-              <Text style={styles.detailValue}>${Math.round(additionalFunds === undefined ? price * 1.0725 + 20 : additionalFunds > 0 ? additionalFunds * 1.0725 + 20 : 20)}</Text>
+              <Text style={styles.detailValue}>
+                $
+                {Math.round(
+                  additionalFunds === undefined ? price * 1.0725 + 20 : additionalFunds > 0 ? additionalFunds * 1.0725 + 20 : 20
+                )}
+              </Text>
             </View>
           </View>
         </View>
@@ -127,7 +138,9 @@ export default function PaymentScreen({ route, navigation }: any) {
           <>
             <View style={styles.cardTitleContainer}>
               <Text style={styles.cardTitle}>Shipping Details</Text>
-              <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+              <TouchableOpacity onPress={handleShippingDetails}>
+                <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+              </TouchableOpacity>
             </View>
             <View style={styles.cardContainer}>
               <View style={styles.addressContainer}>

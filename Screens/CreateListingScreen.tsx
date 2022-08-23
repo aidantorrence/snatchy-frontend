@@ -47,7 +47,7 @@ const initialFormState = {
 };
 export default function CreateListingScreen({ navigation }: any) {
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery("user", () => fetchUser(user?.uid));
+  const { data: userData, isLoading } = useQuery('currentUser', () => fetchUser(user?.uid));
   const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
     images: "",
@@ -133,7 +133,6 @@ export default function CreateListingScreen({ navigation }: any) {
 
   const handleSubmit = () => {
     const isValid = validateForm();
-    console.log(isValid);
     if (isValid) setConfirmModalIsVisible(true);
   };
 
@@ -222,7 +221,6 @@ export default function CreateListingScreen({ navigation }: any) {
 
     if (!result.cancelled) {
       uploadImageAsync(result.uri).then((url) => {
-        console.log(url);
         if (index !== undefined) {
           formData.images[index] = url;
           setFormData({ ...formData, images: [...formData.images] });
@@ -241,7 +239,6 @@ export default function CreateListingScreen({ navigation }: any) {
     setModalValue(val);
   };
   const handleConfirmButtonClick = () => {
-    console.log("listing", listing);
     mutation.mutate(listing);
     setConfirmModalIsVisible(false);
     setFormData(initialFormState)

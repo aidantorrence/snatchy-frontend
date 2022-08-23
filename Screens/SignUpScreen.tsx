@@ -16,7 +16,7 @@ const initialFormState = {
   email: "",
   password: "",
 };
-const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
+const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
   const [formData, setFormData] = useState(initialFormState) as any;
   const [value, setValue] = React.useState({
     email: "",
@@ -26,7 +26,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => postUser(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries("user");
+      queryClient.invalidateQueries("currentUser");
     },
   });
 
@@ -48,7 +48,16 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation }) => {
         ...formData,
         password: undefined,
       });
-      navigation.navigate("HomeTabs");
+      // navigation.goBack();
+      // navigation.navigate(route.name);
+    navigation.navigate("HomeTabs", {
+      screen: "CreateStack",
+    //   params: {
+    //     screen: "ShippingDetails",
+    //     id,
+    //     ownerId,
+    //   },
+    });
     } catch (error: any) {
       setValue({
         ...value,

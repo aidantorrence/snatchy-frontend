@@ -12,9 +12,9 @@ export default function OfferScreen({ route, navigation }: any) {
 
   const handlePress = () => {
     navigation.navigate("PaymentStack", {
-      screen: "Payment",
+      screen: "SetupPayments",
       params: {
-        screen: "Payment",
+        screen: "SetupPayments",
         id,
         ownerId,
         isOffer: true,
@@ -58,7 +58,7 @@ export default function OfferScreen({ route, navigation }: any) {
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 1 }}
         >
-          <Text style={styles.completeButtonText}>Confirm</Text>
+          <Text style={styles.completeButtonText}>Preview Offer</Text>
         </LinearGradient>
       </TouchableOpacity>
       <TextInput keyboardType="numeric" placeholder="$" onChangeText={(e): any => setOfferPrice(e)} />

@@ -32,7 +32,7 @@ function ListHeader() {
 }
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  queryCache.clear();
+  // queryCache.clear();
   const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery("listings", fetchListings);
   const user = useAuthentication();
 

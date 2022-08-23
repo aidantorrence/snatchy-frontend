@@ -47,7 +47,7 @@ export default function ShippingDetailsScreen({ navigation, route }: any) {
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries(`user-${user.uid}`);
+      queryClient.invalidateQueries('currentUser');
     },
   });
   const handleBuy = () => {
