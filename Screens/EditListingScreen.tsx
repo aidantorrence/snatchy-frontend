@@ -14,6 +14,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Alert,
+  FlatList,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -22,6 +23,7 @@ import { EditDropDownForm, EditInputForm } from "../Components/Forms";
 import { fetchListing, updateListing } from "../data/api";
 import * as ImagePicker from "expo-image-picker";
 import uploadImageAsync from "../utils/firebase/uploadImage";
+import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 
 export default function EditListingScreen({ navigation, route }: any) {
   const [formData, setFormData] = useState({
@@ -70,8 +72,9 @@ export default function EditListingScreen({ navigation, route }: any) {
   const [inputModalIsVisible, setInputModalIsVisible] = useState(false);
   const [modalValue, setModalValue] = useState("");
   const { id } = route.params;
-  const { data, isLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
-  const photosToAdd = 10 - data?.images?.length || 0;
+  const { data: listingsData, isLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
+  const photosToAdd = 10 - listingsData?.images?.length || 0;
+  const photoArr = Array(photosToAdd).fill("");
 
   const modalOptions = {
     condition: ["", "Brand New", "Used - Excellent", "Used - Good", "Used - Fair"],
@@ -92,13 +95,13 @@ export default function EditListingScreen({ navigation, route }: any) {
   const openOptionsModal = (val: string) => {
     setCurrentModal(val);
     setOptionsModalIsVisible(true);
-    setModalValue(data[val]);
+    setModalValue(listingsData[val]);
   };
 
   const openInputModal = (val: string) => {
     setCurrentModal(val);
     setInputModalIsVisible(true);
-    setModalValue(data[val]);
+    setModalValue(listingsData[val]);
   };
 
   const handleOptionsModalClose = () => {
@@ -151,15 +154,21 @@ export default function EditListingScreen({ navigation, route }: any) {
   };
 
   const handleReplacePhoto = (url: string, index: number) => {
-    data.images[index] = url;
+    listingsData.images[index] = url;
     mutation.mutate({
       id,
-      images: data.images,
+      images: listingsData.images,
+    });
+  };
+  const handleSwitchPhoto = (data: any) => {
+    mutation.mutate({
+      id,
+      images: data,
     });
   };
 
   const handleDeletePhoto = (index: number) => {
-    const filteredImages = data.images.filter((img: any, idx: number) => idx !== index);
+    const filteredImages = listingsData.images.filter((img: any, idx: number) => idx !== index);
     mutation.mutate({
       id,
       images: filteredImages,
@@ -197,11 +206,28 @@ export default function EditListingScreen({ navigation, route }: any) {
         } else {
           mutation.mutate({
             id,
-            images: [...data.images, url],
+            images: [...listingsData.images, url],
           });
         }
       });
     }
+  };
+
+  const renderItem = ({ item, drag, isActive }: any) => {
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity activeOpacity={1} onLongPress={drag} disabled={isActive} style={styles.imageContainer}>
+          <Image source={{ uri: item }} style={styles.images} />
+        </TouchableOpacity>
+      </ScaleDecorator>
+    );
+  };
+  const renderAddPhotoTemplates = ({ _, index }: any) => {
+    return (
+      <TouchableOpacity style={styles.imageContainer} key={index} onPress={() => editPhoto()}>
+        <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -210,7 +236,22 @@ export default function EditListingScreen({ navigation, route }: any) {
         <SafeAreaView style={styles.container}>
           <ScrollView>
             {/* <Text style={styles.detailsTitle}>Photos</Text> */}
-            <ScrollView style={styles.imageContainer} horizontal={true}>
+            <View style={styles.photosList}>
+              <DraggableFlatList
+                data={listingsData.images}
+                onDragEnd={({ data }) => handleSwitchPhoto(data)}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={renderItem}
+                horizontal={true}
+              />
+              <FlatList
+                data={photoArr}
+                horizontal={true}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={renderAddPhotoTemplates}
+              />
+            </View>
+            {/* <ScrollView style={styles.imageContainer} horizontal={true}>
               {data.images.map((image: string, index: number) => (
                 <TouchableOpacity key={index} onPress={() => editPhoto(index)}>
                   <Image source={{ uri: image }} style={styles.images} />
@@ -223,9 +264,9 @@ export default function EditListingScreen({ navigation, route }: any) {
                     <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
                   </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </ScrollView> */}
             <EditInputForm
-              data={data}
+              data={listingsData}
               formData={formData}
               setFormData={setFormData}
               editMode={editMode}
@@ -236,7 +277,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               openInputModal={openInputModal}
             />
             <EditInputForm
-              data={data}
+              data={listingsData}
               formData={formData}
               setFormData={setFormData}
               editMode={editMode}
@@ -248,7 +289,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               keyboardType="numeric"
             />
             <EditDropDownForm
-              data={data}
+              data={listingsData}
               formData={formData}
               editMode={editMode}
               setEditMode={setEditMode}
@@ -257,10 +298,10 @@ export default function EditListingScreen({ navigation, route }: any) {
               field="condition"
               openOptionsModal={openOptionsModal}
             />
-            {data.condition !== "Brand New" ? (
+            {listingsData.condition !== "Brand New" ? (
               <>
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -272,7 +313,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                   keyboardType="numeric"
                 />
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -283,7 +324,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                   openInputModal={openInputModal}
                 />
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -294,7 +335,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                   openInputModal={openInputModal}
                 />
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -305,7 +346,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                   openInputModal={openInputModal}
                 />
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -316,7 +357,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                   openInputModal={openInputModal}
                 />
                 <EditInputForm
-                  data={data}
+                  data={listingsData}
                   formData={formData}
                   setFormData={setFormData}
                   editMode={editMode}
@@ -329,7 +370,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               </>
             ) : null}
             <EditDropDownForm
-              data={data}
+              data={listingsData}
               formData={formData}
               editMode={editMode}
               setEditMode={setEditMode}
@@ -339,7 +380,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               openOptionsModal={openOptionsModal}
             />
             <EditInputForm
-              data={data}
+              data={listingsData}
               formData={formData}
               setFormData={setFormData}
               editMode={editMode}
@@ -351,7 +392,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               keyboardType="numeric"
             />
             <EditDropDownForm
-              data={data}
+              data={listingsData}
               formData={formData}
               editMode={editMode}
               setEditMode={setEditMode}
@@ -361,7 +402,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               openOptionsModal={openOptionsModal}
             />
             <EditDropDownForm
-              data={data}
+              data={listingsData}
               formData={formData}
               editMode={editMode}
               setEditMode={setEditMode}
@@ -389,7 +430,7 @@ export default function EditListingScreen({ navigation, route }: any) {
               </View>
               <Picker
                 style={{ width: Dimensions.get("window").width, backgroundColor: "#e1e1e1" }}
-                selectedValue={modalValue || data[currentModal]}
+                selectedValue={modalValue || listingsData[currentModal]}
                 onValueChange={(val) => setModalValue(val)}
               >
                 {(modalOptions[currentModal] || []).map((val: string) => (
@@ -431,6 +472,9 @@ export default function EditListingScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  photosList: {
+    flexDirection: 'row', 
+  },
   imageContainer: {
     paddingTop: 7,
     paddingBottom: 12,

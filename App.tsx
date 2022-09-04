@@ -27,6 +27,7 @@ import OrderConfirmationScreen from "./Screens/OrderConfirmationScreen";
 import SetupPaymentsScreen from "./Screens/SetupPaymentsScreen";
 import MessagesScreen from "./Screens/MessagesScreen";
 import ViewOfferScreen from "./Screens/ViewOffersScreen";
+import TradePaymentsScreen from "./Screens/TradePaymentsScreen";
 
 function Icon({ imgSrc }: any) {
   return (
@@ -63,6 +64,7 @@ function PaymentScreenStackNavigation() {
       <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
       <Stack.Screen name="SetupPayments" options={{ headerTitle: "", title: "" }} component={SetupPaymentsScreen} />
       <Stack.Screen name="OrderConfirmation" options={{ headerTitle: "", title: "" }} component={OrderConfirmationScreen} />
+      <Stack.Screen name="TradePayment" options={{ headerTitle: "", title: "" }} component={TradePaymentsScreen} />
     </Stack.Navigator>
   );
 }

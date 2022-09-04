@@ -16,10 +16,6 @@ import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
-import { ScreenStackHeaderSearchBarView } from "react-native-screens";
-
-const img = "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
-const userImages = [img, img, img];
 
 const YourItems = () => {
   return (
@@ -37,36 +33,27 @@ const SellerItems = () => {
 };
 
 export default function TradeSummaryScreen({ navigation, route }: any) {
-  const [additionalFunds, setAdditionalFunds] = useState(null) as any;
+  const [additionalFundsBuyer, setAdditionalFundsBuyer] = useState(null) as any;
+  const [additionalFundsSeller, setAdditionalFundsSeller] = useState(null) as any;
   const user = useAuthentication();
   const { id, ownerId, itemsToTrade, itemsWanted } = route.params;
-  const { data, isLoading } = useQuery('currentUser', () => fetchUser(user.uid));
+  const { data, isLoading } = useQuery("currentUser", () => fetchUser(user.uid));
   const listings = [data.listings.find((l: any) => l.id === id), ...data.listings.filter((l: any) => l.id !== id)];
   const [isChecked, setIsChecked] = useState([true, ...new Array(data.listings.length - 1).fill(false)]);
 
   const handlePress = () => {
-    // if (data.address) {
     navigation.navigate("PaymentStack", {
-      screen: "Payment",
+      screen: "TradePayment",
       params: {
-        screen: "Payment",
+        screen: "TradePayment",
         id,
         ownerId,
         itemsToTrade,
         itemsWanted,
-        additionalFunds,
+        additionalFundsBuyer,
+        additionalFundsSeller,
       },
     });
-    // } else {
-    // navigation.navigate("PaymentStack", {
-    //   screen: "ShippingDetails",
-    //   params: {
-    //     screen: "ShippingDetails",
-    //     id,
-    //     ownerId,
-    //   },
-    // });
-    // }
   };
   const handleChange = (index: number) => {
     const newIsChecked = isChecked.slice();
@@ -74,10 +61,12 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
     setIsChecked(newIsChecked);
   };
   const addAdditionalFunds = (e: string) => {
-    setAdditionalFunds(e);
+    setAdditionalFundsSeller(null);
+    setAdditionalFundsBuyer(e);
   };
   const askForAdditionalFunds = (e: string) => {
-    setAdditionalFunds((parseInt(e) * -1).toString());
+    setAdditionalFundsBuyer(null);
+    setAdditionalFundsSeller(e);
   };
 
   return (
@@ -87,7 +76,7 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
           data={itemsToTrade}
           renderItem={({ item, index }: any) => (
             <View style={styles.itemContainer}>
-              <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
+              <TouchableOpacity style={styles.card}>
                 <Image source={{ uri: item.images[0] }} style={styles.image} />
                 <View style={styles.detailsContainer}>
                   <Text style={styles.name}>{item.name}</Text>
@@ -130,19 +119,21 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
             keyboardType="numeric"
             placeholder="$"
             onChangeText={(e): any => addAdditionalFunds(e)}
-            value={parseInt(additionalFunds, 10) >= 0 ? additionalFunds : ""}
+            value={additionalFundsBuyer}
           />
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.title}>Ask for Cash to balance Offer</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="$"
-            onChangeText={(e): any => askForAdditionalFunds(e)}
-            value={parseInt(additionalFunds, 10) < 0 ? (-1 * parseInt(additionalFunds, 10)).toString() : ""}
-          />
-        </View>
+        {data?.chargesEnabled ? (
+          <View style={styles.inputContainer}>
+            <Text style={styles.title}>Ask for Cash to balance Offer</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="$"
+              onChangeText={(e): any => askForAdditionalFunds(e)}
+              value={additionalFundsSeller}
+            />
+          </View>
+        ) : null}
         <TouchableOpacity onPress={handlePress} style={styles.buttonContainer}>
           <LinearGradient
             colors={["#aaa", "#aaa", "#333"]}

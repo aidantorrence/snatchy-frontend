@@ -22,6 +22,8 @@ export default function PaymentScreen({ route, navigation }: any) {
   const mutateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
       queryClient.invalidateQueries("listings");
     },
   });
@@ -44,7 +46,7 @@ export default function PaymentScreen({ route, navigation }: any) {
 
     if (!error) {
       mutateUser.mutate({ uid: user.uid, sold: true });
-      sendConfirmationEmail(data, listingData);
+      sendConfirmationEmail(data, listingData, undefined);
       Alert.alert("Your order is confirmed!", "Keep shopping!");
       navigation.navigate("HomeTabs");
     }

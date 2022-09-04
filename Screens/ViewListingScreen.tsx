@@ -1,4 +1,5 @@
 import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import Swiper from "react-native-swiper";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { deleteListing, fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
@@ -99,6 +100,16 @@ export default function ViewListingScreen({ navigation, route }: any) {
 
   const listing = data?.listings?.find((listing: any) => listing.id === id);
 
+  function Item({ item }: any) {
+    return (
+      <Swiper style={{ height: 300 }}>
+        {item.images.map((image: any, index: any) => {
+          return <Image key={index} source={{ uri: image }} style={styles.image} />;
+        })}
+      </Swiper>
+    );
+  }
+
   return (
     !isLoading && (
       <>
@@ -116,7 +127,7 @@ export default function ViewListingScreen({ navigation, route }: any) {
                   </TouchableOpacity>
                 ) : null}
               </TouchableOpacity>
-              <Image source={{ uri: listing.images[0] }} style={styles.image} />
+              <Item item={listing} />
               <View style={styles.detailsContainer}>
                 <View style={styles.nameConditionSizeContainer}>
                   <Text style={styles.name}>{listing.name}</Text>

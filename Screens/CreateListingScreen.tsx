@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   Button,
   Alert,
+  FlatList,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
@@ -21,6 +22,7 @@ import { fetchUser, postListing } from "../data/api";
 import { DropDownForm, InputForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import useAuthentication from "../utils/firebase/useAuthentication";
+import DraggableFlatList, { ScaleDecorator, RenderItemParams } from "react-native-draggable-flatlist";
 
 const modalOptions = {
   condition: ["", "Brand New", "Used - Excellent", "Used - Good", "Used - Fair"],
@@ -47,7 +49,7 @@ const initialFormState = {
 };
 export default function CreateListingScreen({ navigation }: any) {
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery('currentUser', () => fetchUser(user?.uid));
+  const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
     images: "",
@@ -89,6 +91,7 @@ export default function CreateListingScreen({ navigation }: any) {
   });
 
   const photosToAdd = 10 - formData?.images?.length || 0;
+  const photoArr = Array(photosToAdd).fill("");
   // const validateForm = () => {
   // switch (form) {
   //   case "images":
@@ -218,16 +221,14 @@ export default function CreateListingScreen({ navigation }: any) {
         quality: 1,
       });
     }
-
     if (!result.cancelled) {
-      uploadImageAsync(result.uri).then((url) => {
-        if (index !== undefined) {
-          formData.images[index] = url;
-          setFormData({ ...formData, images: [...formData.images] });
-        } else {
-          setFormData({ ...formData, images: [...formData.images, url] });
-        }
-      });
+      const url = await uploadImageAsync(result.uri);
+      if (index !== undefined) {
+        formData.images[index] = url;
+        setFormData({ ...formData, images: [...formData.images] });
+      } else {
+        setFormData({ ...formData, images: [...formData.images, url] });
+      }
     }
   };
 
@@ -241,17 +242,33 @@ export default function CreateListingScreen({ navigation }: any) {
   const handleConfirmButtonClick = () => {
     mutation.mutate(listing);
     setConfirmModalIsVisible(false);
-    setFormData(initialFormState)
+    setFormData(initialFormState);
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-    navigation.navigate("Profile");
+      navigation.navigate("Profile");
     }
   };
   const handleOptionsModalClose = () => {
     formData[currentModal] = modalValue;
     setFormData({ ...formData });
     setOptionsModalIsVisible(false);
+  };
+  const renderItem = ({ item, drag, isActive }: any) => {
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity activeOpacity={1} onLongPress={drag} disabled={isActive} style={styles.imageContainer}>
+          <Image source={{ uri: item }} style={styles.images} />
+        </TouchableOpacity>
+      </ScaleDecorator>
+    );
+  };
+  const renderAddPhotoTemplates = ({ _, index }: any) => {
+    return (
+      <TouchableOpacity style={styles.imageContainer} key={index} onPress={() => editPhoto()}>
+        <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -260,7 +277,22 @@ export default function CreateListingScreen({ navigation }: any) {
         <KeyboardAwareScrollView>
           <View style={styles.detailsContainer}>
             {/* <Text style={styles.detailsTitle}>Photos</Text> */}
-            <ScrollView style={styles.imageContainer} horizontal={true}>
+            <View style={styles.photosList}>
+              <DraggableFlatList
+                data={formData.images}
+                onDragEnd={({ data }) => setFormData({ ...formData, images: data })}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={renderItem}
+                horizontal={true}
+              />
+              <FlatList
+                data={photoArr}
+                horizontal={true}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={renderAddPhotoTemplates}
+              />
+            </View>
+            {/* <ScrollView style={styles.imageContainer} horizontal={true}>
               {formData.images.map((image: string, index: number) => (
                 <TouchableOpacity key={index} onPress={() => editPhoto(index)}>
                   <Image source={{ uri: image }} style={styles.images} />
@@ -273,7 +305,7 @@ export default function CreateListingScreen({ navigation }: any) {
                     <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
                   </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </ScrollView> */}
             {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
           </View>
           <InputForm
@@ -467,6 +499,9 @@ export default function CreateListingScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  photosList: {
+    flexDirection: 'row', 
+  },
   container: {
     flex: 1,
     backgroundColor: "white",

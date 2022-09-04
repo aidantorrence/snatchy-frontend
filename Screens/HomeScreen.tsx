@@ -5,7 +5,8 @@ import { fetchListings, fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 import { QueryCache } from "react-query";
 const queryCache = new QueryCache({});
-const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
+const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
+import Swiper from "react-native-swiper";
 
 const DATA = [
   {
@@ -50,6 +51,20 @@ export default function HomeScreen({ navigation }: any) {
     // });
   };
 
+  function Item({ item }: any) {
+    return (
+      <Swiper style={{ height: 300 }}>
+        {item.images.map((image: any, index: any) => {
+          return (
+            <TouchableOpacity key={index} onPress={() => handlePress(item)} style={styles.item}>
+              <Image source={{ uri: image }} style={styles.image} />
+            </TouchableOpacity>
+          );
+        })}
+      </Swiper>
+    );
+  }
+
   return (
     <>
       {isLoadingListings ? (
@@ -59,12 +74,12 @@ export default function HomeScreen({ navigation }: any) {
           <FlatList
             data={listingsData}
             renderItem={({ item }: any) => (
-              <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
+              <>
                 <View style={styles.userInfo}>
                   <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
                 </View>
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
+                <Item item={item} />
                 <View style={styles.detailsContainer}>
                   <View style={styles.nameConditionSizeContainer}>
                     <Text style={styles.name}>{item.name}</Text>
@@ -77,7 +92,7 @@ export default function HomeScreen({ navigation }: any) {
                     {item.canTrade ? <Image style={styles.canTrade} source={require("../Trade.png")} /> : null}
                   </View>
                 </View>
-              </TouchableOpacity>
+              </>
             )}
             keyExtractor={(item) => item.id}
             ListHeaderComponent={ListHeader}

@@ -27,6 +27,8 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
   const mutation: any = useMutation((data) => postUser(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
     },
   });
 

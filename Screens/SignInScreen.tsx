@@ -29,6 +29,8 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
     try {
       const { user } = await signInWithEmailAndPassword(auth, value.email, value.password);
       queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
       refetch();
       navigation.goBack();
       // navigation.pop(1);

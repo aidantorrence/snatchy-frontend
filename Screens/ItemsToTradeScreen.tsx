@@ -73,7 +73,7 @@ export default function ItemsToTradeScreen({ navigation, route }: any) {
               <Text style={styles.listHeaderText}>Select Listing(s) To Trade</Text>
             </View>
             {data?.listings.map((item: any, index: number) => (
-              <View style={styles.itemContainer}>
+              <View key={item.id} style={styles.itemContainer}>
                 <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
                 <TouchableOpacity onPress={() => handlePress()} style={styles.card}>
                   <Image source={{ uri: item.images[0] }} style={styles.image} />

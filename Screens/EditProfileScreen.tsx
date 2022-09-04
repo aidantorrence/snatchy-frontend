@@ -15,7 +15,7 @@ export default function EditProfileScreen({ navigation }: any) {
   const handlePress = (id: any) => {
     navigation.navigate("ViewListing", {
       id,
-      ownerId: userData.uid
+      ownerId: userData?.uid
     });
     // navigation.navigate("CreateStack", {
     //   screen: "EditListing",
@@ -33,15 +33,15 @@ export default function EditProfileScreen({ navigation }: any) {
         <SafeAreaView style={styles.profileScreenContainer}>
           <Button title="Edit"></Button>
           <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
-            <Image source={{ uri: userData.userImage || defaultProfile }} style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }} />
-            <Text style={styles.title}>{userData.sellerName}</Text>
+            <Image source={{ uri: userData?.userImage || defaultProfile }} style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }} />
+            <Text style={styles.title}>{userData?.sellerName}</Text>
           </View>
           <View>
             <View style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
               <Text style={styles.header}>Listings</Text>
             </View>
             <View style={styles.userImagesContainer}>
-              {userData.listings.map((listing: any, index: number) => (
+              {userData?.listings.map((listing: any, index: number) => (
                 <TouchableOpacity onPress={() => handlePress(listing.id)} key={index}>
                   <Image source={{ uri: listing.images[0] }} style={styles.userImages} />
                   {/* <Button onPress={() => navigation.navigate("CreateStack", { screen: "Listing" })} title="Edit"></Button> */}

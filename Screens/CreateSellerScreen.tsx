@@ -20,7 +20,6 @@ export default function CreateSellerScreen({ navigation }: any) {
   useEffect(() => {
     handleCreateSeller();
   }, []);
-console.log(userData);
   const handleCreateSeller = async () => {
     if (userData?.chargesEnabled) return;
     const { accountLink, accountId } = await createStripeConnectAccount(user);
@@ -29,6 +28,8 @@ console.log(userData);
     Linking.addEventListener("url", async ({ url }) => {
       await checkStripeConnectAccountStatus(accountId);
       queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
       WebBrowser.dismissBrowser();
     });
     WebBrowser.openBrowserAsync(accountLink);

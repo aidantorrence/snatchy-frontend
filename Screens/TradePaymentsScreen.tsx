@@ -9,22 +9,23 @@ import {
   fetchSetupPaymentSheetParams,
   fetchUser,
   postOffer,
+  postTrade,
   sendConfirmationEmail,
   sendOfferEmail,
+  sendTradeOfferEmail,
   updateUser,
 } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
-export default function SetupPaymentsScreen({ route, navigation }: any) {
+export default function TradePaymentsScreen({ route, navigation }: any) {
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const { id, ownerId, isOffer, offerPrice, itemsWanted, additionalFunds } = route.params;
+  const { id, ownerId, itemsWanted, itemsToTrade, additionalFundsBuyer, additionalFundsSeller } = route.params;
   const user = useAuthentication();
   const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const { data: ownerData, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
-  const price = isOffer ? offerPrice : listingData?.price;
   const queryClient = useQueryClient();
   const mutateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
@@ -33,9 +34,9 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
       queryClient.invalidateQueries("userOffers");
     },
   });
-  const mutateOffer: any = useMutation((data) => postOffer(data), {
+  const mutateTrade: any = useMutation((data) => postTrade(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries("userOffers");
+      queryClient.invalidateQueries("userTrades");
     },
   });
 
@@ -80,8 +81,15 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
     });
   };
   const handleConfirmOffer = async () => {
-    mutateOffer.mutate({ buyerId: user?.uid, listing: listingData, price: offerPrice });
-    sendOfferEmail(listingData, offerPrice);
+    mutateTrade.mutate({
+      buyerId: user?.uid,
+      sellerId: ownerId,
+      sellerListings: itemsWanted,
+      buyerListings: itemsToTrade,
+      additionalFundsSeller,
+      additionalFundsBuyer,
+    });
+    sendTradeOfferEmail(itemsWanted, itemsToTrade, ownerId, user?.uid, additionalFundsBuyer, additionalFundsSeller);
     Alert.alert("You have made an offer!", "Keep shopping!");
     navigation.navigate("HomeTabs");
   };
@@ -89,26 +97,16 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
     <>
       <StripeProvider publishableKey={Constants?.manifest?.extra?.publishableKey}>
         <SafeAreaView style={styles.container}>
-          {additionalFunds === undefined ? (
-            <View style={styles.listingContainer}>
-              <View style={styles.imageContainer}>
-                <Image source={{ uri: listingData?.images[0] }} style={styles.image} />
-              </View>
-              <View style={styles.listingDetailsContainer}>
-                <Text style={styles.title}>{listingData?.name}</Text>
-                <Text style={styles.detailTitle}>
-                  <Text>Size: </Text>
-                  <Text style={styles.detailValue}>{listingData?.size}</Text>
-                </Text>
-              </View>
-            </View>
-          ) : null}
           <View style={styles.calcContainer}>
             <View style={styles.detailContainer}>
-              <Text style={styles.detailTitle}>Offer Price</Text>
-              <View style={styles.detailValueContainer}>
-                <Text style={styles.detailValue}>${Math.round(price)}</Text>
-              </View>
+              {additionalFundsBuyer ? (
+                <>
+                  <Text style={styles.detailTitle}>{"Added Cash"}</Text>
+                  <View style={styles.detailValueContainer}>
+                    <Text style={styles.detailValue}>${Math.round(additionalFundsBuyer)}</Text>
+                  </View>
+                </>
+              ) : null}
             </View>
           </View>
           <View style={styles.calcContainer}>
@@ -119,20 +117,22 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
               </View>
             </View>
           </View>
+          {additionalFundsBuyer !== null ? (
             <View style={styles.calcContainer}>
               <View style={styles.detailContainer}>
                 <Text style={styles.detailTitle}>Sales Tax</Text>
                 <View style={styles.detailValueContainer}>
-                  <Text style={styles.detailValue}>${Math.round(price * 0.0725)}</Text>
+                  <Text style={styles.detailValue}>${Math.round(additionalFundsBuyer * 0.0725)}</Text>
                 </View>
               </View>
             </View>
+          ) : null}
           <View style={styles.divider} />
           <View style={styles.calcContainer}>
             <View style={styles.detailContainer}>
               <Text style={styles.detailTitle}>Total</Text>
               <View style={styles.detailValueContainer}>
-                <Text style={styles.detailValue}>${Math.round(price * 1.0725 + 20)}</Text>
+                <Text style={styles.detailValue}>${Math.round(additionalFundsBuyer * 1.0725 + 20)}</Text>
               </View>
             </View>
           </View>

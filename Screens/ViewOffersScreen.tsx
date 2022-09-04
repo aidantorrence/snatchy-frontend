@@ -2,7 +2,24 @@ import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacit
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import useAuthentication from "../utils/firebase/useAuthentication";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { chargeOffer, fetchOffersByUser, sendCancelOfferEmail, sendConfirmationEmail, sendDeclineOfferEmail, updateOffer } from "../data/api";
+import {
+  chargeOffer,
+  chargeTrade,
+  fetchOffersByUser,
+  fetchSetupPaymentSheetParams,
+  fetchTradesByUser,
+  sendConfirmationEmail,
+  sendDeclineOfferEmail,
+  sendDeclineTradeOfferEmail,
+  sendTradeConfirmationEmail,
+  updateOffer,
+  updateTrade,
+  updateUser,
+} from "../data/api";
+import { createStackNavigator } from "@react-navigation/stack";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect } from "react";
+import { initPaymentSheet, presentPaymentSheet } from "@stripe/stripe-react-native";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -17,9 +34,10 @@ export default function ViewOffersScreen() {
 function OfferTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Offers to Review" component={SellOffers} />
+      <Tab.Screen name="Offers Received" component={SellOffers} />
       <Tab.Screen name="Your Offers" component={BuyOffers} />
-      <Tab.Screen name="Trades" component={Trades} />
+      <Tab.Screen name="Trades Received" component={SellTradeStackNavigation} />
+      <Tab.Screen name="Your Trades" component={BuyTradeStackNavigation} />
     </Tab.Navigator>
   );
 }
@@ -29,11 +47,13 @@ function OfferItem({ offer, direction }: any) {
   const acceptMutation: any = useMutation((data) => updateOffer(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("userOffers");
+      queryClient.invalidateQueries("currentUser");
     },
   });
   const cancelMutation: any = useMutation((data) => updateOffer(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("userOffers");
+      queryClient.invalidateQueries("currentUser");
     },
   });
 
@@ -101,10 +121,11 @@ function OfferItem({ offer, direction }: any) {
     </View>
   );
 }
+
 function SellOffers() {
   const user = useAuthentication();
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
-  return isLoading || !userData.Seller.length ? (
+  return isLoading || !userData?.Seller?.length ? (
     <SafeAreaView style={styles.container}>
       <Text>You don't have any offers yet!</Text>
     </SafeAreaView>
@@ -119,7 +140,7 @@ function SellOffers() {
 function BuyOffers() {
   const user = useAuthentication();
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
-  return isLoading || !userData.Buyer.length ? (
+  return isLoading || !userData?.Buyer?.length ? (
     <SafeAreaView style={styles.container}>
       <Text>You don't have any offers yet!</Text>
     </SafeAreaView>
@@ -131,24 +152,273 @@ function BuyOffers() {
     />
   );
 }
-function Trades() {
+function BuyTrades({ navigation }: any) {
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
-  return isLoading || !userData.Buyer.length ? (
+  const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
+  return isLoading || !userData?.BuyerTrades?.length ? (
     <SafeAreaView style={styles.container}>
-      <Text>You don't have any offers yet!</Text>
+      <Text>You don't have any trades yet!</Text>
     </SafeAreaView>
   ) : (
     <FlatList
       style={styles.flatList}
-      data={userData.Buyer}
-      renderItem={({ item }) => <OfferItem offer={item} direction="buy" />}
+      data={userData.BuyerTrades}
+      renderItem={({ item }) => <TradeItem navigation={navigation} trade={item} direction="buy" />}
     />
   );
 }
+function SellTrades({ navigation }: any) {
+  const user = useAuthentication();
+  const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
+  return isLoading || !userData?.SellerTrades?.length ? (
+    <SafeAreaView style={styles.container}>
+      <Text>You don't have any trades yet!</Text>
+    </SafeAreaView>
+  ) : (
+    <FlatList
+      style={styles.flatList}
+      data={userData.SellerTrades}
+      renderItem={({ item }) => <TradeItem trade={item} navigation={navigation} direction="sell" />}
+    />
+  );
+}
+function TradeItem({ navigation, trade, direction }: any) {
+  const queryClient = useQueryClient();
 
+  return (
+    <View style={styles.tradeItem}>
+      <TouchableOpacity
+        style={styles.details}
+        onPress={() =>
+          navigation.navigate("TradeDetails", {
+            trade,
+          })
+        }
+      >
+        {direction === "sell" ? (
+          <Text style={styles.nameText}>You received a trade from {trade.Buyer.firstName}.</Text>
+        ) : (
+          <Text style={styles.nameText}>You submitted a trade against {trade.Seller.firstName}.</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
+const Stack = createStackNavigator();
+function BuyTradeStackNavigation() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="YourTrades" component={BuyTrades} />
+      <Stack.Screen name="TradeDetails" component={TradeDetails} />
+    </Stack.Navigator>
+  );
+}
+function SellTradeStackNavigation() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="TradesReceived" component={SellTrades} />
+      <Stack.Screen name="TradeDetails" component={TradeDetails} />
+    </Stack.Navigator>
+  );
+}
+function TradeDetails({ route, navigation }: any) {
+  const user = useAuthentication();
+  const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
+  const { trade } = route.params;
+  const yourDirection = user?.uid === trade.sellerId ? "SELLER" : "BUYER";
+  const yourListings = trade.tradeListings.filter((listing: any) => listing.direction === yourDirection);
+  const theirListings = trade.tradeListings.filter((listing: any) => listing.direction !== yourDirection);
+  const yourAddedCash = yourDirection === "SELLER" ? trade.additionalFundsSeller : trade.additionalFundsBuyer;
+  const theirAddedCash = yourDirection === "SELLER" ? trade.additionalFundsBuyer : trade.additionalFundsSeller;
+  const mutateUser: any = useMutation((data) => updateUser(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
+    },
+  });
+
+  const initializePaymentSheet = async () => {
+    const paymentSheetData = await fetchSetupPaymentSheetParams(userData?.customerId);
+    const { paymentMethod, setupIntent, ephemeralKey, customer } = paymentSheetData;
+    if (paymentMethod) {
+      mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
+      return;
+    }
+    if (!userData?.customerId) mutateUser.mutate({ uid: user.uid, customerId: customer });
+
+    const { error } = await initPaymentSheet({
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      setupIntentClientSecret: setupIntent,
+    });
+    if (!error) {
+    }
+  };
+
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+    const paymentSheetData = await fetchSetupPaymentSheetParams(userData?.customerId);
+    const { paymentMethod } = paymentSheetData;
+    mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
+  };
+
+  useEffect(() => {
+    if (!userData) return;
+    initializePaymentSheet();
+  }, [userData]);
+
+  const handleShippingDetails = () => {
+    navigation.navigate("PaymentStack", {
+      screen: "ShippingDetails",
+    });
+  };
+  const queryClient = useQueryClient();
+  const acceptMutation: any = useMutation((data) => updateTrade(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("currentUser");
+    },
+  });
+  const cancelMutation: any = useMutation((data) => updateTrade(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("currentUser");
+    },
+  });
+
+  const acceptTrade = async () => {
+    await chargeTrade(trade.id);
+    sendTradeConfirmationEmail(trade);
+    await acceptMutation.mutate({ id: trade.id, accepted: true });
+    Alert.alert("Trade accepted!", "Keep shopping!");
+    navigation.goBack();
+  };
+  const declineTrade = async () => {
+    sendDeclineTradeOfferEmail(trade);
+    cancelMutation.mutate({ id: trade.id, cancelled: true });
+    navigation.goBack();
+  };
+  const cancelTrade = async () => {
+    cancelMutation.mutate({ id: trade.id, cancelled: true });
+    navigation.goBack();
+  };
+
+  const handleAcceptButton = () => {
+    Alert.alert("Are you sure you want to accept this trade?", "", [
+      {
+        text: "Accept Trade",
+        onPress: acceptTrade,
+      },
+      { text: "Cancel", style: "cancel" },
+    ])
+  };
+  const handleCancelButton = () => {
+    Alert.alert("Are you sure you want to cancel this trade?", "", [
+      {
+        text: "Cancel Trade",
+        onPress: cancelTrade,
+      },
+      { text: "Nevermind", style: "cancel" },
+    ]);
+  };
+  const handleDeclineButton = () => {
+    Alert.alert("Are you sure you want to decline this trade?", "", [
+      {
+        text: "Decline Trade",
+        onPress: declineTrade,
+      },
+      { text: "Nevermind", style: "cancel" },
+    ]);
+  };
+  return (
+    <>
+      <View style={styles.container}>
+        <View style={styles.yourListings}>
+          <View>
+            <Text style={styles.nameText}>Your</Text>
+          </View>
+          {yourListings.map(({ Listing }: any) => (
+            <View key={Listing.id}>
+              <Image source={{ uri: Listing.images[0] }} style={styles.image} />
+              <View style={styles.details}>
+                <Text style={styles.nameText}>{Listing.name}</Text>
+                <Text style={styles.priceText}>{Listing.price}</Text>
+              </View>
+            </View>
+          ))}
+          {yourAddedCash ? (
+            <View>
+              <Text>Added cash</Text>
+              <Text> {yourAddedCash}</Text>
+            </View>
+          ) : null}
+        </View>
+        <View>
+          <View>
+            <Text style={styles.nameText}>Their</Text>
+          </View>
+          {theirListings.map(({ Listing }: any) => (
+            <View key={Listing.id}>
+              <Image source={{ uri: Listing.images[0] }} style={styles.image} />
+              <View style={styles.details}>
+                <Text style={styles.nameText}>{Listing.name}</Text>
+                <Text style={styles.priceText}>{Listing.price}</Text>
+              </View>
+            </View>
+          ))}
+          {theirAddedCash ? (
+            <View>
+              <Text>Added cash</Text>
+              <Text> {theirAddedCash}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+      {yourDirection === "SELLER" ? (
+        <>
+          {!userData?.address ? (
+            <TouchableOpacity style={styles.addShippingContainer} onPress={handleShippingDetails}>
+              <Text style={styles.addShippingTitle}>Add Your Shipping Address To Accept</Text>
+            </TouchableOpacity>
+          ) : null}
+          {trade?.additionalFundsSeller && userData?.address && !userData?.paymentMethodId ? (
+            <TouchableOpacity style={styles.submitButtonContainer} onPress={openPaymentSheet}>
+              <LinearGradient
+                colors={["#aaa", "#aaa", "#333"]}
+                locations={[0, 0.3, 1]}
+                style={styles.submitButton}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.submitButtonText}>Add Payment Method</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : null}
+          {userData?.paymentMethodId ? (
+            <TouchableOpacity style={styles.acceptButton} onPress={handleAcceptButton}>
+              <Text style={styles.buttonText}>Accept Trade</Text>
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity style={styles.cancelButton} onPress={handleDeclineButton}>
+            <Text style={styles.buttonText}>Reject </Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancelButton}>
+          <Text style={styles.buttonText}>Cancel </Text>
+        </TouchableOpacity>
+      )}
+    </>
+  );
+}
 
 const styles = StyleSheet.create({
+  yourListings: {},
+  tradeItem: {},
+  details: {},
+  nameText: {},
+  priceText: {},
   buttonText: {},
   acceptButton: {
     backgroundColor: "blue",
@@ -176,8 +446,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    flexDirection: "row",
     backgroundColor: "#fff",
-    alignItems: "center",
     justifyContent: "center",
   },
 });

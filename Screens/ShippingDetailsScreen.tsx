@@ -1,14 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { InputForm } from "../Components/Forms";
-import { updateUser } from "../data/api";
+import { fetchUser, updateUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
 export default function ShippingDetailsScreen({ navigation, route }: any) {
-  const { id, ownerId } = route.params;
   const user = useAuthentication();
+  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [formData, setFormData] = useState({
     address: "",
     optionalAddress: "",
@@ -16,7 +16,7 @@ export default function ShippingDetailsScreen({ navigation, route }: any) {
     state: "",
     zipcode: "",
     country: "United States",
-  });
+  }) as any;
   const [focusedState, setFocusedState] = useState({
     name: false,
     price: false,
@@ -47,26 +47,21 @@ export default function ShippingDetailsScreen({ navigation, route }: any) {
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries('currentUser');
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
     },
   });
-  const handleBuy = () => {
+  const handleAddShippingAddress = () => {
     const isValid = validateForm();
-    if (!isValid) return
+    if (!isValid) return;
     mutation.mutate({
       uid: user.uid,
       ...formData,
     });
     // if come from offer button do something vs buy button
-    navigation.navigate("PaymentStack", {
-      screen: "Payment",
-      params: {
-        screen: "Payment",
-        id,
-        ownerId,
-      },
-    });
-  }
+    navigation.goBack();
+  };
   const validateForm = () => {
     let isValid = true;
     for (const key in formData) {
@@ -138,7 +133,7 @@ export default function ShippingDetailsScreen({ navigation, route }: any) {
           error={error}
           field="country"
         />
-        <TouchableOpacity onPress={handleBuy} style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleAddShippingAddress} style={styles.buttonContainer}>
           <LinearGradient
             colors={["#aaa", "#aaa", "#333"]}
             locations={[0, 0.3, 1]}
