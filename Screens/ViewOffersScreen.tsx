@@ -6,6 +6,7 @@ import {
   chargeOffer,
   chargeTrade,
   fetchOffersByUser,
+  fetchPaymentMethod,
   fetchSetupPaymentSheetParams,
   fetchTradesByUser,
   sendConfirmationEmail,
@@ -18,8 +19,8 @@ import {
 } from "../data/api";
 import { createStackNavigator } from "@react-navigation/stack";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect } from "react";
-import { initPaymentSheet, presentPaymentSheet } from "@stripe/stripe-react-native";
+import { useEffect, useState } from "react";
+import { initPaymentSheet, presentPaymentSheet, retrieveSetupIntent } from "@stripe/stripe-react-native";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -48,6 +49,7 @@ function OfferItem({ offer, direction }: any) {
     onSuccess: () => {
       queryClient.invalidateQueries("userOffers");
       queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("listings");
     },
   });
   const cancelMutation: any = useMutation((data) => updateOffer(data), {
@@ -125,14 +127,14 @@ function OfferItem({ offer, direction }: any) {
 function SellOffers() {
   const user = useAuthentication();
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
-  return isLoading || !userData?.Seller?.length ? (
+  return isLoading || !userData?.SellerOffers?.length ? (
     <SafeAreaView style={styles.container}>
       <Text>You don't have any offers yet!</Text>
     </SafeAreaView>
   ) : (
     <FlatList
       style={styles.flatList}
-      data={userData.Seller}
+      data={userData.SellerOffers}
       renderItem={({ item }) => <OfferItem offer={item} direction="sell" />}
     />
   );
@@ -140,14 +142,14 @@ function SellOffers() {
 function BuyOffers() {
   const user = useAuthentication();
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
-  return isLoading || !userData?.Buyer?.length ? (
+  return isLoading || !userData?.BuyerOffers?.length ? (
     <SafeAreaView style={styles.container}>
       <Text>You don't have any offers yet!</Text>
     </SafeAreaView>
   ) : (
     <FlatList
       style={styles.flatList}
-      data={userData.Buyer}
+      data={userData.BuyerOffers}
       renderItem={({ item }) => <OfferItem offer={item} direction="buy" />}
     />
   );
@@ -222,8 +224,13 @@ function SellTradeStackNavigation() {
   );
 }
 function TradeDetails({ route, navigation }: any) {
+  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
+  const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid), {
+    onSuccess: () => {
+      initializePaymentSheet();
+    },
+  });
   const { trade } = route.params;
   const yourDirection = user?.uid === trade.sellerId ? "SELLER" : "BUYER";
   const yourListings = trade.tradeListings.filter((listing: any) => listing.direction === yourDirection);
@@ -239,13 +246,9 @@ function TradeDetails({ route, navigation }: any) {
   });
 
   const initializePaymentSheet = async () => {
-    const paymentSheetData = await fetchSetupPaymentSheetParams(userData?.customerId);
-    const { paymentMethod, setupIntent, ephemeralKey, customer } = paymentSheetData;
-    if (paymentMethod) {
-      mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
-      return;
-    }
-    if (!userData?.customerId) mutateUser.mutate({ uid: user.uid, customerId: customer });
+    const paymentSheetData = await fetchSetupPaymentSheetParams(user?.uid);
+    const { setupIntent, ephemeralKey, customer } = paymentSheetData;
+    setSetupIntentClientSecret(setupIntent);
 
     const { error } = await initPaymentSheet({
       customerId: customer,
@@ -258,9 +261,17 @@ function TradeDetails({ route, navigation }: any) {
 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
-    const paymentSheetData = await fetchSetupPaymentSheetParams(userData?.customerId);
-    const { paymentMethod } = paymentSheetData;
-    mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
+    if (!error) {
+      const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
+      const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
+      mutateUser.mutate({
+        uid: user.uid,
+        paymentMethodId: setupIntent?.paymentMethodId,
+        paymentLast4: paymentMethod?.card?.last4,
+        paymentExpYear: paymentMethod?.card?.exp_year,
+        paymentExpMonth: paymentMethod?.card?.exp_month,
+      });
+    }
   };
 
   useEffect(() => {
@@ -391,7 +402,7 @@ function TradeDetails({ route, navigation }: any) {
                 start={{ x: 0, y: 1 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.submitButtonText}>Add Payment Method</Text>
+                <Text style={styles.submitButtonText}>Add Payment Method To Accept</Text>
               </LinearGradient>
             </TouchableOpacity>
           ) : null}

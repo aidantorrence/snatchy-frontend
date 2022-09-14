@@ -157,7 +157,7 @@ export async function sendConfirmationEmail(currentUser: any, listing: any, offe
 }
 export async function sendTradeConfirmationEmail(trade: any) {
   try {
-    const { data } = await axios.post(`${API_URL}/trade-confirmation`,  { trade });
+    const { data } = await axios.post(`${API_URL}/trade-confirmation`, { trade });
     return data;
   } catch (e) {
     console.log(`${API_URL}/trade-confirmation failed`, e);
@@ -227,10 +227,19 @@ export const fetchPaymentSheetParams = async (customerId: string, listingId: any
   }
 };
 
-export const fetchSetupPaymentSheetParams = async (customerId: string) => {
-  console.log("customerId", customerId);
+export const fetchSetupPaymentSheetParams = async (uid: string) => {
   try {
     const { data } = await axios.post(`${API_URL}/setup-payment`, {
+      uid,
+    });
+    return data;
+  } catch (e) {
+    console.log(e);
+  }
+};
+export const checkPaymentMethods = async (customerId: string) => {
+  try {
+    const { data } = await axios.post(`${API_URL}/check-payment-methods`, {
       customerId,
     });
     return data;
@@ -239,12 +248,30 @@ export const fetchSetupPaymentSheetParams = async (customerId: string) => {
   }
 };
 
+export async function fetchPaymentMethod(paymentMethodId: any) {
+  try {
+    const { data } = await axios.get(`${API_URL}/payment-method-details/${paymentMethodId}`);
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/payment-method-details/${paymentMethodId} failed`, e);
+  }
+}
+
 export async function chargeOffer(offer: any) {
   try {
     const { data } = await axios.post(`${API_URL}/charge-offer`, offer);
     return data;
   } catch (e) {
     console.log(`${API_URL}/charge-offer failed`, e);
+  }
+}
+
+export async function chargeBuy({ uid, listingId }: any) {
+  try {
+    const { data } = await axios.post(`${API_URL}/charge-buy`, { uid, listingId });
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/charge-buy failed`, e);
   }
 }
 export async function chargeTrade(tradeId: any) {

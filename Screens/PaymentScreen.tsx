@@ -1,25 +1,46 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Alert, SafeAreaView, Image, TouchableOpacity } from "react-native";
-import { CardField, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
+import { CardField, retrieveSetupIntent, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { fetchListing, fetchPaymentSheetParams, fetchUser, sendConfirmationEmail, updateUser } from "../data/api";
+import {
+  chargeBuy,
+  fetchListing,
+  fetchPaymentMethod,
+  fetchPaymentSheetParams,
+  fetchSetupPaymentSheetParams,
+  fetchUser,
+  sendConfirmationEmail,
+  updateUser,
+} from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
 export default function PaymentScreen({ route, navigation }: any) {
+  const [currentPaymentMethod, setCurrentPaymentMethod] = useState(undefined) as any;
+  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { id, ownerId, isOffer, offerPrice, itemsWanted, additionalFunds } = route.params;
   const user = useAuthentication();
-  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user.uid));
+  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user.uid), {
+    onSuccess: () => {
+      initializePaymentSheet();
+    },
+  });
   const { data: ownerData, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
   const price = isOffer ? offerPrice : listingData?.price;
-  const { data: paymentSheetData, isLoading: isLoadingPaymentSheet } = useQuery(`payment-sheet`, () =>
-    fetchPaymentSheetParams(data?.customerId, id, ownerData.accountId)
-  );
   const queryClient = useQueryClient();
   const mutateUser: any = useMutation((data) => updateUser(data), {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("userTrades");
+      queryClient.invalidateQueries("userOffers");
+      queryClient.invalidateQueries("listings");
+      initializePaymentSheet();
+    },
+  });
+  const mutatePayment: any = useMutation((data) => chargeBuy(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
       queryClient.invalidateQueries("userTrades");
@@ -29,13 +50,14 @@ export default function PaymentScreen({ route, navigation }: any) {
   });
 
   const initializePaymentSheet = async () => {
-    const { paymentIntent, ephemeralKey, customer } = paymentSheetData;
-    if (!data?.customerId) mutateUser.mutate({ uid: user.uid, customerId: customer });
+    const paymentSheetData = await fetchSetupPaymentSheetParams(user?.uid);
+    const { setupIntent, ephemeralKey, customer } = paymentSheetData;
+    setSetupIntentClientSecret(setupIntent);
 
     const { error } = await initPaymentSheet({
       customerId: customer,
       customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: paymentIntent,
+      setupIntentClientSecret: setupIntent,
     });
     if (!error) {
     }
@@ -43,20 +65,48 @@ export default function PaymentScreen({ route, navigation }: any) {
 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
-
     if (!error) {
-      mutateUser.mutate({ uid: user.uid, sold: true });
-      sendConfirmationEmail(data, listingData, undefined);
-      Alert.alert("Your order is confirmed!", "Keep shopping!");
-      navigation.navigate("HomeTabs");
+      const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
+      const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
+      mutateUser.mutate({
+        uid: user.uid,
+        paymentMethodId: setupIntent?.paymentMethodId,
+        paymentLast4: paymentMethod?.card?.last4,
+        paymentExpYear: paymentMethod?.card?.exp_year,
+        paymentExpMonth: paymentMethod?.card?.exp_month,
+      });
     }
   };
 
-  useEffect(() => {
-    if (!data) return;
-    if (!paymentSheetData) return;
-    if (!isLoadingPaymentSheet) initializePaymentSheet();
-  }, [isLoadingPaymentSheet, data]);
+  // async function getPaymentMethod(data: any) {
+  //   const paymentMethod = await fetchPaymentMethod(data?.paymentMethodId);
+  //   setCurrentPaymentMethod(paymentMethod);
+  // }
+
+  // useEffect(() => {
+  //   async function getPaymentMethod() {
+  //     const paymentMethod = await fetchPaymentMethod(data?.paymentMethodId);
+  //     setCurrentPaymentMethod(paymentMethod);
+  //   }
+  //   getPaymentMethod();
+  // }, []);
+
+  // const openPaymentSheet = async () => {
+  //   const { error } = await presentPaymentSheet();
+
+  //   if (!error) {
+  //     mutateUser.mutate({ uid: user.uid, sold: true });
+  //     sendConfirmationEmail(data, listingData, undefined);
+  //     Alert.alert("Your order is confirmed!", "Keep shopping!");
+  //     navigation.navigate("HomeTabs");
+  //   }
+  // };
+  const handleBuy = async () => {
+    await mutatePayment.mutate({ uid: user?.uid, listingId: listingData?.id });
+    sendConfirmationEmail(data, listingData, undefined);
+    Alert.alert("Your order is confirmed!", "Keep shopping!");
+    navigation.navigate("HomeTabs");
+  };
 
   const handleShippingDetails = () => {
     navigation.navigate("PaymentStack", {
@@ -162,7 +212,39 @@ export default function PaymentScreen({ route, navigation }: any) {
           </TouchableOpacity>
         )}
         {data?.address ? (
-          <TouchableOpacity style={styles.submitButtonContainer} onPress={openPaymentSheet}>
+          !data?.paymentMethodId ? (
+            <TouchableOpacity style={styles.submitButtonContainer} onPress={openPaymentSheet}>
+              <LinearGradient
+                colors={["#aaa", "#aaa", "#333"]}
+                locations={[0, 0.3, 1]}
+                style={styles.submitButton}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.submitButtonText}>Add Payment Method</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <View style={styles.cardTitleContainer}>
+                <Text style={styles.cardTitle}>Payment Details</Text>
+                <TouchableOpacity onPress={openPaymentSheet}>
+                  <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.cardContainer}>
+                <View style={styles.addressContainer}>
+                  <Text style={styles.addressText}>Card ending in {data?.paymentLast4}</Text>
+                  <Text style={styles.addressText}>
+                    Expires {data?.paymentExpMonth}/{data?.paymentExpYear}
+                  </Text>
+                </View>
+              </View>
+            </>
+          )
+        ) : null}
+        {data?.address && data?.paymentMethodId ? (
+          <TouchableOpacity style={styles.submitButtonContainer} onPress={handleBuy}>
             <LinearGradient
               colors={["#aaa", "#aaa", "#333"]}
               locations={[0, 0.3, 1]}
@@ -170,7 +252,7 @@ export default function PaymentScreen({ route, navigation }: any) {
               start={{ x: 0, y: 1 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.submitButtonText}>Review Payment</Text>
+              <Text style={styles.submitButtonText}>Confirm Payment</Text>
             </LinearGradient>
           </TouchableOpacity>
         ) : null}
@@ -180,6 +262,7 @@ export default function PaymentScreen({ route, navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  calcContainer: {},
   editLogo: {
     width: 20,
     height: 20,

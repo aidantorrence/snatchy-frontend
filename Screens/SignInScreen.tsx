@@ -60,6 +60,7 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 
       <View style={styles.controls}>
         <TextInput
+          autoCorrect={false}
           placeholder="Email"
           style={styles.control}
           value={value.email}
@@ -67,6 +68,7 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         />
 
         <TextInput
+          autoCorrect={false}
           placeholder="Password"
           style={styles.control}
           value={value.password}

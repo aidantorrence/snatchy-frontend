@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Alert, SafeAreaView, Image, TouchableOpacity, Modal } from "react-native";
-import { CardField, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
+import { CardField, retrieveSetupIntent, StripeProvider, useConfirmPayment, useStripe } from "@stripe/stripe-react-native";
 import Constants from "expo-constants";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   fetchListing,
+  fetchPaymentMethod,
   fetchPaymentSheetParams,
   fetchSetupPaymentSheetParams,
   fetchUser,
@@ -19,11 +20,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
 export default function TradePaymentsScreen({ route, navigation }: any) {
+  const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { id, ownerId, itemsWanted, itemsToTrade, additionalFundsBuyer, additionalFundsSeller } = route.params;
   const user = useAuthentication();
-  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid), {
+    onSuccess: () => {
+      initializePaymentSheet();
+    },
+  });
   const { data: ownerData, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
   const queryClient = useQueryClient();
@@ -32,6 +38,7 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
       queryClient.invalidateQueries("currentUser");
       queryClient.invalidateQueries("userTrades");
       queryClient.invalidateQueries("userOffers");
+      initializePaymentSheet();
     },
   });
   const mutateTrade: any = useMutation((data) => postTrade(data), {
@@ -41,13 +48,9 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
   });
 
   const initializePaymentSheet = async () => {
-    const paymentSheetData = await fetchSetupPaymentSheetParams(data?.customerId);
-    const { paymentMethod, setupIntent, ephemeralKey, customer } = paymentSheetData;
-    if (paymentMethod) {
-      mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
-      return;
-    }
-    if (!data?.customerId) mutateUser.mutate({ uid: user.uid, customerId: customer });
+    const paymentSheetData = await fetchSetupPaymentSheetParams(user?.uid);
+    const { setupIntent, ephemeralKey, customer } = paymentSheetData;
+    setSetupIntentClientSecret(setupIntent);
 
     const { error } = await initPaymentSheet({
       customerId: customer,
@@ -60,9 +63,17 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
-    const paymentSheetData = await fetchSetupPaymentSheetParams(data?.customerId);
-    const { paymentMethod } = paymentSheetData;
-    mutateUser.mutate({ uid: user.uid, paymentMethodId: paymentMethod });
+    if (!error) {
+      const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
+      const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
+      mutateUser.mutate({
+        uid: user.uid,
+        paymentMethodId: setupIntent?.paymentMethodId,
+        paymentLast4: paymentMethod?.card?.last4,
+        paymentExpYear: paymentMethod?.card?.exp_year,
+        paymentExpMonth: paymentMethod?.card?.exp_month,
+      });
+    }
   };
 
   useEffect(() => {
@@ -175,18 +186,36 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
                 </LinearGradient>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.submitButtonContainer} onPress={() => setConfirmModalIsVisible(true)}>
-                <LinearGradient
-                  colors={["#aaa", "#aaa", "#333"]}
-                  locations={[0, 0.3, 1]}
-                  style={styles.submitButton}
-                  start={{ x: 0, y: 1 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <Text style={styles.submitButtonText}>Make Offer</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+              <>
+                <View style={styles.cardTitleContainer}>
+                  <Text style={styles.cardTitle}>Payment Details</Text>
+                  <TouchableOpacity onPress={openPaymentSheet}>
+                    <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.cardContainer}>
+                  <View style={styles.addressContainer}>
+                    <Text style={styles.addressText}>Card ending in {data?.paymentLast4}</Text>
+                    <Text style={styles.addressText}>
+                      Expires {data?.paymentExpMonth}/{data?.paymentExpYear}
+                    </Text>
+                  </View>
+                </View>
+              </>
             )
+          ) : null}
+          {data?.address && data?.paymentMethodId ? (
+            <TouchableOpacity style={styles.submitButtonContainer} onPress={() => setConfirmModalIsVisible(true)}>
+              <LinearGradient
+                colors={["#aaa", "#aaa", "#333"]}
+                locations={[0, 0.3, 1]}
+                style={styles.submitButton}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.submitButtonText}>Make Offer</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           ) : null}
         </SafeAreaView>
       </StripeProvider>

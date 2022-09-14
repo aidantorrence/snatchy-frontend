@@ -1,21 +1,35 @@
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity } from "react-native";
+import { getAuth, signOut } from "firebase/auth/react-native";
+import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import useAuthentication from "../utils/firebase/useAuthentication";
 
-const defaultProfile = 'https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg'
+const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 const yeezyZebra =
   "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
 const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
 
-export default function EditProfileScreen({ navigation }: any) {
+export default function EditProfileScreen({ navigation, route }: any) {
+  const id = route?.params?.id;
+  const ownerId = route?.params?.ownerId;
+
+  const auth = getAuth();
   const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery('currentUser', () => fetchUser(user?.uid));
+  let userData: any;
+  let isLoading;
+  const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
+  if (ownerId) {
+    userData = ownerData;
+  } else {
+    userData = currentUserData;
+  }
+  const isUserListing = !ownerId || user?.uid === ownerId;
 
   const handlePress = (id: any) => {
     navigation.navigate("ViewListing", {
       id,
-      ownerId: userData?.uid
+      ownerId: userData?.uid,
     });
     // navigation.navigate("CreateStack", {
     //   screen: "EditListing",
@@ -25,15 +39,44 @@ export default function EditProfileScreen({ navigation }: any) {
     //   },
     // });
   };
+
+  const handleLogout = () => {
+    signOut(auth);
+    navigation.navigate("HomeTabs");
+  };
+  const handleAlert = () => {
+    Alert.alert("Select action", "", [
+      {
+        text: "Edit Listing",
+        onPress: () => handlePress("Edit"),
+      },
+      {
+        text: "Logout",
+        onPress: handleLogout,
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  };
   return (
     <>
       {isLoading ? (
         <Text>Loading</Text>
       ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
+          {isUserListing ? (
+            <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
+              <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
+            </TouchableOpacity>
+          ) : null}
           <Button title="Edit"></Button>
           <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
-            <Image source={{ uri: userData?.userImage || defaultProfile }} style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }} />
+            <Image
+              source={{ uri: userData?.userImage || defaultProfile }}
+              style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
+            />
             <Text style={styles.title}>{userData?.sellerName}</Text>
           </View>
           <View>
