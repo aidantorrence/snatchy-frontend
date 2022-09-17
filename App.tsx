@@ -28,6 +28,13 @@ import SetupPaymentsScreen from "./Screens/SetupPaymentsScreen";
 import MessagesScreen from "./Screens/MessagesScreen";
 import ViewOfferScreen from "./Screens/ViewOffersScreen";
 import TradePaymentsScreen from "./Screens/TradePaymentsScreen";
+import * as Sentry from 'sentry-expo';
+
+Sentry.init({
+  dsn: 'https://4bbe7afd11774e9ab04ca8a6929a8796@o1411142.ingest.sentry.io/6749502',
+  enableInExpoDevelopment: true,
+  debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
+});
 
 function Icon({ imgSrc }: any) {
   return (

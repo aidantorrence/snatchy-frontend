@@ -10,7 +10,11 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "env": {
+        "PUBLISHABLE_KEY": "pk_test_51LAn5dDPAiPVQwDccy60JvLicAOPRZMpVSkfOs6ot29GxI2jDarQLJEK3VKIx9517T7wSyMOWTXG8sqfFMkJ198N00ugm6sLzc"
+      }
+    }
   },
   "submit": {
     "production": {
