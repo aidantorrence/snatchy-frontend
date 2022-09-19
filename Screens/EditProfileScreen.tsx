@@ -2,7 +2,7 @@ import { getAuth, signOut } from "firebase/auth/react-native";
 import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 const yeezyZebra =
@@ -14,7 +14,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
   const ownerId = route?.params?.ownerId;
 
   const auth = getAuth();
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   let userData: any;
   let isLoading;
   const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
@@ -46,10 +46,6 @@ export default function EditProfileScreen({ navigation, route }: any) {
   };
   const handleAlert = () => {
     Alert.alert("Select action", "", [
-      {
-        text: "Edit Listing",
-        onPress: () => handlePress("Edit"),
-      },
       {
         text: "Logout",
         onPress: handleLogout,

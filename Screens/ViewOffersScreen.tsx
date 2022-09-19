@@ -1,6 +1,6 @@
 import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   chargeOffer,
@@ -125,7 +125,7 @@ function OfferItem({ offer, direction }: any) {
 }
 
 function SellOffers() {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
   return isLoading || !userData?.SellerOffers?.length ? (
     <SafeAreaView style={styles.container}>
@@ -140,7 +140,7 @@ function SellOffers() {
   );
 }
 function BuyOffers() {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("userOffers", () => fetchOffersByUser(user?.uid));
   return isLoading || !userData?.BuyerOffers?.length ? (
     <SafeAreaView style={styles.container}>
@@ -155,7 +155,7 @@ function BuyOffers() {
   );
 }
 function BuyTrades({ navigation }: any) {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
   return isLoading || !userData?.BuyerTrades?.length ? (
     <SafeAreaView style={styles.container}>
@@ -170,7 +170,7 @@ function BuyTrades({ navigation }: any) {
   );
 }
 function SellTrades({ navigation }: any) {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid));
   return isLoading || !userData?.SellerTrades?.length ? (
     <SafeAreaView style={styles.container}>
@@ -225,7 +225,7 @@ function SellTradeStackNavigation() {
 }
 function TradeDetails({ route, navigation }: any) {
   const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("userTrades", () => fetchTradesByUser(user?.uid), {
     onSuccess: () => {
       initializePaymentSheet();

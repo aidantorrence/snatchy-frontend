@@ -15,7 +15,7 @@ import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const img = "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
 const userImages = [img, img, img];
@@ -30,7 +30,7 @@ const ListHeader = () => {
 
 export default function ItemsToTradeScreen({ navigation, route }: any) {
   const { id, ownerId, itemsWanted } = route.params;
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [isChecked, setIsChecked] = useState(new Array(data?.listings?.length).fill(false));
 

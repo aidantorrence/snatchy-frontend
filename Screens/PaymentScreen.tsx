@@ -14,14 +14,14 @@ import {
   updateUser,
 } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 export default function PaymentScreen({ route, navigation }: any) {
   const [currentPaymentMethod, setCurrentPaymentMethod] = useState(undefined) as any;
   const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { id, ownerId, isOffer, offerPrice, itemsWanted, additionalFunds } = route.params;
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user.uid), {
     onSuccess: () => {
       initializePaymentSheet();

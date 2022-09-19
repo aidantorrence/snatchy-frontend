@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider, useQuery } from "react-query";
 import CreateListingScreen from "./Screens/CreateListingScreen";
 import SignInScreen from "./Screens/SignInScreen";
 import SignUpScreen from "./Screens/SignUpScreen";
-import useAuthentication from "./utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "./utils/firebase/useAuthentication";
 import PaymentScreen from "./Screens/PaymentScreen";
 import ShippingDetailsScreen from "./Screens/ShippingDetailsScreen";
 import ItemsWantedScreen from "./Screens/ItemsWantedScreen";
@@ -28,10 +28,11 @@ import SetupPaymentsScreen from "./Screens/SetupPaymentsScreen";
 import MessagesScreen from "./Screens/MessagesScreen";
 import ViewOfferScreen from "./Screens/ViewOffersScreen";
 import TradePaymentsScreen from "./Screens/TradePaymentsScreen";
-import * as Sentry from 'sentry-expo';
+import * as Sentry from "sentry-expo";
+import Constants from "expo-constants";
 
 Sentry.init({
-  dsn: 'https://4bbe7afd11774e9ab04ca8a6929a8796@o1411142.ingest.sentry.io/6749502',
+  dsn: "https://4bbe7afd11774e9ab04ca8a6929a8796@o1411142.ingest.sentry.io/6749502",
   enableInExpoDevelopment: true,
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
@@ -46,60 +47,61 @@ function Icon({ imgSrc }: any) {
 
 const Stack = createStackNavigator();
 
-export function CreateScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
-      <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
-      <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
-    </Stack.Navigator>
-  );
-}
-function ProfileScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      {/* <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} /> */}
-      <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={EditProfileScreen} />
-    </Stack.Navigator>
-  );
-}
-function PaymentScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
-      <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
-      <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
-      <Stack.Screen name="SetupPayments" options={{ headerTitle: "", title: "" }} component={SetupPaymentsScreen} />
-      <Stack.Screen name="OrderConfirmation" options={{ headerTitle: "", title: "" }} component={OrderConfirmationScreen} />
-      <Stack.Screen name="TradePayment" options={{ headerTitle: "", title: "" }} component={TradePaymentsScreen} />
-    </Stack.Navigator>
-  );
-}
-function TradeScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="ItemsWanted" options={{ headerTitle: "", title: "" }} component={ItemsWantedScreen} />
-      <Stack.Screen name="ItemsToTrade" options={{ headerTitle: "", title: "" }} component={ItemsToTradeScreen} />
-      <Stack.Screen name="TradeSummary" options={{ headerTitle: "", title: "" }} component={TradeSummaryScreen} />
-      <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
-    </Stack.Navigator>
-  );
-}
+// export function CreateScreenStackNavigation() {
+//   return (
+//     <Stack.Navigator>
+//       <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
+//       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+//       <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
+//     </Stack.Navigator>
+//   );
+// }
+// function ProfileScreenStackNavigation() {
+//   return (
+//     <Stack.Navigator>
+//       {/* <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} /> */}
+//       <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={EditProfileScreen} />
+//     </Stack.Navigator>
+//   );
+// }
+// function PaymentScreenStackNavigation() {
+//   return (
+//     <Stack.Navigator>
+//       <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
+//       <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
+//       <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
+//       <Stack.Screen name="SetupPayments" options={{ headerTitle: "", title: "" }} component={SetupPaymentsScreen} />
+//       <Stack.Screen name="OrderConfirmation" options={{ headerTitle: "", title: "" }} component={OrderConfirmationScreen} />
+//       <Stack.Screen name="TradePayment" options={{ headerTitle: "", title: "" }} component={TradePaymentsScreen} />
+//     </Stack.Navigator>
+//   );
+// }
+// function TradeScreenStackNavigation() {
+//   return (
+//     <Stack.Navigator>
+//       <Stack.Screen name="ItemsWanted" options={{ headerTitle: "", title: "" }} component={ItemsWantedScreen} />
+//       <Stack.Screen name="ItemsToTrade" options={{ headerTitle: "", title: "" }} component={ItemsToTradeScreen} />
+//       <Stack.Screen name="TradeSummary" options={{ headerTitle: "", title: "" }} component={TradeSummaryScreen} />
+//       <Stack.Screen name="CreateListing" options={{ headerTitle: "Create a Listing" }} component={CreateListingScreen} />
+//     </Stack.Navigator>
+//   );
+// }
 
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation, route }: any) {
+  // const user = useAuthentication();
   return (
     <QueryClientProvider client={new QueryClient()}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="HomeTabs" options={{ headerTitle: "", title: "" }} component={HomeTabs} />
-          <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
+          {/* <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
           <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
           <Stack.Screen name="ViewListing" options={{ headerTitle: "", title: "" }} component={ViewListingScreen} />
           <Stack.Screen name="EditListing" options={{ headerTitle: "Edit Listing", title: "" }} component={EditListingScreen} />
           <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "" }} component={SignUpScreen} />
-          <Stack.Screen name="SignIn" options={{ headerTitle: "", title: "" }} component={SignInScreen} />
+          <Stack.Screen name="SignIn" options={{ headerTitle: "", title: "" }} component={SignInScreen} /> */}
           {/* <Stack.Screen name="Sign In" component={SignInScreen} />
           <Stack.Screen name="Sign Up" component={SignOutScreen} /> */}
         </Stack.Navigator>
@@ -109,12 +111,25 @@ export default function App({ navigation, route }: any) {
 }
 
 function HomeTabs() {
-  const user = useAuthentication();
-  const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
-  return isLoading ? (
-    <View>
-      <Text>Loading</Text>
-    </View>
+  const arr = []
+  const arr2 = []
+  for (const key in Constants) {
+    if (key === "manifest" || key === 'manifest2' || key === 'expoConfig') {
+    arr.push(`${key}: ${JSON.stringify(Constants[key])}`);
+    }
+  }
+  for (const key in Constants) {
+    arr2.push(`key: ${key}`)
+  }
+
+  
+  // const user = useStore((state) => state.user);
+  // const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  return true ? (
+    <SafeAreaView>
+      <Text>{JSON.stringify(arr2)}</Text>
+      <Text>{JSON.stringify(arr)}</Text>
+    </SafeAreaView>
   ) : (
     <Tab.Navigator
       screenOptions={{
@@ -130,7 +145,7 @@ function HomeTabs() {
           tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.homeFocused : icons.home} />,
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Offers"
         component={user ? ViewOfferScreen : SignUpScreen}
         options={{
@@ -157,7 +172,7 @@ function HomeTabs() {
         options={{
           tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.profileFocused : icons.profile} />,
         }}
-      />
+      /> */}
     </Tab.Navigator>
   );
 }

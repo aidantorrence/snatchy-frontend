@@ -1,18 +1,40 @@
 {
   "cli": {
-    "version": ">= 1.2.0"
+    "version": ">= 1.2.0",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "PUBLISHABLE_KEY": "pk_test_51LAn5dDPAiPVQwDccy60JvLicAOPRZMpVSkfOs6ot29GxI2jDarQLJEK3VKIx9517T7wSyMOWTXG8sqfFMkJ198N00ugm6sLzc",
+        "APP_NAME":"instaheat_dev"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "PUBLISHABLE_KEY": "pk_test_51LAn5dDPAiPVQwDccy60JvLicAOPRZMpVSkfOs6ot29GxI2jDarQLJEK3VKIx9517T7wSyMOWTXG8sqfFMkJ198N00ugm6sLzc",
+        "APP_NAME":"instaheat_preview",
+        "API_KEY": "AIzaSyDUJlSHzSsB8VAiZvGi8qY68i1rGE7dH7c",
+        "AUTH_DOMAIN": "instaheat-dda39.firebaseapp.com",
+        "PROJECT_ID": "instaheat-dda39",
+        "STORAGE_BUCKET": "instaheat-dda39.appspot.com",
+        "MESSAGE_SENDER_ID": "536924549258",
+        "APP_ID": "1:536924549258:web:0b2aa0bd1a01f558f73d73"
+      }
     },
     "production": {
       "env": {
-        "PUBLISHABLE_KEY": "pk_test_51LAn5dDPAiPVQwDccy60JvLicAOPRZMpVSkfOs6ot29GxI2jDarQLJEK3VKIx9517T7wSyMOWTXG8sqfFMkJ198N00ugm6sLzc"
+        "PUBLISHABLE_KEY": "pk_test_51LAn5dDPAiPVQwDccy60JvLicAOPRZMpVSkfOs6ot29GxI2jDarQLJEK3VKIx9517T7wSyMOWTXG8sqfFMkJ198N00ugm6sLzc",
+        "APP_NAME":"instaheat_preview",
+        "API_KEY": "AIzaSyDUJlSHzSsB8VAiZvGi8qY68i1rGE7dH7c",
+        "AUTH_DOMAIN": "instaheat-dda39.firebaseapp.com",
+        "PROJECT_ID": "instaheat-dda39",
+        "STORAGE_BUCKET": "instaheat-dda39.appspot.com",
+        "MESSAGE_SENDER_ID": "536924549258",
+        "APP_ID": "1:536924549258:web:0b2aa0bd1a01f558f73d73"
       }
     }
   },

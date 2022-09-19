@@ -15,7 +15,7 @@ import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const YourItems = () => {
   return (
@@ -35,7 +35,7 @@ const SellerItems = () => {
 export default function TradeSummaryScreen({ navigation, route }: any) {
   const [additionalFundsBuyer, setAdditionalFundsBuyer] = useState(null) as any;
   const [additionalFundsSeller, setAdditionalFundsSeller] = useState(null) as any;
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { id, ownerId, itemsToTrade, itemsWanted } = route.params;
   const { data, isLoading } = useQuery("currentUser", () => fetchUser(user.uid));
   const listings = [data.listings.find((l: any) => l.id === id), ...data.listings.filter((l: any) => l.id !== id)];

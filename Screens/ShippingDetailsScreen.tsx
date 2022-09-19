@@ -4,10 +4,10 @@ import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } fro
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { InputForm } from "../Components/Forms";
 import { fetchUser, updateUser } from "../data/api";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 export default function ShippingDetailsScreen({ navigation, route }: any) {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [formData, setFormData] = useState({
     address: "",

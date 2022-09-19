@@ -2,14 +2,14 @@ import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpaci
 import Swiper from "react-native-swiper";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { deleteListing, fetchUser } from "../data/api";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
 export default function ViewListingScreen({ navigation, route }: any) {
   const { id, ownerId } = route.params;
   const { data, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const isUserListing = user?.uid === ownerId;
   const queryClient = useQueryClient();
   const mutation: any = useMutation(() => deleteListing({ id }), {

@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useQuery } from "react-query";
 import { fetchListings, fetchUser } from "../data/api";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import { QueryCache } from "react-query";
 const queryCache = new QueryCache({});
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
@@ -35,7 +35,7 @@ export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
   // queryCache.clear();
   const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery("listings", fetchListings);
-  const user = useAuthentication();
+  // const user = useStore((state) => state.user);
 
   const handlePress = (listing: any) => {
     navigation.navigate("ViewListing", {

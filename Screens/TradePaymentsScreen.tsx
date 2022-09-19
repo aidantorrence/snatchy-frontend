@@ -17,14 +17,14 @@ import {
   updateUser,
 } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 export default function TradePaymentsScreen({ route, navigation }: any) {
   const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { id, ownerId, itemsWanted, itemsToTrade, additionalFundsBuyer, additionalFundsSeller } = route.params;
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid), {
     onSuccess: () => {
       initializePaymentSheet();

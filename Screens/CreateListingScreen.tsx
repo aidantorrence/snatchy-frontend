@@ -21,7 +21,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { fetchUser, postListing } from "../data/api";
 import { DropDownForm, InputForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
-import useAuthentication from "../utils/firebase/useAuthentication";
+import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from "react-native-draggable-flatlist";
 
 const modalOptions = {
@@ -48,7 +48,7 @@ const initialFormState = {
   toughStains: "",
 };
 export default function CreateListingScreen({ navigation }: any) {
-  const user = useAuthentication();
+  const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
