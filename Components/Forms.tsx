@@ -28,8 +28,10 @@ export function InputForm({ formData, setFormData, focusedState, setFocusedState
     setFormData({ ...formData, [field]: text });
   };
   const handleFocus = () => {
-    setError({ ...error, [field]: "" });
     setFocusedState({ ...focusedState, [field]: true });
+    if (field !== "optionalAddress") {
+      setError({ ...error, [field]: "" });
+    }
   };
   const handleBlur = () => {
     setFocusedState({ ...focusedState, [field]: false });

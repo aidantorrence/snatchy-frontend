@@ -1,11 +1,11 @@
 import axios from "axios";
+import Constants from "expo-constants";
 
-// export const API_URL = "http://localhost:8081";
-export const API_URL = "https://instaheat-server.herokuapp.com";
+export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
 
-export async function fetchListings() {
+export async function fetchListings(uid: string | undefined) {
   try {
-    const { data } = await axios.get(`${API_URL}/listings`);
+    const { data } = await axios.get(`${API_URL}/listings`, { params: { uid } });
     return data;
   } catch (e) {
     console.log(`${API_URL}/listings failed`, e);
@@ -27,6 +27,15 @@ export async function fetchUser(uid: string | undefined) {
     return data;
   } catch (e) {
     console.log(`${API_URL}/user/${uid} failed`, e);
+  }
+}
+
+export async function blockUser(uid: string | undefined, blockedUid: string | undefined) {
+  try {
+    const { data } = await axios.post(`${API_URL}/block-user`,  { uid, blockedUid });
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/block-user failed`, e);
   }
 }
 
@@ -129,6 +138,15 @@ export async function updateUser(user: any) {
   }
 }
 
+export async function deleteUser(uid: any) {
+  try {
+    const { data } = await axios.delete(`${API_URL}/user`, { data: { uid } });
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/user delete failed`, e);
+  }
+}
+
 export async function checkStripeConnectAccountStatus(accountId: any) {
   try {
     const { data } = await axios.get(`${API_URL}/account-status/${accountId}`);
@@ -138,9 +156,9 @@ export async function checkStripeConnectAccountStatus(accountId: any) {
   }
 }
 
-export async function createStripeConnectAccount(user: any) {
+export async function createStripeConnectAccount(user: any, redirectUrl: string) {
   try {
-    const { data } = await axios.post(`${API_URL}/create-account`, user);
+    const { data } = await axios.post(`${API_URL}/create-account`, user, { params: { redirectUrl } });
     return data;
   } catch (e) {
     console.log(`${API_URL}/create-account failed`, e);
@@ -280,5 +298,14 @@ export async function chargeTrade(tradeId: any) {
     return data;
   } catch (e) {
     console.log(`${API_URL}/charge-trade failed`, e);
+  }
+}
+
+export async function postFlagContent(info: any) {
+  try {
+    const { data } = await axios.post(`${API_URL}/flagged-content`, info);
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/flagged-content failed`, e);
   }
 }

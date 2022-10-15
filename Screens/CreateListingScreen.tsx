@@ -49,7 +49,9 @@ const initialFormState = {
 };
 export default function CreateListingScreen({ navigation }: any) {
   const user = useStore((state) => state.user);
-  const { data: userData, isLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
+    enabled: !!user?.uid,
+  });
   const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
     images: "",

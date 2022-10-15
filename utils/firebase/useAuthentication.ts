@@ -3,19 +3,15 @@ import create from "zustand";
 import { useEffect } from "react";
 import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
 import Constants from "expo-constants";
-import { isEmptyObj } from "../utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getReactNativePersistence } from "firebase/auth/react-native";
 
-const firebaseApp = !getApps().length ? initializeApp(Constants.manifest?.extra as any) : getApp();
+const firebaseApp = !getApps().length ? initializeApp(Constants.expoConfig?.extra as any) : getApp();
 
-let auth = getAuth(firebaseApp);
-if (isEmptyObj(auth)) {
-  auth = initializeAuth(firebaseApp as FirebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
-}
+const auth = initializeAuth(firebaseApp as FirebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
 
 export const useStore = create((set: any) => ({
-  user: undefined,
+  user: undefined as User | undefined,
   setUser: (input: any) => set({ user: input }),
 }));
 

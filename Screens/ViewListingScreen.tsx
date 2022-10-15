@@ -1,7 +1,7 @@
 import { View, Text, SafeAreaView, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import Swiper from "react-native-swiper";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { deleteListing, fetchUser } from "../data/api";
+import { deleteListing, fetchUser, postFlagContent } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
@@ -19,6 +19,68 @@ export default function ViewListingScreen({ navigation, route }: any) {
     },
   });
 
+  const handleProfilePress = (uid: any) => {
+    navigation.navigate("ViewProfile", {
+      ownerId: uid,
+    });
+  };
+
+  const handleSubmitFlaggedContent = (details: string | undefined, reason: string) => {
+    postFlagContent({ reason: `${reason}: ${details}`, listingId: id, uid: user?.uid });
+    Alert.alert("This listing has been flagged for review");
+    navigation.navigate("HomeTabs");
+  };
+
+  const handleFlagContentConfirm = (reason: string) => {
+    Alert.prompt("Please provide details", "", [
+      {
+        text: "OK",
+        onPress: (details) => handleSubmitFlaggedContent(details, reason),
+      },
+    ]);
+    //
+  };
+
+  const handleFlagContent = () => {
+    Alert.alert("Reasons for flagging content", "Please let us know why you think this content violates Instaheat policies", [
+      {
+        text: "Sexual Content",
+        onPress: () => handleFlagContentConfirm("Sexual Content"),
+      },
+      {
+        text: "Violence",
+        onPress: () => handleFlagContentConfirm("Violence"),
+      },
+      {
+        text: "Hate Speech",
+        onPress: () => handleFlagContentConfirm("Hate Speech"),
+      },
+      {
+        text: "Spam",
+        onPress: () => handleFlagContentConfirm("Spam"),
+      },
+      {
+        text: "Other",
+        onPress: () => handleFlagContentConfirm("Other"),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  };
+  const handleActions = () => {
+    Alert.alert("Actions", "What would you like to do?", [
+      {
+        text: "Flag",
+        onPress: handleFlagContent,
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  };
   const handlePress = (val: string) => {
     if (val === "Edit") {
       navigation.navigate("EditListing", {
@@ -116,7 +178,7 @@ export default function ViewListingScreen({ navigation, route }: any) {
         <SafeAreaView style={styles.container}>
           <ScrollView>
             <View style={styles.item}>
-              <TouchableOpacity onPress={() => navigation.navigate("ViewProfile")} style={styles.userContainer}>
+              <TouchableOpacity onPress={() => handleProfilePress(ownerId)} style={styles.userContainer}>
                 <View style={styles.userInfo}>
                   <Image source={{ uri: data.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{data.sellerName}</Text>
@@ -125,7 +187,11 @@ export default function ViewListingScreen({ navigation, route }: any) {
                   <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
                     <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
                   </TouchableOpacity>
-                ) : null}
+                ) : (
+                  <TouchableOpacity style={{ padding: 10 }} onPress={handleActions}>
+                    <Image style={{ width: 20, height: 20 }} source={require("../assets/Ellipsis_Logo.png")} />
+                  </TouchableOpacity>
+                )}
               </TouchableOpacity>
               <Item item={listing} />
               <View style={styles.detailsContainer}>

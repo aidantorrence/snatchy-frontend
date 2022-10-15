@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "extra": {
+      "apiKey": "AIzaSyDUJlSHzSsB8VAiZvGi8qY68i1rGE7dH7c",
+      "authDomain": "instaheat-dda39.firebaseapp.com",
+      "projectId": "instaheat-dda39",
+      "storageBucket": "instaheat-dda39.appspot.com",
+      "messagingSenderId": "536924549258",
+      "appId": "1:536924549258:web:0b2aa0bd1a01f558f73d73",
+      "publishableKey": "pk_live_51KWhdwEZR7nYrDwKOzWtMg5agt37W1w1VtS3tH8N9ACB2l2dQms2DOGGvjt3XsheMer6SCvag6381ubtGZLOEgWC00G2TySsNg",
+      "eas": {
+        "projectId": "137422ad-32c7-4bb0-a8d5-08571fc516b3"
+      }
+    }
+  }
+}

@@ -106,7 +106,7 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
   };
   return (
     <>
-      <StripeProvider publishableKey={Constants?.manifest?.extra?.publishableKey}>
+      <StripeProvider publishableKey={Constants?.expoConfig?.extra?.publishableKey}>
         <SafeAreaView style={styles.container}>
           <View style={styles.calcContainer}>
             <View style={styles.detailContainer}>

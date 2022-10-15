@@ -6,6 +6,8 @@ import { InputForm } from "../Components/Forms";
 import { fetchUser, updateUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
+const optionalFields = ["optionalAddress"];
+
 export default function ShippingDetailsScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
   const { data, isLoading: isUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
@@ -65,7 +67,7 @@ export default function ShippingDetailsScreen({ navigation, route }: any) {
   const validateForm = () => {
     let isValid = true;
     for (const key in formData) {
-      if (formData[key] === "") {
+      if (!formData[key] && !optionalFields.includes(key)) {
         setError((err: any) => ({ ...err, [key]: "This field is required" }));
         isValid = false;
       }

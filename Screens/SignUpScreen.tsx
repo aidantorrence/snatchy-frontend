@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import * as WebBrowser from "expo-web-browser";
 import * as ImagePicker from "expo-image-picker";
 import { StyleSheet, Text, View, TextInput, Button, SafeAreaView, TouchableOpacity, Image, Alert } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
+import Checkbox from "expo-checkbox";
 
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useMutation, useQueryClient } from "react-query";
@@ -18,11 +20,13 @@ const initialFormState = {
 };
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
   const [formData, setFormData] = useState(initialFormState) as any;
-  const [value, setValue] = React.useState({
+  const [value, setValue] = useState({
     email: "",
     password: "",
     error: "",
   });
+  const [isChecked, setIsChecked] = useState(false);
+
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => postUser(data), {
     onSuccess: () => {
@@ -35,10 +39,24 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
   const auth = getAuth();
 
   async function signUp() {
+    if (formData.firstName === "" || formData.lastName === "") {
+      setValue({
+        ...value,
+        error: "First and Last Name are required",
+      });
+      return;
+    }
     if (formData.email === "" || formData.password === "") {
       setValue({
         ...value,
         error: "Email and password are mandatory.",
+      });
+      return;
+    }
+    if (!isChecked) {
+      setValue({
+        ...value,
+        error: "You must agree to the terms and conditions.",
       });
       return;
     }
@@ -52,14 +70,14 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       });
       // navigation.goBack();
       // navigation.navigate(route.name);
-    navigation.navigate("HomeTabs", {
-      screen: "CreateStack",
-    //   params: {
-    //     screen: "ShippingDetails",
-    //     id,
-    //     ownerId,
-    //   },
-    });
+      navigation.navigate("HomeTabs", {
+        screen: "CreateStack",
+        //   params: {
+        //     screen: "ShippingDetails",
+        //     id,
+        //     ownerId,
+        //   },
+      });
     } catch (error: any) {
       setValue({
         ...value,
@@ -67,6 +85,9 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       });
     }
   }
+  const handleTermsAndConditionsPress = () => {
+    WebBrowser.openBrowserAsync("https://github.com/aidantorrence/Instaheat-Documents/blob/main/Terms%20And%20Conditions.md");
+  };
 
   const launchPhotosAlert = () => {
     Alert.alert("Take a Photo", "Select from Camera Roll", [
@@ -161,7 +182,15 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           onChangeText={(text: string) => setFormData({ ...formData, password: text })}
           secureTextEntry={true}
         />
-
+        <View style={styles.checkboxContainer}>
+          <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setIsChecked} />
+          <View>
+            <Text> Agree to the </Text>
+          </View>
+            <TouchableOpacity onPress={handleTermsAndConditionsPress}>
+              <Text style={styles.linkText}>Terms and Conditions</Text>
+            </TouchableOpacity>
+        </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={signUp}>
             <Text style={styles.buttonText}>Sign Up</Text>
@@ -176,6 +205,17 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 };
 
 const styles = StyleSheet.create({
+  linkText: {
+    color: "darkblue",
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkbox: {
+    margin: 10,
+  },
   imageContainer: {
     marginVertical: 10,
   },
@@ -193,7 +233,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signInButtonText: {
-    color: '#2b414d',
+    color: "#2b414d",
     fontSize: 16,
   },
   images: {

@@ -7,22 +7,26 @@ import { useQuery, useQueryClient } from "react-query";
 import { useEffect } from "react";
 
 export default function CreateSellerScreen({ navigation }: any) {
+  const redirectUrl = Linking.createURL("");
+
   const user = useStore((state) => state.user);
   const queryClient = useQueryClient();
-  const { isLoading, data: userData, error } = useQuery("currentUser", () => fetchUser(user.uid));
+  const { isLoading, data: userData, error } = useQuery("currentUser", () => fetchUser(user?.uid));
   const {
     isLoading: isLoadingAccount,
     data: accountData,
     error: accountError,
     refetch: refetchAccountStatus,
-  } = useQuery("currentAccount", () => checkStripeConnectAccountStatus(userData?.accountId));
+  } = useQuery("currentAccount", () => checkStripeConnectAccountStatus(userData?.accountId), {
+  enabled: !!user?.uid,
+  });
 
   useEffect(() => {
     handleCreateSeller();
   }, []);
   const handleCreateSeller = async () => {
     if (userData?.chargesEnabled) return;
-    const { accountLink, accountId } = await createStripeConnectAccount(user);
+    const { accountLink, accountId } = await createStripeConnectAccount(user, redirectUrl);
     if (!accountLink) return;
 
     Linking.addEventListener("url", async ({ url }) => {

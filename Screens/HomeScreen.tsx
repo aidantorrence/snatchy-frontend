@@ -1,28 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useQuery } from "react-query";
-import { fetchListings, fetchUser } from "../data/api";
-import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
+import { fetchListings } from "../data/api";
+import { useStore } from "../utils/firebase/useAuthentication";
 import { QueryCache } from "react-query";
 const queryCache = new QueryCache({});
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 import Swiper from "react-native-swiper";
 
-const DATA = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    name: "ADIDAS YEEZY BOOST 360 V2 “ZEBRA”",
-    images: [
-      "https://www.domusweb.it/content/dam/domusweb/it/speciali/assoluti-del-design/gallery/2021/gli-assoluti-20-sneaker-imperdibili/gallery/domus-assoluti-sneaker-converse-all-star.jpg.foto.rmedium.png",
-    ],
-    size: "11",
-    price: "379",
-    condition: "Brand New",
-    canTrade: true,
-    sellerName: "genevieve",
-    userImage: "https://picsum.photos/200/300",
-  },
-];
 
 function ListHeader() {
   return (
@@ -34,8 +19,8 @@ function ListHeader() {
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
   // queryCache.clear();
-  const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery("listings", fetchListings);
-  // const user = useStore((state) => state.user);
+  const user = useStore((state) => state.user);
+  const { isLoading: isLoadingListings, data: listingsData, error: listingsError } = useQuery(["listings", user?.uid], () => fetchListings(user?.uid));
 
   const handlePress = (listing: any) => {
     navigation.navigate("ViewListing", {
@@ -64,6 +49,12 @@ export default function HomeScreen({ navigation }: any) {
       </Swiper>
     );
   }
+  
+  const handleProfilePress = (uid: any) => {
+    navigation.navigate("ViewProfile", {
+      ownerId: uid,
+    });
+  };
 
   return (
     <>
@@ -75,10 +66,10 @@ export default function HomeScreen({ navigation }: any) {
             data={listingsData}
             renderItem={({ item }: any) => (
               <>
-                <View style={styles.userInfo}>
+                <TouchableOpacity onPress={() => handleProfilePress(item.owner.uid)} style={styles.userInfo}>
                   <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
-                </View>
+                </TouchableOpacity>
                 <Item item={item} />
                 <View style={styles.detailsContainer}>
                   <View style={styles.nameConditionSizeContainer}>

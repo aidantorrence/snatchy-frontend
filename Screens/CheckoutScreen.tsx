@@ -54,7 +54,7 @@ export default function CheckoutScreen() {
   }, []);
 
   return (
-    <StripeProvider publishableKey={Constants?.manifest?.extra?.publishableKey}>
+    <StripeProvider publishableKey={Constants?.expoConfig?.extra?.publishableKey}>
       <SafeAreaView style={styles.container}>
       <View style={styles.container}>
         <Button disabled={!loading} title="Checkout" onPress={openPaymentSheet} />

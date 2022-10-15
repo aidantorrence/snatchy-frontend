@@ -1,91 +1,127 @@
-import { getAuth, signOut } from "firebase/auth/react-native";
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { useQuery } from "react-query";
-import { fetchUser } from "../data/api";
-import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
-
-const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
-const yeezyZebra =
-  "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
-const userImages = [yeezyZebra, yeezyZebra, yeezyZebra];
+import { useState } from "react";
+import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, TextInput } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { fetchUser, updateUser } from "../data/api";
+import { useStore } from "../utils/firebase/useAuthentication";
+import * as ImagePicker from "expo-image-picker";
+import uploadImageAsync from "../utils/firebase/uploadImage";
 
 export default function EditProfileScreen({ navigation, route }: any) {
-  const id = route?.params?.id;
-  const ownerId = route?.params?.ownerId;
-
-  const auth = getAuth();
   const user = useStore((state) => state.user);
-  let userData: any;
-  let isLoading;
-  const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
-  const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
-  if (ownerId) {
-    userData = ownerData;
-  } else {
-    userData = currentUserData;
-  }
-  const isUserListing = !ownerId || user?.uid === ownerId;
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    sellerName: "",
+    userImage: '',
+  });
 
-  const handlePress = (id: any) => {
-    navigation.navigate("ViewListing", {
-      id,
-      ownerId: userData?.uid,
-    });
-    // navigation.navigate("CreateStack", {
-    //   screen: "EditListing",
-    //   params: {
-    //     screen: "EditListing",
-    //     id,
-    //   },
-    // });
-  };
+  const queryClient = useQueryClient();
+  const mutation: any = useMutation((data) => updateUser(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("listings");
+    },
+  });
+  const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
+    enabled: !!user?.uid,
+  });
 
-  const handleLogout = () => {
-    signOut(auth);
-    navigation.navigate("HomeTabs");
-  };
-  const handleAlert = () => {
-    Alert.alert("Select action", "", [
+  const launchPhotosAlert = () => {
+    Alert.alert("Take a Photo", "Select from Camera Roll", [
       {
-        text: "Logout",
-        onPress: handleLogout,
+        text: "Take a Photo",
+        onPress: () => pickImage(true),
       },
       {
-        text: "Cancel",
-        style: "cancel",
+        text: "Select from Camera Roll",
+        onPress: () => pickImage(false),
       },
     ]);
   };
+  const pickImage = async (takePhoto: boolean) => {
+    // clear form error
+    // setError({ ...error, images: "" });
+
+    let result: any;
+
+    if (takePhoto) {
+      // take a photo
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      // if permission not granted, return
+      if (status !== "granted") return;
+
+      result = await ImagePicker.launchCameraAsync();
+    } else {
+      // No permissions request is necessary for launching the image library
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+    }
+
+    if (!result?.cancelled) {
+      uploadImageAsync(result.uri).then((url) => {
+        formData.userImage = url;
+        setFormData({ ...formData });
+      });
+    }
+  };
+
+  const handleUpdatePress = async () => {
+    mutation.mutateAsync({
+      ...formData,
+      uid: user?.uid,
+    });
+    navigation.goBack()
+  }
+
   return (
     <>
       {isLoading ? (
         <Text>Loading</Text>
       ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
-          {isUserListing ? (
-            <TouchableOpacity style={{ padding: 10 }} onPress={handleAlert}>
-              <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
-            </TouchableOpacity>
-          ) : null}
-          <Button title="Edit"></Button>
-          <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
+          <TouchableOpacity style={{ display: "flex", alignItems: "center" }} onPress={launchPhotosAlert}>
+            {userData?.userImage || formData.userImage ? (
             <Image
-              source={{ uri: userData?.userImage || defaultProfile }}
+              source={{ uri: formData.userImage || userData?.userImage }}
               style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
             />
-            <Text style={styles.title}>{userData?.sellerName}</Text>
-          </View>
-          <View>
-            <View style={{ display: "flex", flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
-              <Text style={styles.header}>Listings</Text>
-            </View>
-            <View style={styles.userImagesContainer}>
-              {userData?.listings.map((listing: any, index: number) => (
-                <TouchableOpacity onPress={() => handlePress(listing.id)} key={index}>
-                  <Image source={{ uri: listing.images[0] }} style={styles.userImages} />
-                  {/* <Button onPress={() => navigation.navigate("CreateStack", { screen: "Listing" })} title="Edit"></Button> */}
-                </TouchableOpacity>
-              ))}
+            ) : (
+              <>
+                <View style={{ borderRadius: 100, borderWidth: 1, padding: 10, marginBottom: 10 }}>
+                  <Image source={require("../assets/Add_Profile_Logo.png")} style={{ width: 120, height: 120 }} />
+                </View>
+                <Text style={styles.caption}>Add Profile Picture</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <View style={styles.controls}>
+            <TextInput
+              placeholder="First Name"
+              style={styles.control}
+              value={formData.firstName}
+              onChangeText={(text: string) => setFormData({ ...formData, firstName: text })}
+            />
+            <TextInput
+              placeholder="Last Name"
+              style={styles.control}
+              value={formData.lastName}
+              onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
+            />
+            <TextInput
+              placeholder="Shop Name (optional)"
+              style={styles.control}
+              value={formData.sellerName}
+              onChangeText={(text: string) => setFormData({ ...formData, sellerName: text })}
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={handleUpdatePress}>
+                <Text style={styles.buttonText}>Update</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </SafeAreaView>
@@ -95,6 +131,34 @@ export default function EditProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  button: {
+    marginTop: 20,
+    backgroundColor: "#2b414d",
+    borderRadius: 50,
+    padding: 10,
+    width: 150,
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  control: {
+    paddingVertical: 10,
+    borderColor: "#2b414d",
+    borderBottomWidth: 1,
+    fontSize: 20,
+  },
+  controls: {
+    margin: 20,
+    flex: 1,
+  },
+  caption: {},
   profileScreenContainer: {
     flex: 1,
     backgroundColor: "white",
@@ -132,22 +196,22 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
   },
-  button: {
-    backgroundColor: "white",
-    borderWidth: 0.5,
-    borderRadius: 30,
-    padding: 4,
-    paddingTop: 1,
-    paddingBottom: 1,
-    marginTop: 5,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 1,
-    elevation: 2,
-    marginRight: 15,
-  },
+  // button: {
+  //   backgroundColor: "white",
+  //   borderWidth: 0.5,
+  //   borderRadius: 30,
+  //   padding: 4,
+  //   paddingTop: 1,
+  //   paddingBottom: 1,
+  //   marginTop: 5,
+  //   shadowColor: "#000",
+  //   shadowOffset: {
+  //     width: 0,
+  //     height: 1,
+  //   },
+  //   shadowOpacity: 1,
+  //   shadowRadius: 1,
+  //   elevation: 2,
+  //   marginRight: 15,
+  // },
 });
