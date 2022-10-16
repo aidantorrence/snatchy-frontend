@@ -220,7 +220,7 @@ export default function CreateListingScreen({ navigation }: any) {
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [4, 4],
-        quality: 1,
+        quality: 0.1,
       });
     }
     if (!result.cancelled) {

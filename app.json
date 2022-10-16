@@ -2,7 +2,7 @@
   "expo": {
     "name": "Instaheat",
     "slug": "instaheat",
-    "version": "1.0.18",
+    "version": "1.0.19",
     "orientation": "portrait",
     "scheme": "myapp",
     "icon": "./assets/instaheat_icon.png",
@@ -38,7 +38,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "18"
+      "buildNumber": "20"
     },
     "plugins": [
       [

@@ -121,7 +121,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [4, 4],
-        quality: 1,
+        quality: 0.1,
       });
     }
 

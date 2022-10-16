@@ -195,12 +195,12 @@ export default function EditListingScreen({ navigation, route }: any) {
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [4, 4],
-        quality: 1,
+        quality: 0.1,
       });
     }
 
     if (!result.cancelled) {
-      uploadImageAsync(result.uri).then((url) => {
+      uploadImageAsync(result.uri).then((url: any) => {
         if (index !== undefined) {
           handleReplacePhoto(url, index);
         } else {

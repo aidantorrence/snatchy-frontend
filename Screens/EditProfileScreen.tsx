@@ -58,13 +58,13 @@ export default function EditProfileScreen({ navigation, route }: any) {
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [4, 4],
-        quality: 1,
+        quality: 0.1,
       });
     }
 
     if (!result?.cancelled) {
       uploadImageAsync(result.uri).then((url) => {
-        formData.userImage = url;
+        formData.userImage = url as any;
         setFormData({ ...formData });
       });
     }
