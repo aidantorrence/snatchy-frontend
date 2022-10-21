@@ -12,7 +12,7 @@ import Swiper from "react-native-swiper";
 function ListHeader() {
   return (
     <View style={styles.title}>
-      <Text style={styles.titleText}>INSTAHEAT</Text>
+      <Text style={styles.titleText}>TYPER</Text>
     </View>
   );
 }
@@ -38,15 +38,12 @@ export default function HomeScreen({ navigation }: any) {
 
   function Item({ item }: any) {
     return (
-      <Swiper style={{ height: 300 }}>
-        {item.images.map((image: any, index: any) => {
-          return (
-            <TouchableOpacity key={index} onPress={() => handlePress(item)} style={styles.item}>
-              <Image source={{ uri: image }} style={styles.image} />
+            <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
+              <Image source={{ uri: item.images[0] }} style={styles.image} />
+              <View style={styles.nameConditionSizeContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+              </View>
             </TouchableOpacity>
-          );
-        })}
-      </Swiper>
     );
   }
   
@@ -63,25 +60,18 @@ export default function HomeScreen({ navigation }: any) {
       ) : (
         <SafeAreaView style={styles.container}>
           <FlatList
+            horizontal={false}
+            numColumns={2}
+            columnWrapperStyle={styles.column}
             data={listingsData}
             renderItem={({ item }: any) => (
               <>
-                <TouchableOpacity onPress={() => handleProfilePress(item.owner.uid)} style={styles.userInfo}>
+                {/* <TouchableOpacity onPress={() => handleProfilePress(item.owner.uid)} style={styles.userInfo}>
                   <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
                   <Text style={styles.sellerName}>{item.owner.sellerName}</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <Item item={item} />
                 <View style={styles.detailsContainer}>
-                  <View style={styles.nameConditionSizeContainer}>
-                    <Text style={styles.name}>{item.name}</Text>
-                    <Text style={styles.conditionAndSize}>
-                      {item.condition} Size {item.size}
-                    </Text>
-                  </View>
-                  <View style={styles.priceCanTradeContainer}>
-                    <Text style={styles.price}>{item.price}</Text>
-                    {item.canTrade ? <Image style={styles.canTrade} source={require("../Trade.png")} /> : null}
-                  </View>
                 </View>
               </>
             )}
@@ -95,27 +85,28 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  column: {
+    flexShrink: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: "white",
   },
   item: {
     alignItems: "center",
+    width: "50%",
     // paddingBottom: 20,
     // paddingLeft: 20,
     // paddingRight: 20,
   },
   name: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: "bold",
     paddingBottom: 10,
   },
   conditionAndSize: {
     fontSize: 16,
     color: "gray",
-  },
-  nameConditionSizeContainer: {
-    width: "85%",
   },
   priceCanTradeContainer: {
     width: "15%",
@@ -128,7 +119,6 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     flexDirection: "row",
-    padding: 10,
   },
   title: {
     alignItems: "center",
@@ -139,22 +129,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    width: "100%",
-    height: 300,
+    width: '98%',
+    height: '75%',
   },
   userImage: {
     borderRadius: 50,
     width: 25,
     height: 25,
-    marginRight: 10,
-  },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    width: "100%",
-    paddingVertical: 10,
-    paddingLeft: 10,
   },
   sellerName: {
     fontSize: 20,

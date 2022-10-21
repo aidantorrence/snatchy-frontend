@@ -1,7 +1,7 @@
 {
   "expo": {
     "extra": {
-      "apiUrl": "https://ba66-104-139-116-146.ngrok.io",
+      "apiUrl": "http://localhost:8082",
       "apiKey": "AIzaSyDUJlSHzSsB8VAiZvGi8qY68i1rGE7dH7c",
       "authDomain": "instaheat-dda39.firebaseapp.com",
       "projectId": "instaheat-dda39",

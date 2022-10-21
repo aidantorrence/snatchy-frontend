@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Dimensions,
-  ScrollView,
   TouchableOpacity,
   Modal,
   Text,
@@ -94,31 +93,6 @@ export default function CreateListingScreen({ navigation }: any) {
 
   const photosToAdd = 10 - formData?.images?.length || 0;
   const photoArr = Array(photosToAdd).fill("");
-  // const validateForm = () => {
-  // switch (form) {
-  //   case "images":
-  //     if (!formData.images.length) setError({ ...error, images: "A photo is required" });
-  //     break;
-  //   case "name":
-  //     if (!formData.name) setError({ ...error, name: "The field is required" });
-  //     break;
-  //   case "size":
-  //     if (!formData.size) setError({ ...error, size: "The field is required" });
-  //     break;
-  //   case "price":
-  //     if (!formData.price) setError({ ...error, price: "The field is required" });
-  //     break;
-  //   case "canTrade":
-  //     if (!formData.canTrade) setError({ ...error, canTrade: "The field is required" });
-  //     break;
-  //   case "gender":
-  //     if (!formData.gender) setError({ ...error, gender: "The field is required" });
-  //     break;
-  //   case "boxCondition":
-  //     if (!formData.boxCondition) setError({ ...error, boxCondition: "The field is required" });
-  //     break;
-  // }
-  // };
 
   const validateForm = () => {
     let isValid = true;
