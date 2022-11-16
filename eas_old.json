@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 2.1.0",
+    "version": ">= 1.2.0",
     "promptToConfigurePushNotifications": false
   },
   "build": {
@@ -48,8 +48,8 @@
     "production": {
       "ios": {
         "appleId": "aidan.torrence@gmail.com",
-        "ascAppId": "6444202042",
-        "appleTeamId": "4KS5QC5V3R"
+        "ascAppId": "1613905850",
+        "appleTeamId": "SV5K43AG3W"
       }
     }
   }

@@ -3,21 +3,21 @@ import Constants from "expo-constants";
 
 export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
 
-export async function fetchListings(uid: string | undefined) {
+export async function fetchOutfits(uid: string | undefined) {
   try {
-    const { data } = await axios.get(`${API_URL}/listings`, { params: { uid } });
+    const { data } = await axios.get(`${API_URL}/outfits`, { params: { uid } });
     return data;
   } catch (e) {
-    console.log(`${API_URL}/listings failed`, e);
+    console.log(`${API_URL}/outfits failed`, e);
   }
 }
 
-export async function fetchListing(id: number) {
+export async function fetchOutfit(id: number) {
   try {
-    const { data } = await axios.get(`${API_URL}/listing/${id}`);
+    const { data } = await axios.get(`${API_URL}/outfit/${id}`);
     return data;
   } catch (e) {
-    console.log(`${API_URL}/listing/${id} failed`, e);
+    console.log(`${API_URL}/outfit/${id} failed`, e);
   }
 }
 
@@ -39,12 +39,22 @@ export async function blockUser(uid: string | undefined, blockedUid: string | un
   }
 }
 
-export async function postListing(listing: any) {
+export async function postOutfit(outfit: any) {
   try {
-    const { data } = await axios.post(`${API_URL}/listing`, listing);
+    const { data } = await axios.post(`${API_URL}/outfit`, outfit);
     return data;
   } catch (e) {
-    console.log(`${API_URL}/listing failed`, e);
+    console.log(`${API_URL}/outfit failed`, e);
+  }
+}
+
+export async function postComment(comment: any) {
+  console.log('comment', comment)
+  try {
+    const { data } = await axios.post(`${API_URL}/comment`, comment);
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/comment failed`, e);
   }
 }
 
@@ -102,21 +112,21 @@ export async function updateTrade(trade: any) {
   }
 }
 
-export async function updateListing(listing: any) {
+export async function updateOutfit(outfit: any) {
   try {
-    const { data } = await axios.patch(`${API_URL}/listing`, listing);
+    const { data } = await axios.patch(`${API_URL}/outfit`, outfit);
     return data;
   } catch (e) {
-    console.log(`${API_URL}/listing failed`, e);
+    console.log(`${API_URL}/outfit failed`, e);
   }
 }
 
-export async function deleteListing(listing: any) {
+export async function deleteOutfit(outfit: any) {
   try {
-    const { data } = await axios.delete(`${API_URL}/listing`, { data: listing });
+    const { data } = await axios.delete(`${API_URL}/outfit`, { data: outfit });
     return data;
   } catch (e) {
-    console.log(`${API_URL}/listing failed`, e);
+    console.log(`${API_URL}/outfit failed`, e);
   }
 }
 

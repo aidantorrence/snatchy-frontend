@@ -1,20 +1,17 @@
 {
   "expo": {
-    "name": "Instaheat",
-    "slug": "instaheat",
-    "version": "1.0.19",
+    "name": "LooksMax",
+    "owner": "aidantorrence",
+    "slug": "looksmax",
+    "version": "2.0.0",
     "orientation": "portrait",
     "scheme": "myapp",
-    "icon": "./assets/instaheat_icon.png",
+    "icon": "./assets/LooksMax_Favicon_2.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/instaheat_splash.png",
+      "image": "./assets/LooksMax_Logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/137422ad-32c7-4bb0-a8d5-08571fc516b3"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -32,13 +29,13 @@
       "favicon": "./assets/favicon.png"
     },
     "ios": {
-      "bundleIdentifier": "com.instaheat.app",
+      "bundleIdentifier": "com.looksmax.app",
       "supportsTablet": true,
       "_runtimeVersion": "46.0.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "21"
+      "buildNumber": "4"
     },
     "plugins": [
       [
@@ -51,21 +48,25 @@
           "file": "sentry-expo/upload-sourcemaps",
           "config": {
             "organization": "instaheat",
-            "project": "react-native",
+            "slug": "looksmax",
+            "project": "looksmax",
             "authToken": "f9156e3ec5ba41219756ef06d98d5a2c8161706ef4c949388198452ca11f7f99"
           }
         }
       ]
     },
     "extra": {
-      "apiUrl": "https://instaheat-server.herokuapp.com",
+      "apiUrl": "https://typer-kibbe.herokuapp.com",
       "apiKey": "AIzaSyDUJlSHzSsB8VAiZvGi8qY68i1rGE7dH7c",
       "authDomain": "instaheat-dda39.firebaseapp.com",
       "projectId": "instaheat-dda39",
       "storageBucket": "instaheat-dda39.appspot.com",
       "messagingSenderId": "536924549258",
       "appId": "1:536924549258:web:0b2aa0bd1a01f558f73d73",
-      "publishableKey": "pk_live_51KWhdwEZR7nYrDwKOzWtMg5agt37W1w1VtS3tH8N9ACB2l2dQms2DOGGvjt3XsheMer6SCvag6381ubtGZLOEgWC00G2TySsNg"
+      "publishableKey": "pk_live_51KWhdwEZR7nYrDwKOzWtMg5agt37W1w1VtS3tH8N9ACB2l2dQms2DOGGvjt3XsheMer6SCvag6381ubtGZLOEgWC00G2TySsNg",
+      "eas": {
+        "projectId": "d736cba8-c2d4-4a7f-9e2a-e3e98bf1996e"
+      }
     }
   }
 }

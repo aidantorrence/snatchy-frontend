@@ -33,7 +33,7 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
   const { data: ownerData, isLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
   const queryClient = useQueryClient();
-  const mutateUser: any = useMutation((data) => updateUser(data), {
+  const useUpdateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
       queryClient.invalidateQueries("userTrades");
@@ -66,7 +66,7 @@ export default function TradePaymentsScreen({ route, navigation }: any) {
     if (!error) {
       const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
       const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
-      mutateUser.mutate({
+      useUpdateUser.mutate({
         uid: user.uid,
         paymentMethodId: setupIntent?.paymentMethodId,
         paymentLast4: paymentMethod?.card?.last4,

@@ -31,7 +31,7 @@ export default function PaymentScreen({ route, navigation }: any) {
   const { data: listingData, isLoading: isListingLoading } = useQuery(`listing-${id}`, () => fetchListing(id));
   const price = isOffer ? offerPrice : listingData?.price;
   const queryClient = useQueryClient();
-  const mutateUser: any = useMutation((data) => updateUser(data), {
+  const useUpdateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: (data) => {
       queryClient.invalidateQueries("currentUser");
       queryClient.invalidateQueries("userTrades");
@@ -68,7 +68,7 @@ export default function PaymentScreen({ route, navigation }: any) {
     if (!error) {
       const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
       const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
-      mutateUser.mutate({
+      useUpdateUser.mutate({
         uid: user.uid,
         paymentMethodId: setupIntent?.paymentMethodId,
         paymentLast4: paymentMethod?.card?.last4,
@@ -95,7 +95,7 @@ export default function PaymentScreen({ route, navigation }: any) {
   //   const { error } = await presentPaymentSheet();
 
   //   if (!error) {
-  //     mutateUser.mutate({ uid: user.uid, sold: true });
+  //     useUpdateUser.mutate({ uid: user.uid, sold: true });
   //     sendConfirmationEmail(data, listingData, undefined);
   //     Alert.alert("Your order is confirmed!", "Keep shopping!");
   //     navigation.navigate("HomeTabs");

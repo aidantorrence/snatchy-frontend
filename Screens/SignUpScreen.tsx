@@ -14,7 +14,6 @@ const initialFormState = {
   userImage: "",
   firstName: "",
   lastName: "",
-  sellerName: "",
   email: "",
   password: "",
 };
@@ -134,13 +133,16 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeAreaContainer}>
       {!!value.error && (
         <View style={styles.error}>
           <Text>{value.error}</Text>
         </View>
       )}
-
+      <View style={styles.title}>
+        <Text style={styles.titleText}>LooksMax</Text>
+      </View>
+      <View style={styles.container}>
       {/* <Text style={styles.title}>GET STARTED</Text> */}
       <TouchableOpacity style={styles.imageContainer} onPress={launchPhotosAlert}>
         <Image
@@ -161,12 +163,6 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           style={styles.control}
           value={formData.lastName}
           onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
-        />
-        <TextInput
-          placeholder="Shop Name (optional)"
-          style={styles.control}
-          value={formData.sellerName}
-          onChangeText={(text: string) => setFormData({ ...formData, sellerName: text })}
         />
         <TextInput
           placeholder="Email"
@@ -199,6 +195,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
         </TouchableOpacity>
+      </View>
       </View>
     </SafeAreaView>
   );
@@ -255,21 +252,25 @@ const styles = StyleSheet.create({
     width: 150,
   },
   title: {
-    fontSize: 28,
+    marginTop: 20,
+    alignItems: "center",
+  },
+  titleText: {
+    fontSize: 32,
     fontWeight: "bold",
-    color: "#2b414d",
-    marginBottom: 20,
+  },
+  safeAreaContainer: {
+    flex: 1,
+    paddingTop: 20,
+    backgroundColor: "#fff",
   },
   container: {
-    flex: 1,
     paddingTop: 20,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
-
   controls: {
-    flex: 1,
   },
 
   control: {

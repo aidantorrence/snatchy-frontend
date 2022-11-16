@@ -6,15 +6,16 @@ import {
   signOut,
 } from "firebase/auth/react-native";
 import { useState } from "react";
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { blockUser, deleteUser, fetchUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import * as WebBrowser from "expo-web-browser";
+import { modusTypes } from "./QuizSuccessScreen";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
-export default function EditProfileScreen({ navigation, route }: any) {
+export default function ViewProfileScreen({ navigation, route }: any) {
   const ownerId = route?.params?.ownerId;
   const queryClient = useQueryClient();
   const user = useStore((state) => state.user);
@@ -23,11 +24,16 @@ export default function EditProfileScreen({ navigation, route }: any) {
   const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
   if (ownerId) {
+    isLoading = isOwnerLoading;
     userData = ownerData;
   } else {
     userData = currentUserData;
+    isLoading = isCurrentUserLoading;
   }
-  const isUserListing = !ownerId || user?.uid === ownerId;
+  const isCurrentUser = !ownerId || user?.uid === ownerId;
+  console.log("_______________________________________________");
+  console.log("ownerData", ownerData);
+  console.log("_______________________________________________");
 
   const mutateBlockUser: any = useMutation(() => blockUser(user?.uid, ownerId), {
     onSuccess: () => {
@@ -37,17 +43,10 @@ export default function EditProfileScreen({ navigation, route }: any) {
   });
 
   const handlePress = (id: any) => {
-    navigation.navigate("ViewListing", {
+    navigation.navigate("ViewOutfit", {
       id,
       ownerId: userData?.uid,
     });
-    // navigation.navigate("CreateStack", {
-    //   screen: "EditListing",
-    //   params: {
-    //     screen: "EditListing",
-    //     id,
-    //   },
-    // });
   };
 
   const handleSettingsClick = () => {
@@ -86,10 +85,6 @@ export default function EditProfileScreen({ navigation, route }: any) {
   };
   const handleActionsClick = () => {
     Alert.alert("Select action", "", [
-      // {
-      //   text: "Message",
-      //   onPress: handleMessage,
-      // },
       {
         text: "Block",
         onPress: handleBlock,
@@ -104,10 +99,12 @@ export default function EditProfileScreen({ navigation, route }: any) {
   return (
     <>
       {isLoading ? (
-        <Text>Loading</Text>
+    <SafeAreaView style={styles.screenAreaView}>
+       <ActivityIndicator size="large" />
+    </SafeAreaView>
       ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
-          {isUserListing ? (
+          {isCurrentUser ? (
             <TouchableOpacity
               style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}
               onPress={handleSettingsClick}
@@ -127,20 +124,26 @@ export default function EditProfileScreen({ navigation, route }: any) {
               source={{ uri: userData?.userImage || defaultProfile }}
               style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
             />
-            <Text style={styles.title}>{userData?.sellerName}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 5, alignSelf: "center" }}>
+            <Text style={styles.sellerName}>{userData?.firstName + " " + userData?.lastName}</Text>
+            { userData?.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} /> : null }
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 5, alignSelf: "center" }}>
+            <Text style={styles.sellerName}>{modusTypes[userData?.modusType]}</Text>
           </View>
           <View>
             <View style={styles.listingsHeader}>
-              <Text style={styles.header}>Listings</Text>
+              <Text style={styles.header}>Outfits</Text>
             </View>
-            <View style={styles.userImagesContainer}>
-              {userData?.listings.map((listing: any, index: number) => (
-                <TouchableOpacity onPress={() => handlePress(listing.id)} key={index}>
-                  <Image source={{ uri: listing.images[0] }} style={styles.userImages} />
-                  {/* <Button onPress={() => navigation.navigate("CreateStack", { screen: "Listing" })} title="Edit"></Button> */}
+            <ScrollView contentContainerStyle={styles.userImagesContainer}>
+              {userData?.outfits.map((outfit: any, index: number) => (
+                <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
+                  <Image source={{ uri: outfit.images[0] }} style={styles.userImages} />
+                  {/* <Text> {outfit.description} </Text> */}
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           </View>
         </SafeAreaView>
       )}
@@ -149,12 +152,29 @@ export default function EditProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  screenAreaView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: "center",
+  },
+  userImage: {
+    borderRadius: 50,
+    width: 20,
+    height: 20,
+    marginRight: 5,
+  },
+  sellerName: {
+    fontSize: 17,
+    fontWeight: "bold",
+    marginRight: 5,
+  },
   listingsHeader: {
     display: "flex",
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
     padding: 20,
+    marginHorizontal: 20,
   },
   profileScreenContainer: {
     flex: 1,
@@ -163,6 +183,7 @@ const styles = StyleSheet.create({
   userImagesContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
+    flexWrap: 'wrap',
   },
   userImages: {
     width: 80,

@@ -11,42 +11,90 @@ import {
   Button,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { fetchUser, postListing } from "../data/api";
-import { DropDownForm, InputForm } from "../Components/Forms";
+import { fetchUser, postOutfit } from "../data/api";
+import { DropDownForm, InputForm, MultiDropDownForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
-import DraggableFlatList, { ScaleDecorator, RenderItemParams } from "react-native-draggable-flatlist";
 
 const modalOptions = {
-  condition: ["", "Brand New", "Used - Excellent", "Used - Good", "Used - Fair"],
-  gender: ["", "Mens", "Womens"],
-  boxCondition: ["", "Good", "Damaged", "None"],
-  canTrade: ["", "Yes", "No"],
+  kibbeTypes: [
+    "",
+    "Dramatic",
+    "Soft Dramatic",
+    "Flamboyant Natural",
+    "Soft Natural",
+    "Dramatic Classic",
+    "Soft Classic",
+    "Flamboyant Gamine",
+    "Soft Gamine",
+    "Theatrical Romantic",
+    "Romantic",
+    // "Dramatic Romantic",
+    // "Soft Romantic",
+    // "Dramatic Gamine",
+  ],
+  occasions: [
+    "",
+    "Athletic",
+    "Beach",
+    "Black Tie",
+    "Casual",
+    "Clubbing",
+    "Cocktail",
+    "Date",
+    "Festival",
+    "Holiday",
+    "Lounge",
+    "Office",
+    "Smart Casual",
+    "Wedding",
+  ],
+  aesthetic: [
+    "",
+    "Academia / Preppy",
+    "Insta Baddie / Y2K",
+    "Indie",
+    "Goth / Grunge / Punk",
+    "Artsy",
+    "E-person",
+    "Soft / VSCO",
+    "Cottage-core",
+    "Norm-core",
+  ],
+  seasonalColors: [
+    "",
+    "Light Spring",
+    "True Spring",
+    "Bright Spring",
+    "Light Summer",
+    "True Summer",
+    "Soft Summer",
+    "Dark Autumn",
+    "True Autumn",
+    "Soft Autumn",
+    "Dark Winter",
+    "True Winter",
+    "Bright Winter",
+  ],
 } as any;
 
 const initialFormState = {
   images: [],
-  name: "",
-  condition: "",
-  size: "",
-  price: "",
-  canTrade: "",
-  gender: "",
-  boxCondition: "",
-  timesWorn: "",
-  scuffMarks: "",
-  discoloration: "",
-  looseThreads: "",
-  heelDrag: "",
-  toughStains: "",
+  kibbeTypes: [],
+  description: "",
+  occasions: [],
+  aesthetic: "",
+  seasonalColors: [],
+  purchaseLink: "",
 };
-export default function CreateListingScreen({ navigation }: any) {
+export default function PostOutfitScreen({ navigation }: any) {
   const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
@@ -54,45 +102,28 @@ export default function CreateListingScreen({ navigation }: any) {
   const [formData, setFormData] = useState(initialFormState) as any;
   const [error, setError] = useState({
     images: "",
-    name: "",
-    condition: "",
-    size: "",
-    price: "",
-    canTrade: "",
-    gender: "",
-    boxCondition: "",
-    timesWorn: "",
-    scuffMarks: "",
-    discoloration: "",
-    looseThreads: "",
-    heelDrag: "",
-    toughStains: "",
+    kibbeTypes: "",
+    description: "",
+    occasions: "",
+    aesthetic: "",
+    seasonalColors: "",
+    purchaseLink: "",
   }) as any;
   const [optionsModalIsVisible, setOptionsModalIsVisible] = useState(false);
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
   const [currentModal, setCurrentModal] = useState("");
   const [modalValue, setModalValue] = useState("");
   const [focusedState, setFocusedState] = useState({
-    name: false,
-    price: false,
-    size: false,
-    timesWorn: false,
-    scuffMarks: false,
-    discoloration: false,
-    looseThreads: false,
-    heelDrag: false,
-    toughStains: false,
+    description: false,
+    purchaseLink: false,
   });
   const queryClient = useQueryClient();
-  const mutation: any = useMutation((data) => postListing(data), {
+  const { mutate, isMutationLoading }: any = useMutation((data) => postOutfit(data), {
     onSuccess: () => {
-      queryClient.invalidateQueries("user");
-      queryClient.invalidateQueries("listings");
+      queryClient.invalidateQueries("currentUser");
+      queryClient.invalidateQueries("outfits");
     },
   });
-
-  const photosToAdd = 10 - formData?.images?.length || 0;
-  const photoArr = Array(photosToAdd).fill("");
 
   const validateForm = () => {
     let isValid = true;
@@ -101,7 +132,7 @@ export default function CreateListingScreen({ navigation }: any) {
       isValid = false;
     }
     for (const key in formData) {
-      if (["timesWorn", "scuffMarks", "discoloration", "looseThreads", "heelDrag", "toughStains"].includes(key)) continue;
+      if (["purchaseLink"].includes(key)) continue;
       if (formData[key] === "") {
         setError((err: any) => ({ ...err, [key]: "This field is required" }));
         isValid = false;
@@ -115,27 +146,14 @@ export default function CreateListingScreen({ navigation }: any) {
     if (isValid) setConfirmModalIsVisible(true);
   };
 
-  // useEffect(() => {
-  // 	pickImage();
-  // }, []);
-
-  const listing = {
-    name: formData.name,
-    condition: formData.condition,
-    size: formData.size,
-    price: formData.price,
+  const outfit = {
     images: formData.images,
-    gender: formData.gender,
-    boxCondition: formData.boxCondition,
-    canTrade: formData.canTrade === "Yes",
-    description: "",
-    listingDefects: [
-      `scuffMarks: ${formData.discoloration}`,
-      `discoloration: ${formData.discoloration}`,
-      `looseThreads: ${formData.looseThreads}`,
-      `heelDrag: ${formData.heelDrag}`,
-      `toughStains: ${formData.toughStains}`,
-    ],
+    kibbeTypes: formData.kibbeTypes,
+    description: formData.description,
+    occasions: formData.occasions,
+    aesthetic: formData.aesthetic,
+    seasonalColors: formData.seasonalColors,
+    purchaseLink: formData.purchaseLink,
     ownerId: user?.uid,
   };
 
@@ -161,6 +179,23 @@ export default function CreateListingScreen({ navigation }: any) {
     setFormData({ ...formData, images: filteredImages });
   };
 
+  const handleURLPasteComplete = (value: any) => {
+    setFormData({ ...formData, images: [...formData.images, value] });
+    setOptionsModalIsVisible(false);
+  };
+
+  const pasteURL = () =>
+    Alert.prompt("Enter image URL", "", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: handleURLPasteComplete,
+      },
+    ]);
+
   const launchPhotosAlert = (index?: number) => {
     Alert.alert("Take a Photo", "Select from Camera Roll", [
       {
@@ -170,6 +205,14 @@ export default function CreateListingScreen({ navigation }: any) {
       {
         text: "Select from Camera Roll",
         onPress: () => pickImage(false, index),
+      },
+      // {
+      //   text: "Paste URL",
+      //   onPress: pasteURL,
+      // },
+      {
+        text: "Cancel",
+        style: "cancel",
       },
     ]);
   };
@@ -215,9 +258,8 @@ export default function CreateListingScreen({ navigation }: any) {
   const handlePickerSelect = (val: string) => {
     setModalValue(val);
   };
-  const handleConfirmButtonClick = () => {
-    mutation.mutate(listing);
-    setConfirmModalIsVisible(false);
+  const handlePost = () => {
+    mutate(outfit);
     setFormData(initialFormState);
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -226,62 +268,36 @@ export default function CreateListingScreen({ navigation }: any) {
     }
   };
   const handleOptionsModalClose = () => {
-    formData[currentModal] = modalValue;
-    setFormData({ ...formData });
+    if (["occasions", "kibbeTypes", "seasonalColors"].includes(currentModal)) {
+      if (modalValue && !formData[currentModal].includes(modalValue)) formData[currentModal].push(modalValue);
+      setFormData({ ...formData });
+    } else {
+      formData[currentModal] = modalValue;
+      setFormData({ ...formData });
+    }
     setOptionsModalIsVisible(false);
-  };
-  const renderItem = ({ item, drag, isActive }: any) => {
-    return (
-      <ScaleDecorator>
-        <TouchableOpacity activeOpacity={1} onLongPress={drag} disabled={isActive} style={styles.imageContainer}>
-          <Image source={{ uri: item }} style={styles.images} />
-        </TouchableOpacity>
-      </ScaleDecorator>
-    );
-  };
-  const renderAddPhotoTemplates = ({ _, index }: any) => {
-    return (
-      <TouchableOpacity style={styles.imageContainer} key={index} onPress={() => editPhoto()}>
-        <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
-      </TouchableOpacity>
-    );
+    setModalValue("");
   };
 
-  return (
-    <>
+  return isLoading ? <SafeAreaView style={styles.screenAreaView}>
+  <ActivityIndicator size="large" />
+</SafeAreaView> : <>
       <SafeAreaView style={styles.container}>
         <KeyboardAwareScrollView>
           <View style={styles.detailsContainer}>
-            {/* <Text style={styles.detailsTitle}>Photos</Text> */}
-            <View style={styles.photosList}>
-              <DraggableFlatList
-                data={formData.images}
-                onDragEnd={({ data }) => setFormData({ ...formData, images: data })}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={renderItem}
-                horizontal={true}
-              />
-              <FlatList
-                data={photoArr}
-                horizontal={true}
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={renderAddPhotoTemplates}
-              />
-            </View>
-            {/* <ScrollView style={styles.imageContainer} horizontal={true}>
-              {formData.images.map((image: string, index: number) => (
-                <TouchableOpacity key={index} onPress={() => editPhoto(index)}>
-                  <Image source={{ uri: image }} style={styles.images} />
-                </TouchableOpacity>
-              ))}
-              {Array(photosToAdd)
-                .fill("")
-                .map((val, idx) => (
-                  <TouchableOpacity key={idx} onPress={() => editPhoto()}>
-                    <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
-                  </TouchableOpacity>
-                ))}
-            </ScrollView> */}
+            <TouchableOpacity style={styles.imageButton} onPress={() => editPhoto()}>
+              {formData.images.length ? (
+                <>
+                  <Image source={{ uri: formData.images[0] }} style={styles.uploadedImage} />
+                  <Text style={styles.imageText}>Replace Photo</Text>
+                </>
+              ) : (
+                <View style={styles.imageContainer}>
+                  <Image source={require("../assets/Outfit_Icon.png")} style={styles.images} />
+                  <Text style={styles.placeholderImageText}>Upload Outfit</Text>
+                </View>
+              )}
+            </TouchableOpacity>
             {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
           </View>
           <InputForm
@@ -291,89 +307,37 @@ export default function CreateListingScreen({ navigation }: any) {
             setFocusedState={setFocusedState}
             setError={setError}
             error={error}
-            field="name"
+            field="description"
           />
-          <InputForm
+          <MultiDropDownForm
             formData={formData}
             setFormData={setFormData}
-            focusedState={focusedState}
-            setFocusedState={setFocusedState}
-            setError={setError}
-            error={error}
-            field="price"
-            keyboardType="numeric"
-          />
-          <DropDownForm
-            formData={formData}
             error={error}
             setError={setError}
-            field="condition"
+            field="kibbeTypes"
             openOptionsModal={openOptionsModal}
           />
-          {formData.condition && formData.condition !== "Brand New" ? (
-            <>
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="timesWorn"
-                keyboardType="numeric"
-              />
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="scuffMarks"
-              />
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="discoloration"
-              />
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="looseThreads"
-              />
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="heelDrag"
-              />
-              <InputForm
-                formData={formData}
-                setFormData={setFormData}
-                focusedState={focusedState}
-                setFocusedState={setFocusedState}
-                setError={setError}
-                error={error}
-                field="toughStains"
-              />
-            </>
-          ) : null}
+          <MultiDropDownForm
+            formData={formData}
+            setFormData={setFormData}
+            error={error}
+            setError={setError}
+            field="occasions"
+            openOptionsModal={openOptionsModal}
+          />
           <DropDownForm
             formData={formData}
             error={error}
             setError={setError}
-            field="gender"
+            field="aesthetic"
+            openOptionsModal={openOptionsModal}
+          />
+          <MultiDropDownForm
+            formData={formData}
+            setFormData={setFormData}
+            error={error}
+            setError={setError}
+            field="seasonalColors"
             openOptionsModal={openOptionsModal}
           />
           <InputForm
@@ -383,34 +347,10 @@ export default function CreateListingScreen({ navigation }: any) {
             setFocusedState={setFocusedState}
             setError={setError}
             error={error}
-            field="size"
-            keyboardType="numeric"
+            field="purchaseLink"
           />
-          <DropDownForm
-            formData={formData}
-            error={error}
-            setError={setError}
-            field="boxCondition"
-            openOptionsModal={openOptionsModal}
-          />
-          <DropDownForm
-            formData={formData}
-            error={error}
-            setError={setError}
-            field="canTrade"
-            openOptionsModal={openOptionsModal}
-          />
-          <TouchableOpacity onPress={handleSubmit} style={styles.buttonContainer}>
-            <LinearGradient
-              // Background Linear Gradient
-              colors={["#aaa", "#aaa", "#333"]}
-              locations={[0, 0.3, 1]}
-              style={styles.completeButton}
-              start={{ x: 0, y: 1 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.completeButtonText}>Complete</Text>
-            </LinearGradient>
+          <TouchableOpacity onPress={handlePost} style={[styles.completeButton, styles.buttonContainer]}>
+            <Text style={styles.completeButtonText}>Post</Text>
           </TouchableOpacity>
         </KeyboardAwareScrollView>
       </SafeAreaView>
@@ -441,55 +381,52 @@ export default function CreateListingScreen({ navigation }: any) {
           </View>
         </SafeAreaView>
       </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={confirmModalIsVisible}
-        onRequestClose={() => setConfirmModalIsVisible(!confirmModalIsVisible)}
-      >
-        <SafeAreaView style={styles.confirmModalContainer}>
-          <TouchableOpacity onPress={() => setConfirmModalIsVisible(!confirmModalIsVisible)} style={styles.closeIconContainer}>
-            <Image source={require("../assets/Close_Logo.png")} style={styles.closeIcon} />
-          </TouchableOpacity>
-          <View style={styles.confirmModalTextContainer}>
-            <Text style={styles.confirmModalText}>Every flaw must be described and photographed.</Text>
-            <Text style={styles.confirmModalText}>
-              If anything isn't, the item will be sent back to you and you will be charged a $10 fee.
-            </Text>
-            <TouchableOpacity onPress={handleConfirmButtonClick} style={styles.buttonContainer}>
-              <LinearGradient
-                colors={["#aaa", "#aaa", "#333"]}
-                locations={[0, 0.3, 1]}
-                style={styles.confirmButton}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.completeButtonText}>Confirm Listing</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </Modal>
     </>
-  );
 }
 
 const styles = StyleSheet.create({
-  photosList: {
-    flexDirection: 'row', 
+  screenAreaView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: "center",
+  },
+  placeholderImageText: {
+    fontSize: 15,
+    fontWeight: "bold",
+    paddingBottom: 7,
+  },
+  imageText: {
+    fontSize: 15,
+    color: 'gray',
   },
   container: {
     flex: 1,
     backgroundColor: "white",
   },
-  imageContainer: {
+  imageButton: {
+    alignItems: "center",
     paddingTop: 7,
     paddingBottom: 12,
+  },
+  imageContainer: {
+    alignItems: "center",
+    paddingTop: 7,
+    paddingBottom: 12,
+    borderRadius: 500,
+    backgroundColor: "lightgray",
+    width: 140,
+    borderWidth: 1,
+    borderStyle: "dashed",
   },
   images: {
     width: 80,
     height: 80,
-    marginRight: 30,
+    marginBottom: 5,
+  },
+  uploadedImage: {
+    width: 180,
+    height: 180,
+    marginBottom: 5,
   },
   dropDownCaret: {
     width: 20,
@@ -528,7 +465,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   buttonText: {},
-  nameContainer: {
+  descriptionContainer: {
     marginTop: 20,
     marginLeft: 20,
   },
@@ -628,7 +565,7 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     padding: 15,
-    alignItems: "center",
+    alignSelf: "center",
     borderRadius: 27,
     margin: 20,
     paddingLeft: 30,
@@ -650,6 +587,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonContainer: {
+    backgroundColor: '#f287d2',
     alignItems: "center",
   },
   closeIcon: {

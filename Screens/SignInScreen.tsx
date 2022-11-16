@@ -28,11 +28,11 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 
     try {
       const { user } = await signInWithEmailAndPassword(auth, value.email, value.password);
-      queryClient.invalidateQueries("currentUser");
-      queryClient.invalidateQueries("userTrades");
-      queryClient.invalidateQueries("userOffers");
-      refetch();
-      navigation.goBack();
+      // queryClient.invalidateQueries("currentUser");
+      // queryClient.invalidateQueries("userTrades");
+      // queryClient.invalidateQueries("userOffers");
+      // refetch();
+      navigation.navigate("HomeTabs");
       // navigation.pop(1);
       // navigation.navigate("HomeTabs", {
       //   screen: "CreateStack",
@@ -58,6 +58,9 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         </View>
       )}
 
+      <View style={styles.title}>
+        <Text style={styles.titleText}>LooksMax</Text>
+      </View>
       <View style={styles.controls}>
         <TextInput
           autoCorrect={false}
@@ -81,12 +84,41 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
             <Text style={styles.buttonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
+          <View style={styles.or}>
+            <Text style={styles.orText}>----- OR -----</Text>
+          </View>
+          <TouchableOpacity style={styles.signUp} onPress={() => navigation.navigate("SignUp")}>
+            <Text style={styles.signUpButtonText}>Don't have an account? Sign Up</Text>
+          </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  signUpButtonText: {
+    color: "#2b414d",
+    fontSize: 16,
+  },
+  signUp: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  or: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  orText: {
+    fontSize: 20,
+  },
+  title: {
+    marginVertical: 20,
+    alignItems: "center",
+  },
+  titleText: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -109,11 +141,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
   },
 
   controls: {
-    flex: 1,
     width: "80%",
   },
 

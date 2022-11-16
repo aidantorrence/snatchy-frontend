@@ -237,7 +237,7 @@ function TradeDetails({ route, navigation }: any) {
   const theirListings = trade.tradeListings.filter((listing: any) => listing.direction !== yourDirection);
   const yourAddedCash = yourDirection === "SELLER" ? trade.additionalFundsSeller : trade.additionalFundsBuyer;
   const theirAddedCash = yourDirection === "SELLER" ? trade.additionalFundsBuyer : trade.additionalFundsSeller;
-  const mutateUser: any = useMutation((data) => updateUser(data), {
+  const useUpdateUser: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
       queryClient.invalidateQueries("userTrades");
@@ -264,7 +264,7 @@ function TradeDetails({ route, navigation }: any) {
     if (!error) {
       const { setupIntent } = await retrieveSetupIntent(setupIntentClientSecret);
       const paymentMethod = await fetchPaymentMethod(setupIntent?.paymentMethodId);
-      mutateUser.mutate({
+      useUpdateUser.mutate({
         uid: user.uid,
         paymentMethodId: setupIntent?.paymentMethodId,
         paymentLast4: paymentMethod?.card?.last4,
@@ -322,7 +322,7 @@ function TradeDetails({ route, navigation }: any) {
         onPress: acceptTrade,
       },
       { text: "Cancel", style: "cancel" },
-    ])
+    ]);
   };
   const handleCancelButton = () => {
     Alert.alert("Are you sure you want to cancel this trade?", "", [
