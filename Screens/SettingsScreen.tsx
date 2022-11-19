@@ -100,11 +100,11 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    margin: 25,
-    marginBottom: 20,
+    // margin: 25,
   },
   container: {
-    width: "80%",
+    flex: 1,
+    width: "100%",
   },
   profileScreenContainer: {
     flex: 1,
@@ -112,7 +112,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkContainer: {
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
   },

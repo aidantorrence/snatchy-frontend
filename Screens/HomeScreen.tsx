@@ -3,8 +3,6 @@ import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity
 import { useQuery } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { QueryCache } from "react-query";
-const queryCache = new QueryCache({});
-const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 import { fetchOutfits } from "../data/api";
 
 const kibbeTypes = {
@@ -22,7 +20,6 @@ const kibbeTypes = {
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  // queryCache.clear();
   const user = useStore((state) => state.user);
   const {
     isLoading: isLoadingOutfits,
@@ -60,48 +57,18 @@ export default function HomeScreen({ navigation }: any) {
           <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
           <Text style={styles.ownerName}>{item.owner.firstName + " " + item.owner.lastName}</Text>
         </View> */}
+          <View style={{flexDirection: 'row', marginLeft: 5, marginBottom: 5, alignItems: 'center'}}>
+          { item?.owner?.userImage ? <Image source={{ uri: item.owner.userImage }} style={styles.userImage} /> : 
+          <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} /> }
+          <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
+          {item.owner.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} /> : null}
+          </View> 
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
           <Image source={{ uri: item.images[0] }} style={styles.image} />
         </TouchableOpacity>
         <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{item.description}</Text>
-          <View style={{flexDirection: 'row'}}>
-          <Text style={styles.subTitle}>by</Text>
-          { item.owner.userImage ? <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} /> : 
-          <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} /> }
-          <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
-          {item.owner.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} /> : null}
-          </View> 
           
-        </View>
-        <View style={styles.tagsContainer}>
-          {/* { item.owner.userType === 'EXPERT' ? <View style={styles.expertTag}>
-            <Text style={styles.expertTagText}>{item.owner.userType}</Text>
-          </View> : null } */}
-          {item.kibbeTypes.slice(0,1).map((item: any, index: number) => {
-            return (
-              <View key={index} style={styles.kibbeTypes}>
-                <Text style={styles.tagsText}>{item}</Text>
-              </View>
-            );
-          })}
-          {item.seasonalColors.slice(0,1).map((item: any, index: number) => {
-            return (
-              <View key={index} style={styles.seasonalColors}>
-                <Text style={styles.tagsText}>{item}</Text>
-              </View>
-            );
-          })}
-          {item.occasions.slice(0,1).map((item: any, index: number) => {
-            return (
-              <View key={index} style={styles.occasions}>
-                <Text style={styles.tagsText}>{item}</Text>
-              </View>
-            );
-          })}
-          <View style={styles.aesthetic}>
-            <Text style={styles.tagsText}>{item.aesthetic}</Text>
-          </View>
         </View>
       </>
     );
@@ -111,6 +78,12 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate("ViewProfile", {
       ownerId: uid,
     });
+  };
+  const handleModusTypePress = () => {
+    navigation.navigate("ModusTypeFilter");
+  };
+  const handleSeasonalColorPress = () => {
+    navigation.navigate("SeasonalColorFilter");
   };
 
   const handleFilterPress = () => {
@@ -128,11 +101,27 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.title}>
             <Text style={styles.titleText}>LooksMax</Text>
           </View>
-          <TouchableOpacity 
+          <View style={styles.filterContainer}>
+          <View style={styles.filter}>
+            <Text style={styles.filterText}>Filter by:</Text>
+          </View>
+          <View style={styles.filterType}>
+            <TouchableOpacity onPress={handleModusTypePress}>
+            <Text style={styles.filterTypeText}>MODUS TYPE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSeasonalColorPress}>
+            <Text style={styles.filterTypeText}>SEASONAL COLOR</Text>
+                </TouchableOpacity>
+          </View>
+          <View style={styles.filter}>
+            <Text style={styles.filterPlaceholder}>Filter by:</Text>
+          </View>
+          </View>
+          {/* <TouchableOpacity 
             onPress={handleFilterPress} 
             style={styles.filterButton}>
             <Image source={require("../assets/Filter_Logo.png")} style={styles.filterLogo} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <FlatList
             horizontal={false}
             numColumns={2}
@@ -152,6 +141,33 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
+    marginBottom: 10,
+    borderColor: 'lightgray',
+    borderBottomWidth: .25,
+    borderTopWidth: .25,
+    paddingVertical: 6,
+  },
+  filter: {
+    flex: 1,
+  },
+  filterType: {
+    flexDirection: 'row',
+  },
+  filterText: {
+    fontSize: 11,
+  },
+  filterTypeText: {
+    fontSize: 11,
+    marginHorizontal: 5,
+  },
+  filterPlaceholder: {
+    fontSize: 11,
+    color: 'white',
+  },
   screenAreaView: {
     flex: 1,
     justifyContent: 'center',
@@ -165,8 +181,15 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   userImage: {
+    marginRight: 5,
     height: 17,
     width: 17,
+    borderRadius: 25,
+  },
+  verifedImage: {
+    marginLeft: 2,
+    height: 10,
+    width: 10,
     borderRadius: 25,
   },
   ownerName: {
@@ -219,7 +242,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   column: {
-    flexShrink: 1,
     width: "50%",
   },
   container: {
@@ -228,20 +250,23 @@ const styles = StyleSheet.create({
   },
   item: {
     alignItems: "center",
+    marginRight: Dimensions.get('window').width * 0.02,
     // paddingBottom: 20,
     // paddingLeft: 20,
     // paddingRight: 20,
   },
-  descriptionContainer: {},
+  descriptionContainer: {
+    marginBottom: 5,
+  },
   description: {
     paddingHorizontal: 5,
     marginTop: 2,
-    fontSize: 15,
-    fontWeight: "400",
+    fontSize: 11,
+    textAlign: 'center',
   },
   subTitle: {
-    paddingHorizontal: 5,
-    color: "gray",
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   conditionAndSize: {
     fontSize: 16,
@@ -261,15 +286,15 @@ const styles = StyleSheet.create({
   },
   title: {
     alignItems: "center",
-    // marginBottom: 20,
+    marginBottom: 10,
   },
   titleText: {
-    fontSize: 32,
+    fontSize: 18,
     fontWeight: "bold",
   },
   image: {
     width: Dimensions.get('window').width * 0.49,
-    height: 253,
+    height: Dimensions.get('window').height * 0.35,
     resizeMode:"cover"
   },
   sellerName: {

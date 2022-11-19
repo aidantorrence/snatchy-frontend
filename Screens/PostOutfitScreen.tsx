@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   TouchableOpacity,
@@ -16,7 +16,6 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { fetchUser, postOutfit } from "../data/api";
 import { DropDownForm, InputForm, MultiDropDownForm } from "../Components/Forms";
@@ -83,6 +82,11 @@ const modalOptions = {
     "True Winter",
     "Bright Winter",
   ],
+  postReason: [
+    "",
+    "Inspiration",
+    "Feedback",
+  ],
 } as any;
 
 const initialFormState = {
@@ -93,6 +97,7 @@ const initialFormState = {
   aesthetic: "",
   seasonalColors: [],
   purchaseLink: "",
+  postReason: '',
 };
 export default function PostOutfitScreen({ navigation }: any) {
   const user = useStore((state) => state.user);
@@ -108,6 +113,7 @@ export default function PostOutfitScreen({ navigation }: any) {
     aesthetic: "",
     seasonalColors: "",
     purchaseLink: "",
+    postReasons: '',
   }) as any;
   const [optionsModalIsVisible, setOptionsModalIsVisible] = useState(false);
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
@@ -124,6 +130,10 @@ export default function PostOutfitScreen({ navigation }: any) {
       queryClient.invalidateQueries("outfits");
     },
   });
+
+  useEffect( () => {
+    launchPhotosAlert();
+  }, [])
 
   const validateForm = () => {
     let isValid = true;
@@ -279,9 +289,12 @@ export default function PostOutfitScreen({ navigation }: any) {
     setModalValue("");
   };
 
-  return isLoading ? <SafeAreaView style={styles.screenAreaView}>
-  <ActivityIndicator size="large" />
-</SafeAreaView> : <>
+  return isLoading ? (
+    <SafeAreaView style={styles.screenAreaView}>
+      <ActivityIndicator size="large" />
+    </SafeAreaView>
+  ) : (
+    <>
       <SafeAreaView style={styles.container}>
         <KeyboardAwareScrollView>
           <View style={styles.detailsContainer}>
@@ -293,7 +306,7 @@ export default function PostOutfitScreen({ navigation }: any) {
                 </>
               ) : (
                 <View style={styles.imageContainer}>
-                  <Image source={require("../assets/Outfit_Icon.png")} style={styles.images} />
+                  <Image source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
                   <Text style={styles.placeholderImageText}>Upload Outfit</Text>
                 </View>
               )}
@@ -309,27 +322,29 @@ export default function PostOutfitScreen({ navigation }: any) {
             error={error}
             field="description"
           />
+          <InputForm
+            formData={formData}
+            setFormData={setFormData}
+            focusedState={focusedState}
+            setFocusedState={setFocusedState}
+            setError={setError}
+            error={error}
+            field="content"
+          />
+          <DropDownForm
+            formData={formData}
+            setFormData={setFormData}
+            error={error}
+            setError={setError}
+            field="postReason"
+            openOptionsModal={openOptionsModal}
+          />
           <MultiDropDownForm
             formData={formData}
             setFormData={setFormData}
             error={error}
             setError={setError}
             field="kibbeTypes"
-            openOptionsModal={openOptionsModal}
-          />
-          <MultiDropDownForm
-            formData={formData}
-            setFormData={setFormData}
-            error={error}
-            setError={setError}
-            field="occasions"
-            openOptionsModal={openOptionsModal}
-          />
-          <DropDownForm
-            formData={formData}
-            error={error}
-            setError={setError}
-            field="aesthetic"
             openOptionsModal={openOptionsModal}
           />
           <MultiDropDownForm
@@ -382,22 +397,22 @@ export default function PostOutfitScreen({ navigation }: any) {
         </SafeAreaView>
       </Modal>
     </>
+  );
 }
 
 const styles = StyleSheet.create({
   screenAreaView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     alignItems: "center",
   },
   placeholderImageText: {
-    fontSize: 15,
-    fontWeight: "bold",
+    fontSize: 10,
     paddingBottom: 7,
   },
   imageText: {
     fontSize: 15,
-    color: 'gray',
+    color: "gray",
   },
   container: {
     flex: 1,
@@ -413,10 +428,7 @@ const styles = StyleSheet.create({
     paddingTop: 7,
     paddingBottom: 12,
     borderRadius: 500,
-    backgroundColor: "lightgray",
     width: 140,
-    borderWidth: 1,
-    borderStyle: "dashed",
   },
   images: {
     width: 80,
@@ -424,9 +436,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   uploadedImage: {
-    width: 180,
-    height: 180,
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").width,
     marginBottom: 5,
+  },
+  addPhoto: {
+    width: 25,
+    height: 25,
+    marginBottom: 5,
+    opacity: .7,
   },
   dropDownCaret: {
     width: 20,
@@ -460,7 +478,6 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     marginHorizontal: 20,
-    borderBottomWidth: 1,
     borderColor: "#aaa",
     paddingVertical: 5,
   },
@@ -564,13 +581,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   completeButton: {
-    padding: 15,
+    padding: 10,
     alignSelf: "center",
-    borderRadius: 27,
+    borderRadius: 10,
     margin: 20,
     paddingLeft: 30,
     paddingRight: 30,
-    width: 160,
+    width: 210,
   },
   confirmButton: {
     padding: 15,
@@ -587,7 +604,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonContainer: {
-    backgroundColor: '#f287d2',
+    backgroundColor: "#f287d2",
     alignItems: "center",
   },
   closeIcon: {

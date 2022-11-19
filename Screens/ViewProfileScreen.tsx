@@ -6,14 +6,12 @@ import {
   signOut,
 } from "firebase/auth/react-native";
 import { useState } from "react";
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, Dimensions } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { blockUser, deleteUser, fetchUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import * as WebBrowser from "expo-web-browser";
 import { modusTypes } from "./QuizSuccessScreen";
-
-const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
 export default function ViewProfileScreen({ navigation, route }: any) {
   const ownerId = route?.params?.ownerId;
@@ -109,7 +107,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
               style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}
               onPress={handleSettingsClick}
             >
-              <Image style={{ width: 20, height: 20 }} source={require("../assets/Settings.png")} />
+              <Image style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -121,29 +119,30 @@ export default function ViewProfileScreen({ navigation, route }: any) {
           )}
           <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
             <Image
-              source={{ uri: userData?.userImage || defaultProfile }}
-              style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
+              source={userData?.userImage ? { uri: userData?.userImage } : require("../assets/Monkey_Profile_Logo.png")}
+              style={{ width: 104, height: 104, borderRadius: 100 }}
             />
           </View>
           <View style={{ flexDirection: 'row', marginTop: 5, alignSelf: "center" }}>
             <Text style={styles.sellerName}>{userData?.firstName + " " + userData?.lastName}</Text>
             { userData?.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} /> : null }
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 5, alignSelf: "center" }}>
-            <Text style={styles.sellerName}>{modusTypes[userData?.modusType]}</Text>
+          <View style={{ flexDirection: 'row', alignSelf: "center", marginBottom: 20, }}>
+            <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
           </View>
           <View>
-            <View style={styles.listingsHeader}>
-              <Text style={styles.header}>Outfits</Text>
-            </View>
+            {userData?.outfits?.length ? <>
             <ScrollView contentContainerStyle={styles.userImagesContainer}>
               {userData?.outfits.map((outfit: any, index: number) => (
                 <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
                   <Image source={{ uri: outfit.images[0] }} style={styles.userImages} />
-                  {/* <Text> {outfit.description} </Text> */}
                 </TouchableOpacity>
               ))}
             </ScrollView>
+            </> : <View style={{alignItems: 'center'}}>
+                  <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
+                  <Text style={{textAlign: 'center', fontSize: 20}}>No Outfits Yet!</Text>
+                </View>}
           </View>
         </SafeAreaView>
       )}
@@ -164,9 +163,11 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   sellerName: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "bold",
-    marginRight: 5,
+  },
+  modusTypeText: {
+    fontSize: 12,
   },
   listingsHeader: {
     display: "flex",
@@ -186,9 +187,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   userImages: {
-    width: 80,
-    height: 80,
-    margin: 10,
+    width: Dimensions.get('window').width * 0.31,
+    height: Dimensions.get('window').width * 0.31,
+  },
+  noOutfitsImage: {
+    width: 200,
+    height: 200,
   },
   title: {
     fontWeight: "bold",

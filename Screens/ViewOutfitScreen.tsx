@@ -189,16 +189,16 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
     if (outfit?.purchaseLink) {
       WebBrowser.openBrowserAsync(outfit?.purchaseLink);
     } else {
-    Alert.alert("Select action", "", [
-      {
-        text: "Add Purchase Link",
-        onPress: handleAddPurchaseLink
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-    ]);
+      Alert.alert("Select action", "", [
+        {
+          text: "Add Purchase Link",
+          onPress: handleAddPurchaseLink,
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
     }
   };
 
@@ -215,10 +215,10 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                   <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
                 )}
                 <View>
-                  <View style={{ flexDirection: "row" }}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text style={styles.sellerName}>{outfit.owner.firstName + " " + outfit.owner.lastName}</Text>
                     {outfit.owner.userType === "EXPERT" ? (
-                      <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} />
+                      <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifiedImage} />
                     ) : null}
                   </View>
                   <Text style={styles.modusType}>{modusTypes[outfit.owner.modusType]}</Text>
@@ -235,23 +235,23 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               )}
             </TouchableOpacity>
             <Image source={{ uri: outfit.images[0] }} style={styles.image} />
+            <View style={styles.titleContainer}>
+              <Text style={styles.description}>{outfit.description}</Text>
+            </View>
             <View style={styles.detailsContainer}>
-              {/* <View style={styles.titleContainer}> */}
-              {/* <Text style={styles.description}>{outfit.description}</Text> */}
-              {/* </View> */}
               <View>
-              <View style={styles.votesContainer}>
-                <TouchableOpacity>
-                  <Image style={styles.votesIcon} source={require("../assets/Upvote_Logo.png")} />
-                </TouchableOpacity>
-                <Text style={styles.votes}>{outfit.upvotes - outfit.downvotes}</Text>
-                <TouchableOpacity>
-                  <Image style={styles.votesIcon} source={require("../assets/Downvote_Logo.png")} />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity onPress={handleShoppingBagClick} style={{alignItems: 'center', marginTop: 5}}>
+                <View style={styles.votesContainer}>
+                  <TouchableOpacity>
+                    <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} />
+                  </TouchableOpacity>
+                  <Text style={styles.votes}>{outfit.upvotes - outfit.downvotes}</Text>
+                  <TouchableOpacity>
+                    <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} />
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={handleShoppingBagClick} style={{ alignItems: "center", marginTop: 10 }}>
                   <Image source={require("../assets/Shopping_Bag_Logo.png")} style={styles.shoppingBagImage} />
-              </TouchableOpacity>
+                </TouchableOpacity>
               </View>
               <View style={styles.tagsContainer}>
                 {outfit.kibbeTypes.map((item: any, index: number) => {
@@ -279,22 +279,17 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                   );
                 })}
               </View>
-              {/* <TextInput
-                  style={styles.textInput}
-                  value={comment}
-                  onChangeText={(text: string) => setComment(text)}
-                  multiline
-                  placeholder="Write feedback / suggestions / thoughts here"
-                />
-                <View style={styles.replyButtonContainer}>
-                  <TouchableOpacity style={styles.replyButton} onPress={handleReply}>
-                    <Text style={styles.replyButtonText}>Reply</Text>
-                  </TouchableOpacity>
-                </View> */}
             </View>
+            { outfit?.content ? <View style={styles.postContainer}>
+              <View style={styles.postHeader}>
+                  <Text style={styles.postHeaderText}>
+                    {outfit?.owner?.firstName + " " + outfit?.owner?.lastName + ' '}
+                    <Text style={styles.postText}>{outfit?.content}</Text>
+                  </Text>
+              </View>
+            </View> : null }
             <View style={styles.commentsContainer}>
               {outfit?.Comment?.map((comment: any, index: number) => {
-                console.log(comment);
                 return (
                   <View key={index} style={styles.commentContainer}>
                     <View style={styles.commentHeader}>
@@ -303,7 +298,10 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                       ) : (
                         <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.commentUserImage} />
                       )}
-                      <Text style={styles.commentText}>{comment?.owner?.firstName + " " + comment?.owner?.lastName}</Text>
+                      <View>
+                        <Text style={styles.commentUserTitle}>{comment?.owner?.firstName + " " + comment?.owner?.lastName}</Text>
+                        <Text style={styles.commentModusType}>{modusTypes[comment?.owner?.modusType]}</Text>
+                      </View>
                       {/* <Text style={styles.commentText}>{new Date(comment.createdAt).toDateString()}</Text> */}
                     </View>
                     <Text style={styles.commentText}>{comment.content}</Text>
@@ -477,13 +475,16 @@ const styles = StyleSheet.create({
   commentsContainer: {
     paddingHorizontal: 10,
   },
+  postContainer: {
+    marginVertical: 5,
+    paddingHorizontal: 10,
+  },
   commentBox: {
-    marginHorizontal: 20,
-    padding: 10,
+    marginHorizontal: 10,
+    padding: 12,
     paddingHorizontal: 20,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: "#888888",
+    borderRadius: 10,
+    backgroundColor: "#f2f2f2",
   },
   commentUserImage: {
     borderRadius: 50,
@@ -505,15 +506,36 @@ const styles = StyleSheet.create({
   },
   commentContainer: {
     marginTop: 10,
-    marginLeft: 5,
+  },
+  commentUserTitle: {
+    marginRight: 5,
+    fontWeight: "bold",
+    fontSize: 11,
+  },
+  commentModusType: {
+    marginRight: 5,
+    fontSize: 8,
   },
   commentText: {
     marginRight: 5,
+    fontSize: 12,
   },
   commentHeader: {
+    alignItems: "center",
     flexDirection: "row",
-    justifyContent: "flex-start",
     marginBottom: 5,
+  },
+  postHeader: {
+    flexDirection: "row",
+    marginBottom: 5,
+  },
+  postHeaderText: {
+    fontWeight: "bold",
+    fontSize: 11,
+  },
+  postText: {
+    fontWeight: "normal",
+    fontSize: 12,
   },
   replyButtonContainer: {
     alignItems: "flex-end",
@@ -537,26 +559,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   votes: {
-    fontSize: 24,
+    fontSize: 17,
+    marginHorizontal: 5,
   },
   votesContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   votesIcon: {
-    opacity: 0.5,
-    width: 20,
-    height: 20,
-    marginHorizontal: 5,
+    width: 22,
+    height: 22,
   },
   tagsContainer: {
-    width: "75%",
+    marginLeft: 10,
     flexDirection: "row",
     flexWrap: "wrap",
+    flex: 1,
   },
   tags: {
     flexDirection: "row",
-    margin: 5,
+    margin: 3,
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
@@ -667,13 +689,19 @@ const styles = StyleSheet.create({
   },
   image: {
     width: Dimensions.get("window").width,
-    height: 533,
+    height: Dimensions.get("window").height * 0.5,
     resizeMode: "cover",
   },
   userImage: {
     borderRadius: 50,
-    width: 20,
-    height: 20,
+    width: 40,
+    height: 40,
+    marginRight: 5,
+  },
+  verifiedImage: {
+    borderRadius: 50,
+    width: 14,
+    height: 14,
     marginRight: 5,
   },
   userInfo: {
@@ -684,13 +712,12 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   sellerName: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: "bold",
     marginRight: 5,
   },
   modusType: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 11,
     marginRight: 5,
   },
   canTrade: {
@@ -699,20 +726,19 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   detailsContainer: {
-    paddingTop: 10,
     paddingHorizontal: 10,
     flexDirection: "row",
-    alignItems: 'center'
+    // justifyContent: "space-between",
+    // alignItems: 'center'
   },
   description: {
-    width: "80%",
-    fontSize: 20,
+    fontSize: 14,
     paddingBottom: 7,
   },
   titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
+    paddingTop: 5,
+    paddingHorizontal: 10,
+    alignItems: "center",
   },
   priceCanTradeContainer: {
     width: "25%",

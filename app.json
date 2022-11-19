@@ -35,7 +35,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "plugins": [
       [

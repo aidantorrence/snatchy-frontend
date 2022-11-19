@@ -41,6 +41,7 @@ import QuizSilhouetteScreen from "./Screens/QuizSilhouetteScreen";
 import QuizOrnateDetailsScreen from "./Screens/QuizOrnateDetailsScreen";
 import QuizThickMaterialsScreen from "./Screens/QuizThickMaterialsScreen";
 import QuizSuccessScreen from "./Screens/QuizSuccessScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 Sentry.init({
   dsn: "https://c777f53f2cd94a8198526620d7d373fb@o1411142.ingest.sentry.io/4504101948948480",
@@ -48,10 +49,10 @@ Sentry.init({
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
 
-function Icon({ imgSrc }: any) {
+function Icon({ imgSrc, style}: any) {
   return (
-    <View style={{ paddingTop: 15 }}>
-      <Image source={imgSrc} resizeMode="contain" style={{ width: 33, height: 33 }} />
+    <View style={{ paddingTop: 8 }}>
+      <Image source={imgSrc} resizeMode="contain" style={[styles.icon, style]} />
     </View>
   );
 }
@@ -61,7 +62,7 @@ const Stack = createStackNavigator();
 export function CreateScreenStackNavigation() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="PostOutfit" options={{ headerTitle: "Post an Outfit" }} component={PostOutfitScreen} />
+      <Stack.Screen name="PostOutfit" options={{ headerTitle: "" }} component={PostOutfitScreen} />
       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
       {/* <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} /> */}
       <Stack.Screen name="Settings" options={{ headerTitle: "", title: "" }} component={SettingsScreen} />
@@ -73,7 +74,7 @@ function ProfileScreenStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
       <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={EditProfileScreen} />
-      <Stack.Screen name="Settings" options={{ headerTitle: "", title: "" }} component={SettingsScreen} />
+      <Stack.Screen name="Settings" options={{ headerTitle: "", title: "", headerShown: true }} component={SettingsScreen} />
     </Stack.Navigator>
   );
 }
@@ -103,6 +104,7 @@ function TradeScreenStackNavigation() {
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation, route }: any) {
+  // AsyncStorage.clear();
   const user = useAuthentication();
   return (
     <QueryClientProvider client={new QueryClient()}>
@@ -206,7 +208,7 @@ function HomeTabs() {
         name="CreateStack"
         component={CreateScreenStackNavigation}
         options={{
-          tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.createFocused : icons.create} />,
+          tabBarIcon: ({ focused }) => <Icon style={styles.centerIcon} imgSrc={focused ? icons.createFocused : icons.create} />,
         }}
       />
       <Tab.Screen
@@ -226,4 +228,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: "center",
   },
+  icon: {
+    width: 36, 
+    height: 36
+   },
+  centerIcon: {
+    width: 43, 
+    height: 43
+   },
 });
