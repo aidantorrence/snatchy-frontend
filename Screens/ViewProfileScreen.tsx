@@ -139,11 +139,11 @@ export default function ViewProfileScreen({ navigation, route }: any) {
               <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} />
             ) : null}
           </View>
-          <View style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}>
+          <TouchableOpacity onPress={() => navigation.navigate('ModusDescription', { modusType: userData?.modusType })} style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}>
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
-          </View>
+          </TouchableOpacity>
           <View>
-            <FlatList
+            { userData?.outfits.length ? <FlatList
               horizontal={false}
               numColumns={3}
               columnWrapperStyle={styles.column}
@@ -154,7 +154,12 @@ export default function ViewProfileScreen({ navigation, route }: any) {
                 </TouchableOpacity>
               )}
               keyExtractor={(item) => item.id}
-            />
+            /> : (
+              <View style={{ alignItems: "center" }}>
+                <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
+                <Text style={{ textAlign: "center", fontSize: 18 }}>No Outfits Yet!</Text>
+              </View>
+            )}
             {/* {userData?.outfits?.length ? (
               <>
                 <ScrollView contentContainerStyle={styles.userImagesContainer}>

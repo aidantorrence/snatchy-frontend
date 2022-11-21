@@ -1,9 +1,10 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Checkbox from "expo-checkbox";
 import React, { useState } from "react";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { NavigationHelpersContext } from "@react-navigation/native";
+import { Dimensions } from "react-native";
 
 export default function FilterScreen({ navigation }: any) {
   const handleModusTypePress = () => {
@@ -28,35 +29,44 @@ export default function FilterScreen({ navigation }: any) {
 }
 
 export function ModusTypeFilterScreen({ navigation }: any) {
-  const modusTypes = [
-    "Queen",
-    "Boss",
-    "Coquette",
-    "Supermodel",
-    "Siren",
-    "Lady",
-    "Feline",
-    "Ingenue",
-    "Vixen",
-    "Femme Fatale",
-  ];
+  const modusTypes = ["Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
   const [checked, setChecked] = useState(new Array(modusTypes.length).fill(false));
   function handleReturn() {
     setUser({
       ...user,
-      currentModusTypes: checked
-        .map((el, index) => {
-          if (el) return modusTypes[index];
-        })
+      currentModusTypes: checked.map((el, index) => {
+        if (el) return modusTypes[index];
+      }),
     });
     navigation.navigate("Home");
   }
 
   return (
     <SafeAreaView style={styles.filterContainer}>
-      {modusTypes.map((modusType, index) => {
+      <View style={styles.secondaryContainer}>
+      <FlatList
+        numColumns={3}
+        columnWrapperStyle={styles.column}
+        data={modusTypes}
+        renderItem={({ item, index }: any) => (
+          <View style={styles.checkboxContainerModus}>
+            <Checkbox
+              style={styles.checkbox}
+              value={checked[index]}
+              onValueChange={(newValue) => {
+                const newChecked = [...checked];
+                newChecked[index] = newValue;
+                setChecked(newChecked);
+              }}
+            />
+            <Text style={styles.checkboxText}>{item}</Text>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
+      {/* {modusTypes.map((modusType, index) => {
         return (
           <View style={styles.checkboxContainer} key={index}>
             <Text style={styles.checkboxText}>{modusType}</Text>
@@ -71,10 +81,11 @@ export function ModusTypeFilterScreen({ navigation }: any) {
             />
           </View>
         );
-      })}
+      })} */}
       <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
         <Text style={styles.filterButtonText}>Filter</Text>
       </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -100,20 +111,22 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
   function handleReturn() {
     setUser({
       ...user,
-      currentSeasonalColors: checked
-        .map((el, index) => {
-          if (el) return seasonalColors[index];
-        })
+      currentSeasonalColors: checked.map((el, index) => {
+        if (el) return seasonalColors[index];
+      }),
     });
     navigation.navigate("Home");
   }
 
   return (
     <SafeAreaView style={styles.filterContainer}>
-      {seasonalColors.map((seasonalColor, index) => {
-        return (
-          <View style={styles.checkboxContainer} key={index}>
-            <Text style={styles.checkboxText}>{seasonalColor}</Text>
+      <View style={styles.secondaryContainer}>
+      <FlatList
+        numColumns={2}
+        columnWrapperStyle={styles.column}
+        data={seasonalColors}
+        renderItem={({ item, index }: any) => (
+          <View style={styles.checkboxContainer}>
             <Checkbox
               style={styles.checkbox}
               value={checked[index]}
@@ -123,24 +136,48 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
                 setChecked(newChecked);
               }}
             />
+            <Text style={styles.checkboxText}>{item}</Text>
           </View>
-        );
-      })}
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
       <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
         <Text style={styles.filterButtonText}>Filter</Text>
       </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
+  secondaryContainer: {
+    alignItems: 'center',
+  },
+  column: {
+    flex: 1,
+  },
   checkboxContainer: {
     flexDirection: "row",
-    margin: 10,
+    marginVertical: 10,
+    paddingHorizontal: 30,
+    width: Dimensions.get('window').width / 2,
+    // justifyContent: "center",
+    alignItems: 'center',
+  },
+  checkboxContainerModus: {
+    flexDirection: "row",
+    marginVertical: 10,
+    paddingLeft: 30,
+    width: Dimensions.get('window').width / 3,
+    // justifyContent: "center",
+    alignItems: 'center',
   },
   checkboxText: {
+  },
+  checkbox: {
+    width: 15,
+    height:15,
     marginRight: 5,
   },
-  checkbox: {},
   container: {
     flexDirection: "row",
     backgroundColor: "white",
@@ -149,13 +186,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   filterContainer: {
-    padding: 20,
+    // padding: 20,
     flexWrap: "wrap",
-    flexDirection: "row",
     backgroundColor: "white",
     flex: 1,
     // alignItems: 'center',
-    justifyContent: "center",
+    // justifyContent: "center",
   },
   filterButton: {
     backgroundColor: "#F487D2",
@@ -166,15 +202,17 @@ const styles = StyleSheet.create({
   },
   filterCompleteButton: {
     backgroundColor: "#F487D2",
-    borderRadius: 100,
-    marginTop: 30,
-    margin: 10,
-    width: 150,
-    padding: 20,
+    padding: 10,
+    alignSelf: "center",
+    borderRadius: 10,
+    margin: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+    width: 210,
   },
   filterButtonText: {
-    color: "white",
     fontSize: 20,
+    color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },

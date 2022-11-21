@@ -31,11 +31,10 @@
     "ios": {
       "bundleIdentifier": "com.looksmax.app",
       "supportsTablet": true,
-      "_runtimeVersion": "46.0.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "9"
+      "buildNumber": "10"
     },
     "plugins": [
       [

@@ -101,9 +101,9 @@ export default function HomeScreen({ navigation }: any) {
         </SafeAreaView>
       ) : (
         <SafeAreaView style={styles.container}>
-          <View style={styles.title}>
+          {/* <View style={styles.title}>
             <Text style={styles.titleText}>LooksMax</Text>
-          </View>
+          </View> */}
           <View style={styles.filterContainer}>
             <View style={styles.filter}>
               <Text style={styles.filterText}>Filter by:</Text>
