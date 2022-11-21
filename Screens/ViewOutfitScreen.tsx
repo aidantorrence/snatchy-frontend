@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -24,15 +24,20 @@ import * as WebBrowser from "expo-web-browser";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
+// const voteMapping = {
+//   '0': 'unvoted',
+//   '1': 'upvoted',
+//   '-1': 'downvoted',
+// } as any;
+
 export default function ViewOutfitScreen({ navigation, route }: any) {
+  const user = useStore((state) => state.user);
   const [inputModalIsVisible, setInputModalIsVisible] = useState(false);
   const [modalValue, setModalValue] = useState("");
   const { id } = route.params;
-  const { data: outfit, isLoading } = useQuery(`listing-${id}`, () => fetchOutfit(id));
+  const { data: outfit, isLoading } = useQuery(`listing-${id}`, () => fetchOutfit(id, user?.uid));
   const [comment, setComment] = useState("");
-  const [currentVote, setCurrentVote] = useState('unvoted');
 
-  const user = useStore((state) => state.user);
   const isCurrentUserPost = user?.uid === outfit?.ownerId;
   const queryClient = useQueryClient();
   const { mutate, isMutationLoading }: any = useMutation(() => deleteOutfit({ id }), {
@@ -65,6 +70,11 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
       queryClient.invalidateQueries({queryKey: [`listing-${id}`]});
     },
   });
+
+  // useLayoutEffect (() => {
+  //   console.log('outfit?.postVote', outfit?.postVote.vote);
+  //   setCurrentVote(voteMapping[outfit?.postVote?.vote?.toString()])
+  // }, [outfit]);
 
   const handleProfilePress = (uid: any) => {
     navigation.navigate("ViewProfile", {
@@ -216,22 +226,16 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
     }
   };
 
-  const handleVote = (vote: string) => {
-    const mappings = { 
-      'unvoted': 0,
-      'upvoted': 1,
-      'downvoted': -1
-    } as any;
-
-    if (currentVote === 'unvoted') {
-      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings[vote] });
-      setCurrentVote(vote);
-    } else if (currentVote === vote) {
-      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings['unvoted'] });
-      setCurrentVote('unvoted');
+  const handleVote = (vote: number) => {
+    if (outfit?.postVote[0]?.vote === 0) {
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: vote });
+      // setCurrentVote(vote);
+    } else if (outfit?.postVote[0]?.vote === vote) {
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: 0 });
+      // setCurrentVote('unvoted');
     } else {
-      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings[vote] });
-      setCurrentVote(vote);
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: vote });
+      // setCurrentVote(vote);
     }
   };
 
@@ -274,12 +278,12 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
             <View style={styles.detailsContainer}>
               <View>
                 <View style={styles.votesContainer}>
-                  <TouchableOpacity onPress={() => handleVote('upvoted')}>
-                    {currentVote !== 'upvoted' ? <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Upvote_Focused.png")} />}
+                  <TouchableOpacity onPress={() => handleVote(1)}>
+                    {outfit?.postVote[0]?.vote !== 1 ? <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Upvote_Focused_Compressed.jpg")} />}
                   </TouchableOpacity>
                   <Text style={styles.votes}>{outfit.votes}</Text>
-                  <TouchableOpacity onPress={() => handleVote('downvoted')}>
-                    {currentVote !== 'downvoted' ? <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Downvote_Focused.png")} />}
+                  <TouchableOpacity onPress={() => handleVote(-1)}>
+                    {outfit?.postVote[0]?.vote !== -1 ? <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Downvote_Focused_Compressed.jpg")} />}
                   </TouchableOpacity>
                 </View>
               </View>
