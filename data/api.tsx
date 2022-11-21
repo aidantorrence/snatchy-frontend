@@ -12,9 +12,9 @@ export async function fetchOutfits(uid: string | undefined) {
   }
 }
 
-export async function fetchOutfit(id: number) {
+export async function fetchOutfit(id: number, uid: string) {
   try {
-    const { data } = await axios.get(`${API_URL}/outfit/${id}`);
+    const { data } = await axios.get(`${API_URL}/outfit/${id}`, { params: { uid } });
     return data;
   } catch (e) {
     console.log(`${API_URL}/outfit/${id} failed`, e);
@@ -136,6 +136,15 @@ export async function postUser(user: any) {
     return data;
   } catch (e) {
     console.log(`${API_URL}/user failed`, e);
+  }
+}
+
+export async function postVote(postVote: any) {
+  try {
+    const { data } = await axios.post(`${API_URL}/post-vote`, postVote);
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/post-vote failed`, e);
   }
 }
 

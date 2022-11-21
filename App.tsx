@@ -43,6 +43,8 @@ import QuizThickMaterialsScreen from "./Screens/QuizThickMaterialsScreen";
 import QuizSuccessScreen from "./Screens/QuizSuccessScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const queryClient = new QueryClient()
+
 Sentry.init({
   dsn: "https://c777f53f2cd94a8198526620d7d373fb@o1411142.ingest.sentry.io/4504101948948480",
   enableInExpoDevelopment: true,
@@ -107,7 +109,7 @@ export default function App({ navigation, route }: any) {
   // AsyncStorage.clear();
   const user = useAuthentication();
   return (
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="HomeTabs" options={{ headerTitle: "", title: "" }} component={HomeTabs} />

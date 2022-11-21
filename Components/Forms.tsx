@@ -66,8 +66,8 @@ export function InputForm({ formData, setFormData, focusedState, setFocusedState
           keyboardType={keyboardType}
           multiline={fieldTitles[field].multiline}
         />
-        {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
       </View>
+        {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
     </View>
   );
 }
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: "red",
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: "bold",
   },
   detailsPlaceholder: {

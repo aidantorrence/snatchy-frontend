@@ -17,28 +17,13 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { fetchUser, postOutfit } from "../data/api";
+import { fetchOutfits, fetchUser, postOutfit } from "../data/api";
 import { DropDownForm, InputForm, MultiDropDownForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 
 const modalOptions = {
-  kibbeTypes: [
-    "",
-    "Dramatic",
-    "Soft Dramatic",
-    "Flamboyant Natural",
-    "Soft Natural",
-    "Dramatic Classic",
-    "Soft Classic",
-    "Flamboyant Gamine",
-    "Soft Gamine",
-    "Theatrical Romantic",
-    "Romantic",
-    // "Dramatic Romantic",
-    // "Soft Romantic",
-    // "Dramatic Gamine",
-  ],
+  kibbeTypes: ["", "Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"],
   occasions: [
     "",
     "Athletic",
@@ -82,11 +67,7 @@ const modalOptions = {
     "True Winter",
     "Bright Winter",
   ],
-  postReason: [
-    "",
-    "Inspiration",
-    "Feedback",
-  ],
+  postReason: ["", "Inspiration", "Feedback"],
 } as any;
 
 const initialFormState = {
@@ -97,14 +78,14 @@ const initialFormState = {
   aesthetic: "",
   seasonalColors: [],
   purchaseLink: "",
-  postReason: '',
+  postReason: "",
 };
 export default function PostOutfitScreen({ navigation }: any) {
   const user = useStore((state) => state.user);
   const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
   });
-  const [formData, setFormData] = useState(initialFormState) as any;
+  const [formData, setFormData] = useState(JSON.parse(JSON.stringify(initialFormState))) as any;
   const [error, setError] = useState({
     images: "",
     kibbeTypes: "",
@@ -113,12 +94,13 @@ export default function PostOutfitScreen({ navigation }: any) {
     aesthetic: "",
     seasonalColors: "",
     purchaseLink: "",
-    postReasons: '',
+    postReasons: "",
   }) as any;
   const [optionsModalIsVisible, setOptionsModalIsVisible] = useState(false);
   const [confirmModalIsVisible, setConfirmModalIsVisible] = useState(false);
   const [currentModal, setCurrentModal] = useState("");
   const [modalValue, setModalValue] = useState("");
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [focusedState, setFocusedState] = useState({
     description: false,
     purchaseLink: false,
@@ -127,13 +109,18 @@ export default function PostOutfitScreen({ navigation }: any) {
   const { mutate, isMutationLoading }: any = useMutation((data) => postOutfit(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
-      queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({ queryKey: ["outfits"] });
     },
   });
 
-  useEffect( () => {
+  // const {
+  //   data: outfitsData,
+  //   refetch,
+  // } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
+
+  useEffect(() => {
     launchPhotosAlert();
-  }, [])
+  }, []);
 
   const validateForm = () => {
     let isValid = true;
@@ -142,8 +129,8 @@ export default function PostOutfitScreen({ navigation }: any) {
       isValid = false;
     }
     for (const key in formData) {
-      if (["purchaseLink"].includes(key)) continue;
-      if (formData[key] === "") {
+      if (["purchaseLink", "kibbeTypes", "seasonalColors", "aesthetic", "occasions"].includes(key)) continue;
+      if ((Array.isArray(formData[key]) && formData[key]?.length === 0) || formData[key] === "") {
         setError((err: any) => ({ ...err, [key]: "This field is required" }));
         isValid = false;
       }
@@ -157,13 +144,15 @@ export default function PostOutfitScreen({ navigation }: any) {
   };
 
   const outfit = {
-    images: formData.images,
-    kibbeTypes: formData.kibbeTypes,
-    description: formData.description,
-    occasions: formData.occasions,
-    aesthetic: formData.aesthetic,
-    seasonalColors: formData.seasonalColors,
-    purchaseLink: formData.purchaseLink,
+    ...formData,
+    // images: formData.images,
+    // kibbeTypes: formData.kibbeTypes,
+    // description: formData.description,
+    // occasions: formData.occasions,
+    // aesthetic: formData.aesthetic,
+    // seasonalColors: formData.seasonalColors,
+    // purchaseLink: formData.purchaseLink,
+    // content: formData.content,
     ownerId: user?.uid,
   };
 
@@ -230,35 +219,41 @@ export default function PostOutfitScreen({ navigation }: any) {
   const pickImage = async (takePhoto: boolean, index: number | undefined) => {
     // clear form error
     setError({ ...error, images: "" });
+    setPhotoLoading(true);
 
-    let result: any;
+    try {
+      let result: any;
 
-    if (takePhoto) {
-      // take a photo
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (takePhoto) {
+        // take a photo
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-      // if permission not granted, return
-      if (status !== "granted") return;
+        // if permission not granted, return
+        if (status !== "granted") return;
 
-      result = await ImagePicker.launchCameraAsync();
-    } else {
-      // No permissions request is necessary for launching the image library
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 4],
-        quality: 0.1,
-      });
-    }
-    if (!result.cancelled) {
-      const url = await uploadImageAsync(result.uri);
-      if (index !== undefined) {
-        formData.images[index] = url;
-        setFormData({ ...formData, images: [...formData.images] });
+        result = await ImagePicker.launchCameraAsync();
       } else {
-        setFormData({ ...formData, images: [...formData.images, url] });
+        // No permissions request is necessary for launching the image library
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          allowsEditing: true,
+          aspect: [4, 4],
+          quality: 0.1,
+        });
       }
+      if (!result.cancelled) {
+        const url = await uploadImageAsync(result.uri);
+        if (index !== undefined) {
+          formData.images[index] = url;
+          setFormData({ ...formData, images: [...formData.images] });
+        } else {
+          setFormData({ ...formData, images: [...formData.images, url] });
+        }
+      }
+    } catch (e) {
+      setPhotoLoading(false);
     }
+    setPhotoLoading(false);
   };
 
   const openOptionsModal = (val: string) => {
@@ -269,13 +264,10 @@ export default function PostOutfitScreen({ navigation }: any) {
     setModalValue(val);
   };
   const handlePost = () => {
+    if (!validateForm()) return;
     mutate(outfit);
-    setFormData(initialFormState);
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      navigation.navigate("Profile");
-    }
+    setFormData(JSON.parse(JSON.stringify(initialFormState)));
+    navigation.navigate("Home");
   };
   const handleOptionsModalClose = () => {
     if (["occasions", "kibbeTypes", "seasonalColors"].includes(currentModal)) {
@@ -304,14 +296,16 @@ export default function PostOutfitScreen({ navigation }: any) {
                   <Image source={{ uri: formData.images[0] }} style={styles.uploadedImage} />
                   <Text style={styles.imageText}>Replace Photo</Text>
                 </>
+              ) : photoLoading ? (
+                <ActivityIndicator size="large" />
               ) : (
                 <View style={styles.imageContainer}>
                   <Image source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
                   <Text style={styles.placeholderImageText}>Upload Outfit</Text>
+                  {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
                 </View>
               )}
             </TouchableOpacity>
-            {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
           </View>
           <InputForm
             formData={formData}
@@ -408,7 +402,6 @@ const styles = StyleSheet.create({
   },
   placeholderImageText: {
     fontSize: 10,
-    paddingBottom: 7,
   },
   imageText: {
     fontSize: 15,
@@ -444,7 +437,7 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     marginBottom: 5,
-    opacity: .7,
+    opacity: 0.7,
   },
   dropDownCaret: {
     width: 20,
@@ -473,7 +466,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: "red",
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: "bold",
   },
   detailsContainer: {

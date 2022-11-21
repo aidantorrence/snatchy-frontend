@@ -1,28 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from "react-native";
+import {
+  Image,
+  View,
+  Text,
+  SafeAreaView,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import { useQuery } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
-import { QueryCache } from "react-query";
 import { fetchOutfits } from "../data/api";
-
-const kibbeTypes = {
-    D: "Dramatic",
-    DC: "Dramatic Classic",
-    FG: "Flamboyant Gamine",
-    FN: "Flamboyant Natural",
-    R: "Romantic",
-    SC: "Soft Classic",
-    SD: "Soft Dramatic",
-    SG: "Soft Gamine",
-    SN: "Soft Natural",
-    TR: "Theatrical Romantic",
-  } as any;
+import { modusTypes } from "./QuizSuccessScreen";
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
   const user = useStore((state) => state.user);
   const {
-    isLoading: isLoadingOutfits,
+    isFetching: isFetchingOutfits,
     data: outfitsData,
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
@@ -36,18 +33,20 @@ export default function HomeScreen({ navigation }: any) {
 
   let outfits = outfitsData?.filter((outfit: any) => {
     if (!user?.currentModusTypes?.length) {
-      return (outfit?.kibbeTypes || []).includes(kibbeTypes[user?.modusType])
+      return (outfit?.kibbeTypes || []).includes(modusTypes[user?.modusType]);
     } else {
-      return (outfit?.kibbeTypes || []).some((item: any) => (user?.currentModusTypes || []).includes(item))
+      return (outfit?.kibbeTypes || []).some((item: any) => (user?.currentModusTypes || []).includes(item));
     }
   });
 
   outfits = outfits?.filter((outfit: any) => {
     if (!user?.currentSeasonalColors?.length) {
-      return outfits
+      return outfits;
     } else {
-      return (outfit?.seasonalColors || []).some((item: any) => (user?.currentSeasonalColors || []).includes(item))
+      return (outfit?.seasonalColors || []).some((item: any) => (user?.currentSeasonalColors || []).includes(item));
     }
+  }).sort((a: any, b: any) => {
+    return new Date(b?.createdAt).getTime() - new Date(a?.createdAt).getTime() || ((b?.upvotes - b?.downvotes) - (a?.upvotes - a?.downvotes));
   });
 
   function Item({ item }: any) {
@@ -57,18 +56,22 @@ export default function HomeScreen({ navigation }: any) {
           <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
           <Text style={styles.ownerName}>{item.owner.firstName + " " + item.owner.lastName}</Text>
         </View> */}
-          <View style={{flexDirection: 'row', marginLeft: 5, marginBottom: 5, alignItems: 'center'}}>
-          { item?.owner?.userImage ? <Image source={{ uri: item.owner.userImage }} style={styles.userImage} /> : 
-          <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} /> }
+        <View style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}>
+          {item?.owner?.userImage ? (
+            <Image source={{ uri: item.owner.userImage }} style={styles.userImage} />
+          ) : (
+            <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
+          )}
           <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
-          {item.owner.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} /> : null}
-          </View> 
+          {item.owner.userType === "EXPERT" ? (
+            <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} />
+          ) : null}
+        </View>
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
           <Image source={{ uri: item.images[0] }} style={styles.image} />
         </TouchableOpacity>
         <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{item.description}</Text>
-          
         </View>
       </>
     );
@@ -92,30 +95,30 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <>
-      {isLoadingOutfits ? (
-    <SafeAreaView style={styles.screenAreaView}>
-       <ActivityIndicator size="large" />
-    </SafeAreaView>
+      {isFetchingOutfits ? (
+        <SafeAreaView style={styles.screenAreaView}>
+          <ActivityIndicator size="large" />
+        </SafeAreaView>
       ) : (
         <SafeAreaView style={styles.container}>
           <View style={styles.title}>
             <Text style={styles.titleText}>LooksMax</Text>
           </View>
           <View style={styles.filterContainer}>
-          <View style={styles.filter}>
-            <Text style={styles.filterText}>Filter by:</Text>
-          </View>
-          <View style={styles.filterType}>
-            <TouchableOpacity onPress={handleModusTypePress}>
-            <Text style={styles.filterTypeText}>MODUS TYPE</Text>
+            <View style={styles.filter}>
+              <Text style={styles.filterText}>Filter by:</Text>
+            </View>
+            <View style={styles.filterType}>
+              <TouchableOpacity onPress={handleModusTypePress}>
+                <Text style={styles.filterTypeText}>MODUS TYPE</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleSeasonalColorPress}>
-            <Text style={styles.filterTypeText}>SEASONAL COLOR</Text>
-                </TouchableOpacity>
-          </View>
-          <View style={styles.filter}>
-            <Text style={styles.filterPlaceholder}>Filter by:</Text>
-          </View>
+                <Text style={styles.filterTypeText}>SEASONAL COLOR</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.filter}>
+              <Text style={styles.filterPlaceholder}>Filter by:</Text>
+            </View>
           </View>
           {/* <TouchableOpacity 
             onPress={handleFilterPress} 
@@ -142,20 +145,20 @@ export default function HomeScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 5,
     marginBottom: 10,
-    borderColor: 'lightgray',
-    borderBottomWidth: .25,
-    borderTopWidth: .25,
+    borderColor: "lightgray",
+    borderBottomWidth: 0.25,
+    borderTopWidth: 0.25,
     paddingVertical: 6,
   },
   filter: {
     flex: 1,
   },
   filterType: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   filterText: {
     fontSize: 11,
@@ -166,11 +169,11 @@ const styles = StyleSheet.create({
   },
   filterPlaceholder: {
     fontSize: 11,
-    color: 'white',
+    color: "white",
   },
   screenAreaView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     alignItems: "center",
   },
   userInfo: {
@@ -220,7 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: "blue",
   },
   tagsText: {
-    color: 'white',
+    color: "white",
     fontSize: 10,
     fontWeight: "bold",
     marginRight: 5,
@@ -250,7 +253,7 @@ const styles = StyleSheet.create({
   },
   item: {
     alignItems: "center",
-    marginRight: Dimensions.get('window').width * 0.02,
+    marginRight: Dimensions.get("window").width * 0.02,
     // paddingBottom: 20,
     // paddingLeft: 20,
     // paddingRight: 20,
@@ -262,11 +265,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     marginTop: 2,
     fontSize: 11,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subTitle: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   conditionAndSize: {
     fontSize: 16,
@@ -293,9 +296,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    width: Dimensions.get('window').width * 0.49,
-    height: Dimensions.get('window').height * 0.35,
-    resizeMode:"cover"
+    width: Dimensions.get("window").width * 0.49,
+    height: Dimensions.get("window").height * 0.35,
+    resizeMode: "cover",
   },
   sellerName: {
     fontSize: 20,
@@ -313,7 +316,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
-    backgroundColor: '#1DA1F2'
+    backgroundColor: "#1DA1F2",
   },
   kibbeTypes: {
     flexDirection: "row",
@@ -322,7 +325,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
-    backgroundColor: '#F487D2'
+    backgroundColor: "#F487D2",
   },
   aesthetic: {
     flexDirection: "row",
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
-    backgroundColor: '#555555'
+    backgroundColor: "#555555",
   },
   occasions: {
     flexDirection: "row",
@@ -340,6 +343,6 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
-    backgroundColor: 'lightgray'
+    backgroundColor: "lightgray",
   },
 });

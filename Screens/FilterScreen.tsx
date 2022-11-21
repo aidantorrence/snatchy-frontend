@@ -29,16 +29,16 @@ export default function FilterScreen({ navigation }: any) {
 
 export function ModusTypeFilterScreen({ navigation }: any) {
   const modusTypes = [
-    "Dramatic",
-    "Soft Dramatic",
-    "Flamboyant Natural",
-    "Soft Natural",
-    "Dramatic Classic",
-    "Soft Classic",
-    "Flamboyant Gamine",
-    "Soft Gamine",
-    "Theatrical Romantic",
-    "Romantic",
+    "Queen",
+    "Boss",
+    "Coquette",
+    "Supermodel",
+    "Siren",
+    "Lady",
+    "Feline",
+    "Ingenue",
+    "Vixen",
+    "Femme Fatale",
   ];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
@@ -51,7 +51,7 @@ export function ModusTypeFilterScreen({ navigation }: any) {
           if (el) return modusTypes[index];
         })
     });
-    navigation.navigate("HomeTabs");
+    navigation.navigate("Home");
   }
 
   return (
@@ -105,7 +105,7 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
           if (el) return seasonalColors[index];
         })
     });
-    navigation.navigate("HomeTabs");
+    navigation.navigate("Home");
   }
 
   return (

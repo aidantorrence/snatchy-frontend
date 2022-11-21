@@ -17,7 +17,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Swiper from "react-native-swiper";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { deleteOutfit, fetchOutfit, fetchUser, postComment, postFlagContent, updateOutfit } from "../data/api";
+import { deleteOutfit, fetchOutfit, fetchUser, postComment, postFlagContent, postVote, updateOutfit } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import { modusTypes } from "./QuizSuccessScreen";
 import * as WebBrowser from "expo-web-browser";
@@ -30,6 +30,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
   const { id } = route.params;
   const { data: outfit, isLoading } = useQuery(`listing-${id}`, () => fetchOutfit(id));
   const [comment, setComment] = useState("");
+  const [currentVote, setCurrentVote] = useState('unvoted');
 
   const user = useStore((state) => state.user);
   const isCurrentUserPost = user?.uid === outfit?.ownerId;
@@ -49,6 +50,19 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
   const postCommentMutation: any = useMutation((data) => postComment(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
+    },
+  });
+
+  const postVoteMutation: any = useMutation((data) => postVote(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({queryKey: [`listing-${id}`]});
+    },
+  });
+  const updatePostMutation: any = useMutation((data) => updateOutfit(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({queryKey: [`listing-${id}`]});
     },
   });
 
@@ -202,6 +216,25 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
     }
   };
 
+  const handleVote = (vote: string) => {
+    const mappings = { 
+      'unvoted': 0,
+      'upvoted': 1,
+      'downvoted': -1
+    } as any;
+
+    if (currentVote === 'unvoted') {
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings[vote] });
+      setCurrentVote(vote);
+    } else if (currentVote === vote) {
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings['unvoted'] });
+      setCurrentVote('unvoted');
+    } else {
+      postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: mappings[vote] });
+      setCurrentVote(vote);
+    }
+  };
+
   return (
     !isLoading && (
       <>
@@ -210,7 +243,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
             <TouchableOpacity onPress={() => handleProfilePress(outfit.ownerId)} style={styles.userContainer}>
               <View style={styles.userInfo}>
                 {outfit.owner.userImage ? (
-                  <Image source={{ uri: outfit.owner.userImage || defaultProfile }} style={styles.userImage} />
+                  <Image source={{ uri: outfit.owner.userImage }} style={styles.userImage} />
                 ) : (
                   <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
                 )}
@@ -241,44 +274,34 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
             <View style={styles.detailsContainer}>
               <View>
                 <View style={styles.votesContainer}>
-                  <TouchableOpacity>
-                    <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} />
+                  <TouchableOpacity onPress={() => handleVote('upvoted')}>
+                    {currentVote !== 'upvoted' ? <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Upvote_Focused.png")} />}
                   </TouchableOpacity>
-                  <Text style={styles.votes}>{outfit.upvotes - outfit.downvotes}</Text>
-                  <TouchableOpacity>
-                    <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} />
+                  <Text style={styles.votes}>{outfit.votes}</Text>
+                  <TouchableOpacity onPress={() => handleVote('downvoted')}>
+                    {currentVote !== 'downvoted' ? <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Downvote_Focused.png")} />}
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={handleShoppingBagClick} style={{ alignItems: "center", marginTop: 10 }}>
-                  <Image source={require("../assets/Shopping_Bag_Logo.png")} style={styles.shoppingBagImage} />
-                </TouchableOpacity>
               </View>
               <View style={styles.tagsContainer}>
-                {outfit.kibbeTypes.map((item: any, index: number) => {
+                {outfit.kibbeTypes.length ? outfit.kibbeTypes.map((item: any, index: number) => {
                   return (
                     <View key={index} style={[styles.tags, styles.kibbeTypes]}>
                       <Text style={styles.tagsText}>{item}</Text>
                     </View>
                   );
-                })}
-                {outfit.occasions.map((item: any, index: number) => {
-                  return (
-                    <View key={index} style={[styles.tags, styles.occasions]}>
-                      <Text style={styles.tagsText}>{item}</Text>
-                    </View>
-                  );
-                })}
-                <View style={[styles.tags, styles.aesthetic]}>
-                  <Text style={styles.tagsText}>{outfit.aesthetic}</Text>
-                </View>
-                {outfit.seasonalColors.map((item: any, index: number) => {
+                }) : null}
+                {outfit.seasonalColors.length ? outfit.seasonalColors.map((item: any, index: number) => {
                   return (
                     <View key={index} style={[styles.tags, styles.seasonalColors]}>
                       <Text style={styles.tagsText}>{item}</Text>
                     </View>
                   );
-                })}
+                }) : null}
               </View>
+                <TouchableOpacity onPress={handleShoppingBagClick} style={{ alignItems: "center", marginLeft: 5, marginRight: 10 }}>
+                  <Image source={require("../assets/Shopping_Bag_Logo.png")} style={styles.shoppingBagImage} />
+                </TouchableOpacity>
             </View>
             { outfit?.content ? <View style={styles.postContainer}>
               <View style={styles.postHeader}>
@@ -294,7 +317,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                   <View key={index} style={styles.commentContainer}>
                     <View style={styles.commentHeader}>
                       {comment?.owner?.userImage ? (
-                        <Image source={{ uri: comment?.owner?.userImage || defaultProfile }} style={styles.commentUserImage} />
+                        <Image source={{ uri: comment?.owner?.userImage }} style={styles.commentUserImage} />
                       ) : (
                         <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.commentUserImage} />
                       )}
@@ -387,8 +410,8 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
 
 const styles = StyleSheet.create({
   shoppingBagImage: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
   },
   optionsModalContainer: {
     flex: 1,

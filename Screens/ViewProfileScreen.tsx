@@ -6,7 +6,20 @@ import {
   signOut,
 } from "firebase/auth/react-native";
 import { useState } from "react";
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Image,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Dimensions,
+  FlatList,
+} from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { blockUser, deleteUser, fetchUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
@@ -29,9 +42,6 @@ export default function ViewProfileScreen({ navigation, route }: any) {
     isLoading = isCurrentUserLoading;
   }
   const isCurrentUser = !ownerId || user?.uid === ownerId;
-  console.log("_______________________________________________");
-  console.log("ownerData", ownerData);
-  console.log("_______________________________________________");
 
   const mutateBlockUser: any = useMutation(() => blockUser(user?.uid, ownerId), {
     onSuccess: () => {
@@ -66,8 +76,8 @@ export default function ViewProfileScreen({ navigation, route }: any) {
 
   const handleBlockUser = () => {
     mutateBlockUser.mutate();
-    navigation.navigate('HomeTabs')
-  }
+    navigation.navigate("HomeTabs");
+  };
 
   const handleBlock = () => {
     Alert.alert("Are you sure you want to block this user?", "You will no longer see posts/messages from this user", [
@@ -97,9 +107,9 @@ export default function ViewProfileScreen({ navigation, route }: any) {
   return (
     <>
       {isLoading ? (
-    <SafeAreaView style={styles.screenAreaView}>
-       <ActivityIndicator size="large" />
-    </SafeAreaView>
+        <SafeAreaView style={styles.screenAreaView}>
+          <ActivityIndicator size="large" />
+        </SafeAreaView>
       ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
           {isCurrentUser ? (
@@ -123,26 +133,44 @@ export default function ViewProfileScreen({ navigation, route }: any) {
               style={{ width: 104, height: 104, borderRadius: 100 }}
             />
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 5, alignSelf: "center" }}>
+          <View style={{ flexDirection: "row", marginTop: 5, alignSelf: "center" }}>
             <Text style={styles.sellerName}>{userData?.firstName + " " + userData?.lastName}</Text>
-            { userData?.userType === 'EXPERT' ? <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} /> : null }
+            {userData?.userType === "EXPERT" ? (
+              <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} />
+            ) : null}
           </View>
-          <View style={{ flexDirection: 'row', alignSelf: "center", marginBottom: 20, }}>
+          <View style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}>
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
           </View>
           <View>
-            {userData?.outfits?.length ? <>
-            <ScrollView contentContainerStyle={styles.userImagesContainer}>
-              {userData?.outfits.map((outfit: any, index: number) => (
-                <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
-                  <Image source={{ uri: outfit.images[0] }} style={styles.userImages} />
+            <FlatList
+              horizontal={false}
+              numColumns={3}
+              columnWrapperStyle={styles.column}
+              data={userData?.outfits}
+              renderItem={({ item }: any) => (
+                <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
+                  <Image source={{ uri: item.images[0] }} style={styles.userImages} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-            </> : <View style={{alignItems: 'center'}}>
-                  <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
-                  <Text style={{textAlign: 'center', fontSize: 20}}>No Outfits Yet!</Text>
-                </View>}
+              )}
+              keyExtractor={(item) => item.id}
+            />
+            {/* {userData?.outfits?.length ? (
+              <>
+                <ScrollView contentContainerStyle={styles.userImagesContainer}>
+                  {userData?.outfits.map((outfit: any, index: number) => (
+                    <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
+                      <Image source={{ uri: outfit.images[0] }} style={styles.userImages} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <View style={{ alignItems: "center" }}>
+                <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
+                <Text style={{ textAlign: "center", fontSize: 20 }}>No Outfits Yet!</Text>
+              </View>
+            )} */}
           </View>
         </SafeAreaView>
       )}
@@ -153,7 +181,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   screenAreaView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     alignItems: "center",
   },
   userImage: {
@@ -184,11 +212,15 @@ const styles = StyleSheet.create({
   userImagesContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   userImages: {
-    width: Dimensions.get('window').width * 0.31,
-    height: Dimensions.get('window').width * 0.31,
+    width: Dimensions.get("window").width * 0.315,
+    height: Dimensions.get("window").width * 0.315,
+  },
+  imagesContainer: {
+    marginRight: Dimensions.get("window").width * 0.03,
+    marginBottom: Dimensions.get("window").width * 0.03,
   },
   noOutfitsImage: {
     width: 200,

@@ -5,7 +5,6 @@ import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getReactNativePersistence } from "firebase/auth/react-native";
-console.log(Constants.expoConfig?.extra)
 const firebaseApp = !getApps().length ? initializeApp(Constants.expoConfig?.extra as any) : getApp();
 
 const auth = initializeAuth(firebaseApp as FirebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
