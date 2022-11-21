@@ -14,6 +14,7 @@ import { useQuery } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { fetchOutfits } from "../data/api";
 import { modusTypes } from "./QuizSuccessScreen";
+import { FlashList } from "@shopify/flash-list";
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
@@ -125,10 +126,10 @@ export default function HomeScreen({ navigation }: any) {
             style={styles.filterButton}>
             <Image source={require("../assets/Filter_Logo.png")} style={styles.filterLogo} />
           </TouchableOpacity> */}
-          <FlatList
+          <FlashList
             horizontal={false}
             numColumns={2}
-            columnWrapperStyle={styles.column}
+            estimatedItemSize={8}
             data={outfits}
             renderItem={({ item }: any) => (
               <View style={styles.itemContainer}>
@@ -175,6 +176,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: 'white',
   },
   userInfo: {
     flexDirection: "row",
@@ -245,7 +247,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   column: {
-    width: "50%",
+    // width: "50%",
   },
   container: {
     flex: 1,

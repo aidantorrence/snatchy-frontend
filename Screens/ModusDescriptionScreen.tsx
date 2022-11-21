@@ -31,6 +31,19 @@ export const modusTypes = {
   TR: "Femme Fatale",
 } as any;
 
+export const modusTypesReverse = {
+  Queen: "D",
+  Boss: "DC",
+  Coquette: "FG",
+  Supermodel: "FN",
+  Siren: "R",
+  Lady: "SC",
+  Feline: "SD",
+  Ingenue: "SG",
+  Vixen: "SN",
+  "Femme Fatale": "TR",
+} as any;
+
 const celebrities = {
   Queen: [
     "Zendaya",
@@ -295,7 +308,7 @@ export default function ModusDescriptionScreen({ navigation, route, refetch }: a
           <View>
             <Text style={styles.secondaryHeaderText}>Celebrities</Text>
             {celebrities[modusTypes[modusType]]?.map((celebrity: any, index: any) => (
-              <Text key={index} >{celebrity}</Text>
+              <Text style={styles.celebrityText} key={index} >{celebrity}</Text>
             ))}
           </View>
         </View>
@@ -304,8 +317,12 @@ export default function ModusDescriptionScreen({ navigation, route, refetch }: a
   );
 }
 const styles = StyleSheet.create({
+  celebrityText: {
+    textAlign: 'center',
+  },
   subHeaderText: {
     fontWeight: "bold",
+    textAlign: 'center',
     fontSize: 16,
     textDecorationLine: "underline",
     marginBottom: 5,
@@ -317,12 +334,13 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     width: Dimensions.get("window").width - 20,
     marginBottom: 5,
+    textAlign: 'center',
   },
   descriptionText: {
     marginHorizontal: 10,
     marginBottom: 10,
     fontSize: 14,
-    textAlign: "auto",
+    textAlign: 'center',
   },
   image: {
     width: Dimensions.get("window").width,
@@ -333,6 +351,8 @@ const styles = StyleSheet.create({
     fontSize: 25,
     marginTop: 5,
     fontWeight: "bold",
+    // textDecorationLine: "underline",
+    marginBottom: 10,
   },
   introText: {
     fontSize: 30,

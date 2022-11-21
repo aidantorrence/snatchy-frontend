@@ -21,6 +21,7 @@ import { deleteOutfit, fetchOutfit, fetchUser, postComment, postFlagContent, pos
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import { modusTypes } from "./QuizSuccessScreen";
 import * as WebBrowser from "expo-web-browser";
+import { modusTypesReverse } from "./ModusDescriptionScreen";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
@@ -290,9 +291,9 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               <View style={styles.tagsContainer}>
                 {outfit.kibbeTypes.length ? outfit.kibbeTypes.map((item: any, index: number) => {
                   return (
-                    <View key={index} style={[styles.tags, styles.kibbeTypes]}>
+                    <TouchableOpacity onPress={() => navigation.navigate('ModusDescription', { modusType: modusTypesReverse[item] })} key={index} style={[styles.tags, styles.kibbeTypes]}>
                       <Text style={styles.tagsText}>{item}</Text>
-                    </View>
+                    </TouchableOpacity>
                   );
                 }) : null}
                 {outfit.seasonalColors.length ? outfit.seasonalColors.map((item: any, index: number) => {
@@ -761,6 +762,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     paddingBottom: 7,
+    textAlign: 'center',
   },
   titleContainer: {
     paddingTop: 5,

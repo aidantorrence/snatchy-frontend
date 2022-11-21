@@ -6,7 +6,7 @@
     "version": "2.0.0",
     "orientation": "portrait",
     "scheme": "myapp",
-    "icon": "./assets/LooksMax_Favicon_2.png",
+    "icon": "./assets/LooksMax_Favicon_3.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/LooksMax_Logo.png",
@@ -34,7 +34,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "10"
+      "buildNumber": "11"
     },
     "plugins": [
       [
