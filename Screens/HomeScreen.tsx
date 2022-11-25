@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }: any) {
 
   let outfits = outfitsData?.filter((outfit: any) => {
     if (!user?.currentModusTypes?.length) {
-      return (outfit?.kibbeTypes || []).includes(modusTypes[user?.modusType]);
+      return !outfit?.kibbeTypes.length || (outfit?.kibbeTypes || []).includes(modusTypes[user?.modusType]);
     } else {
       return (outfit?.kibbeTypes || []).some((item: any) => (user?.currentModusTypes || []).includes(item));
     }

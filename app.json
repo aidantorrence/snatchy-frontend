@@ -34,11 +34,19 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "11"
+      "buildNumber": "12"
     },
     "plugins": [
       [
         "sentry-expo"
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
       ]
     ],
     "hooks": {

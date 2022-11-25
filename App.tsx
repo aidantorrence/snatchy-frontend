@@ -6,7 +6,7 @@ import { icons } from "./utils/icons";
 import EditProfileScreen from "./Screens/EditProfileScreen";
 import ViewProfileScreen from "./Screens/ViewProfileScreen";
 import EditListingScreen from "./Screens/EditListingScreen";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useRef } from "react";
 import HomeScreen from "./Screens/HomeScreen";
 import { QueryClient, QueryClientProvider, useQuery } from "react-query";
 import SignInScreen from "./Screens/SignInScreen";
@@ -48,6 +48,7 @@ import QuizThickMaterialsScreen from "./Screens/QuizThickMaterialsScreen";
 import QuizSuccessScreen from "./Screens/QuizSuccessScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModusDescriptionScreen from "./Screens/ModusDescriptionScreen";
+import analytics from '@react-native-firebase/analytics';
 
 const queryClient = new QueryClient();
 
@@ -112,11 +113,29 @@ function TradeScreenStackNavigation() {
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation, route }: any) {
-  // AsyncStorage.clear();
+  const routeNameRef = useRef();
+  const navigationRef = useRef() as any;
   const user = useAuthentication();
   return (
     <QueryClientProvider client={queryClient}>
-      <NavigationContainer>
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={() => {
+          routeNameRef.current = navigationRef?.current?.getCurrentRoute()?.name;
+        }}
+        onStateChange={async () => {
+          const previousRouteName = routeNameRef.current;
+          const currentRouteName = navigationRef?.current?.getCurrentRoute()?.name;
+  
+          if (previousRouteName !== currentRouteName) {
+            await analytics().logScreenView({
+              screen_name: currentRouteName,
+              screen_class: currentRouteName,
+            });
+          }
+          routeNameRef.current = currentRouteName;
+        }}
+      >
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
