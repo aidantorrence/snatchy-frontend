@@ -4,11 +4,13 @@ import * as ImagePicker from "expo-image-picker";
 import { StyleSheet, Text, View, TextInput, Button, SafeAreaView, TouchableOpacity, Image, Alert } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import Checkbox from "expo-checkbox";
+import auth from "@react-native-firebase/auth";
 
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useMutation, useQueryClient } from "react-query";
 import { postUser } from "../data/api";
 import uploadImageAsync from "../utils/firebase/uploadImage";
+import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
 
 const initialFormState = {
   userImage: "",
@@ -18,6 +20,7 @@ const initialFormState = {
   password: "",
 };
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
+  const firebaseAuth = auth();
   const [formData, setFormData] = useState(initialFormState) as any;
   const [value, setValue] = useState({
     email: "",
@@ -34,8 +37,6 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       queryClient.invalidateQueries("userOffers");
     },
   });
-
-  const auth = getAuth();
 
   async function signUp() {
     if (formData.firstName === "" || formData.lastName === "") {
@@ -61,12 +62,13 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
     }
 
     try {
-      const { user } = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const { user } = await firebaseAuth.createUserWithEmailAndPassword(formData.email, formData.password);
       mutation.mutate({
         uid: user.uid,
         ...formData,
         password: undefined,
       });
+      analytics().logSignUp({ method: "email" });
       // navigation.goBack();
       // navigation.navigate(route.name);
       navigation.navigate("HomeTabs", {
@@ -98,6 +100,10 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         text: "Select from Camera Roll",
         onPress: () => pickImage(false),
       },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
     ]);
   };
   const pickImage = async (takePhoto: boolean) => {
@@ -114,6 +120,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       if (status !== "granted") return;
 
       result = await ImagePicker.launchCameraAsync();
+      analytics().logEvent("take_profile_picture");
     } else {
       // No permissions request is necessary for launching the image library
       result = await ImagePicker.launchImageLibraryAsync({
@@ -122,6 +129,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         aspect: [4, 4],
         quality: 0.1,
       });
+      analytics().logEvent("select_profile_picture");
     }
 
     if (!result?.cancelled) {
@@ -129,6 +137,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         formData.userImage = url;
         setFormData({ ...formData });
       });
+      analytics().logEvent("upload_profile_picture");
     }
   };
 
@@ -143,59 +152,66 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         <Text style={styles.titleText}>LooksMax</Text>
       </View>
       <View style={styles.container}>
-      {/* <Text style={styles.title}>GET STARTED</Text> */}
-      <TouchableOpacity style={styles.imageContainer} onPress={launchPhotosAlert}>
-        <Image
-          source={formData.userImage ? { uri: formData.userImage } : require("../assets/Default_Profile.png")}
-          style={styles.images}
-        />
-      </TouchableOpacity>
-      <Text style={styles.profile}>Add Profile Photo</Text>
-      <View style={styles.controls}>
-        <TextInput
-          placeholder="First Name"
-          style={styles.control}
-          value={formData.firstName}
-          onChangeText={(text: string) => setFormData({ ...formData, firstName: text })}
-        />
-        <TextInput
-          placeholder="Last Name"
-          style={styles.control}
-          value={formData.lastName}
-          onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
-        />
-        <TextInput
-          placeholder="Email"
-          style={styles.control}
-          value={formData.email}
-          onChangeText={(text: string) => setFormData({ ...formData, email: text })}
-        />
+        {/* <Text style={styles.title}>GET STARTED</Text> */}
+        <TouchableOpacity style={styles.imageContainer} onPress={launchPhotosAlert}>
+          <FastImage
+            source={formData.userImage ? { uri: formData.userImage } : require("../assets/Default_Profile.png")}
+            style={styles.images}
+          />
+        </TouchableOpacity>
+        <Text style={styles.profile}>Add Profile Photo</Text>
+        <View style={styles.controls}>
+          <TextInput
+            placeholder="First Name"
+            style={styles.control}
+            value={formData.firstName}
+            onChangeText={(text: string) => setFormData({ ...formData, firstName: text })}
+          />
+          <TextInput
+            placeholder="Last Name"
+            style={styles.control}
+            value={formData.lastName}
+            onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
+          />
+          <TextInput
+            placeholder="Email"
+            style={styles.control}
+            value={formData.email}
+            onChangeText={(text: string) => setFormData({ ...formData, email: text })}
+          />
 
-        <TextInput
-          placeholder="Password"
-          style={styles.control}
-          value={formData.password}
-          onChangeText={(text: string) => setFormData({ ...formData, password: text })}
-          secureTextEntry={true}
-        />
-        <View style={styles.checkboxContainer}>
-          <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setIsChecked} />
-          <View>
-            <Text> Agree to the </Text>
-          </View>
+          <TextInput
+            placeholder="Password"
+            style={styles.control}
+            value={formData.password}
+            onChangeText={(text: string) => setFormData({ ...formData, password: text })}
+            secureTextEntry={true}
+          />
+          <View style={styles.checkboxContainer}>
+            <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setIsChecked} />
+            <View>
+              <Text> Agree to the </Text>
+            </View>
             <TouchableOpacity onPress={handleTermsAndConditionsPress}>
               <Text style={styles.linkText}>Terms and Conditions</Text>
             </TouchableOpacity>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={signUp}>
-            <Text style={styles.buttonText}>Sign Up</Text>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={signUp}>
+              <Text style={styles.buttonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.signInButton}
+            onPress={() =>
+              navigation.navigate("SignupStackNavigation", {
+                screen: "SignIn",
+              })
+            }
+          >
+            <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("SignIn")}>
-          <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
-        </TouchableOpacity>
-      </View>
       </View>
     </SafeAreaView>
   );
@@ -206,9 +222,9 @@ const styles = StyleSheet.create({
     color: "darkblue",
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkbox: {
     margin: 10,
@@ -270,8 +286,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  controls: {
-  },
+  controls: {},
 
   control: {
     paddingVertical: 10,

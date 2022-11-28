@@ -10,14 +10,18 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
-import { useQuery } from "react-query";
+import { QueryCache, useQuery } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { fetchOutfits } from "../data/api";
 import { modusTypes } from "./QuizSuccessScreen";
 import { FlashList } from "@shopify/flash-list";
+import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
+const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
+  // queryCache.clear();
   const user = useStore((state) => state.user);
   const {
     isFetching: isFetchingOutfits,
@@ -25,10 +29,18 @@ export default function HomeScreen({ navigation }: any) {
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
 
-  const handlePress = (listing: any) => {
+  const handlePress = (outfit: any) => {
     navigation.navigate("ViewOutfit", {
-      id: listing.id,
-      ownerId: listing.ownerId,
+      id: outfit.id,
+      ownerId: outfit.ownerId,
+    });
+    analytics().logViewItem({
+      items: [
+        {
+          item_id: outfit.id.toString(),
+          item_name: outfit.description,
+        },
+      ],
     });
   };
 
@@ -40,36 +52,37 @@ export default function HomeScreen({ navigation }: any) {
     }
   });
 
-  outfits = outfits?.filter((outfit: any) => {
-    if (!user?.currentSeasonalColors?.length) {
-      return outfits;
-    } else {
-      return (outfit?.seasonalColors || []).some((item: any) => (user?.currentSeasonalColors || []).includes(item));
-    }
-  }).sort((a: any, b: any) => {
-    return new Date(b?.createdAt).getTime() - new Date(a?.createdAt).getTime() || ((b?.upvotes - b?.downvotes) - (a?.upvotes - a?.downvotes));
-  });
+  outfits = outfits
+    ?.filter((outfit: any) => {
+      if (!user?.currentSeasonalColors?.length) {
+        return outfits;
+      } else {
+        return (outfit?.seasonalColors || []).some((item: any) => (user?.currentSeasonalColors || []).includes(item));
+      }
+    })
+    .sort((a: any, b: any) => {
+      return (
+        new Date(b?.createdAt).getTime() - new Date(a?.createdAt).getTime() ||
+        b?.upvotes - b?.downvotes - (a?.upvotes - a?.downvotes)
+      );
+    });
 
   function Item({ item }: any) {
     return (
       <>
-        {/* <View style={styles.userInfo}>
-          <Image source={{ uri: item.owner.userImage || defaultProfile }} style={styles.userImage} />
-          <Text style={styles.ownerName}>{item.owner.firstName + " " + item.owner.lastName}</Text>
-        </View> */}
         <View style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}>
           {item?.owner?.userImage ? (
-            <Image source={{ uri: item.owner.userImage }} style={styles.userImage} />
+            <FastImage source={{ uri: item.owner.userImage }} style={styles.userImage} />
           ) : (
-            <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
+            <FastImage source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
           )}
           <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
           {item.owner.userType === "EXPERT" ? (
-            <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} />
+            <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} />
           ) : null}
         </View>
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
-          <Image source={{ uri: item.images[0] }} style={styles.image} />
+          <FastImage source={{ uri: item.images[0] }} style={styles.image} />
         </TouchableOpacity>
         <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{item.description}</Text>
@@ -85,9 +98,11 @@ export default function HomeScreen({ navigation }: any) {
   };
   const handleModusTypePress = () => {
     navigation.navigate("ModusTypeFilter");
+    analytics().logEvent("modus_type_filter_click");
   };
   const handleSeasonalColorPress = () => {
     navigation.navigate("SeasonalColorFilter");
+    analytics().logEvent("seasonal_color_filter_click");
   };
 
   const handleFilterPress = () => {
@@ -102,9 +117,6 @@ export default function HomeScreen({ navigation }: any) {
         </SafeAreaView>
       ) : (
         <SafeAreaView style={styles.container}>
-          {/* <View style={styles.title}>
-            <Text style={styles.titleText}>LooksMax</Text>
-          </View> */}
           <View style={styles.filterContainer}>
             <View style={styles.filter}>
               <Text style={styles.filterText}>Filter by:</Text>
@@ -124,7 +136,7 @@ export default function HomeScreen({ navigation }: any) {
           {/* <TouchableOpacity 
             onPress={handleFilterPress} 
             style={styles.filterButton}>
-            <Image source={require("../assets/Filter_Logo.png")} style={styles.filterLogo} />
+            <FastImage source={require("../assets/Filter_Logo.png")} style={styles.filterLogo} />
           </TouchableOpacity> */}
           <FlashList
             horizontal={false}
@@ -176,7 +188,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   userInfo: {
     flexDirection: "row",

@@ -15,6 +15,7 @@ import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
+import FastImage from 'react-native-fast-image'
 
 const img = "https://1.kixify.com/sites/default/files/imagecache/product_full/product/2020/04/27/p_30009391_171134591_240382.jpg";
 const userImages = [img, img, img];
@@ -61,7 +62,7 @@ export default function ItemsWantedScreen({ navigation, route }: any) {
           <View key={item.id} style={styles.itemContainer}>
             <Checkbox style={styles.checkbox} value={isChecked[index]} onValueChange={() => handleChange(index)} />
             <TouchableOpacity onPress={() => handlePress(item)} style={styles.card}>
-              <Image source={{ uri: item.images[0] }} style={styles.image} />
+              <FastImage source={{ uri: item.images[0] }} style={styles.image} />
               <View style={styles.detailsContainer}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.detailsText}>

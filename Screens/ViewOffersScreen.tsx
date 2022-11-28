@@ -21,6 +21,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
 import { initPaymentSheet, presentPaymentSheet, retrieveSetupIntent } from "@stripe/stripe-react-native";
+import FastImage from 'react-native-fast-image'
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -101,7 +102,7 @@ function OfferItem({ offer, direction }: any) {
   };
   return (
     <View style={styles.offerItem}>
-      <Image source={{ uri: offer.listing.images[0] }} style={styles.image} />
+      <FastImage source={{ uri: offer.listing.images[0] }} style={styles.image} />
       <View style={styles.details}>
         <Text style={styles.nameText}>{offer.listing.name}</Text>
         <Text style={styles.priceText}>{offer.price}</Text>
@@ -351,7 +352,7 @@ function TradeDetails({ route, navigation }: any) {
           </View>
           {yourListings.map(({ Listing }: any) => (
             <View key={Listing.id}>
-              <Image source={{ uri: Listing.images[0] }} style={styles.image} />
+              <FastImage source={{ uri: Listing.images[0] }} style={styles.image} />
               <View style={styles.details}>
                 <Text style={styles.nameText}>{Listing.name}</Text>
                 <Text style={styles.priceText}>{Listing.price}</Text>
@@ -371,7 +372,7 @@ function TradeDetails({ route, navigation }: any) {
           </View>
           {theirListings.map(({ Listing }: any) => (
             <View key={Listing.id}>
-              <Image source={{ uri: Listing.images[0] }} style={styles.image} />
+              <FastImage source={{ uri: Listing.images[0] }} style={styles.image} />
               <View style={styles.details}>
                 <Text style={styles.nameText}>{Listing.name}</Text>
                 <Text style={styles.priceText}>{Listing.price}</Text>

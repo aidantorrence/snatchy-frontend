@@ -16,6 +16,7 @@ import { fetchUser } from "../data/api";
 import Checkbox from "expo-checkbox";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
+import FastImage from 'react-native-fast-image'
 
 const YourItems = () => {
   return (
@@ -77,7 +78,7 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
           renderItem={({ item, index }: any) => (
             <View style={styles.itemContainer}>
               <TouchableOpacity style={styles.card}>
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
+                <FastImage source={{ uri: item.images[0] }} style={styles.image} />
                 <View style={styles.detailsContainer}>
                   <Text style={styles.name}>{item.name}</Text>
                   <Text style={styles.detailsText}>
@@ -97,7 +98,7 @@ export default function TradeSummaryScreen({ navigation, route }: any) {
           renderItem={({ item, index }: any) => (
             <View style={styles.itemContainer}>
               <TouchableOpacity style={styles.card}>
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
+                <FastImage source={{ uri: item.images[0] }} style={styles.image} />
                 <View style={styles.detailsContainer}>
                   <Text style={styles.name}>{item.name}</Text>
                   <Text style={styles.detailsText}>

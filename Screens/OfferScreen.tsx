@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View, Text, SafeAreaView, Image, Button, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
+import FastImage from "react-native-fast-image";
 
 export default function OfferScreen({ route, navigation }: any) {
   const [offerPrice, setOfferPrice] = useState(null) as any;
@@ -26,8 +27,8 @@ export default function OfferScreen({ route, navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.listingContainer}>
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: listing.images[0] }} style={styles.image} />
+        <View style={styles.KimageContainer}>
+          <FastImage source={{ uri: listing.images[0] }} style={styles.image} />
         </View>
         <View style={styles.listingDetailsContainer}>
           <Text style={styles.title}>{listing.name}</Text>

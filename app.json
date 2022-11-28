@@ -30,6 +30,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.looksmax.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
@@ -37,6 +38,7 @@
       "buildNumber": "12"
     },
     "plugins": [
+      "@react-native-firebase/app",
       [
         "sentry-expo"
       ],

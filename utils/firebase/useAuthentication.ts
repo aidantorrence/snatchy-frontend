@@ -1,13 +1,14 @@
-import { Auth, getAuth, initializeAuth, onAuthStateChanged, User } from "firebase/auth";
+// import { Auth, getAuth, initializeAuth, onAuthStateChanged, User } from "firebase/auth";
 import create from "zustand";
 import { useEffect } from "react";
-import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getReactNativePersistence } from "firebase/auth/react-native";
-const firebaseApp = !getApps().length ? initializeApp(Constants.expoConfig?.extra as any) : getApp();
+import auth from '@react-native-firebase/auth';
+import firebase, { ReactNativeFirebase } from "@react-native-firebase/app";
 
-const auth = initializeAuth(firebaseApp as FirebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
+// const firebaseApp = !firebase.apps.length ? firebase.initializeApp(Constants.expoConfig?.extra as any) : firebase.apps[0];
+
+// const auth = initializeAuth(firebaseApp as ReactNativeFirebase.FirebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
 
 export const useStore = create((set: any) => ({
   user: undefined as any,
@@ -18,8 +19,7 @@ export default function useAuthentication() {
   const setUser = useStore((state) => state.setUser);
   const user = useStore((state) => state.user);
 
-  useEffect(() => {
-    const unsubscribeFromAuthStateChanged = onAuthStateChanged(auth, (user) => {
+  function onAuthStateChanged(user: any) {
       if (user) {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
@@ -28,8 +28,10 @@ export default function useAuthentication() {
         // User is signed out
         setUser(undefined);
       }
-    });
+  }
 
+  useEffect(() => {
+    const unsubscribeFromAuthStateChanged = auth().onAuthStateChanged(onAuthStateChanged);
     return unsubscribeFromAuthStateChanged;
   }, []);
 

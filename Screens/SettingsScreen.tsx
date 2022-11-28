@@ -1,24 +1,26 @@
-import { deleteUser as deleteUserFirebase, getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth/react-native";
+// import { deleteUser as deleteUserFirebase, getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth/react-native";
 import { useState } from "react";
 import { Text, SafeAreaView, StyleSheet, TouchableOpacity, Alert, View } from "react-native";
 import { deleteUser } from "../data/api";
 import * as WebBrowser from "expo-web-browser";
+import auth from "@react-native-firebase/auth";
 
 export default function SettingsScreen({ navigation, route }: any) {
   const [password, setPassword] = useState("");
+  const firebaseAuth = auth();
+  const user = firebaseAuth.currentUser;
 
-  const auth = getAuth();
   let isLoading;
 
   const handleDeletePress = async (value: any) => {
     let credential;
     try {
-      credential = await signInWithEmailAndPassword(auth, auth?.currentUser?.email as any, value);
+      credential = await firebaseAuth.signInWithEmailAndPassword(firebaseAuth?.currentUser?.email as any, value);
     } catch (e) {
       console.log(e, "sign in failed");
     }
     try {
-      await deleteUserFirebase(credential?.user as any);
+      await user?.delete();
       await deleteUser(credential?.user?.uid);
     } catch (e) {
       console.log(e, "delete failed");
@@ -54,7 +56,7 @@ export default function SettingsScreen({ navigation, route }: any) {
   };
 
   const handleLogout = () => {
-    signOut(auth);
+    firebaseAuth.signOut();
     navigation.navigate("HomeTabs");
   };
   const handleSettingsClick = () => {

@@ -1,13 +1,14 @@
 import React from "react";
 import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { StackScreenProps } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
+import auth from "@react-native-firebase/auth";
+import analytics from "@react-native-firebase/analytics";
 
-const auth = getAuth();
 
 const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
+  const firebaseAuth = auth();
   let uid = "";
   const { data: userData, isLoading, refetch } = useQuery(`currentUser`, () => fetchUser(uid));
   const queryClient = useQueryClient();
@@ -27,21 +28,9 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
     }
 
     try {
-      const { user } = await signInWithEmailAndPassword(auth, value.email, value.password);
-      // queryClient.invalidateQueries("currentUser");
-      // queryClient.invalidateQueries("userTrades");
-      // queryClient.invalidateQueries("userOffers");
-      // refetch();
+      const { user } = await firebaseAuth.signInWithEmailAndPassword(value.email, value.password);
+      analytics().logEvent("upload_profile_picture");
       navigation.navigate("HomeTabs");
-      // navigation.pop(1);
-      // navigation.navigate("HomeTabs", {
-      //   screen: "CreateStack",
-      //   //   params: {
-      //   //     screen: "ShippingDetails",
-      //   //     id,
-      //   //     ownerId,
-      //   //   },
-      // });
     } catch (error: any) {
       setValue({
         ...value,

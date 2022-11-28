@@ -5,6 +5,7 @@ import { fetchUser, updateUser } from "../data/api";
 import { useStore } from "../utils/firebase/useAuthentication";
 import * as ImagePicker from "expo-image-picker";
 import uploadImageAsync from "../utils/firebase/uploadImage";
+import FastImage from "react-native-fast-image";
 
 export default function EditProfileScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
@@ -12,7 +13,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
     firstName: "",
     lastName: "",
     sellerName: "",
-    userImage: '',
+    userImage: "",
   });
 
   const queryClient = useQueryClient();
@@ -75,8 +76,8 @@ export default function EditProfileScreen({ navigation, route }: any) {
       ...formData,
       uid: user?.uid,
     });
-    navigation.goBack()
-  }
+    navigation.goBack();
+  };
 
   return (
     <>
@@ -86,14 +87,14 @@ export default function EditProfileScreen({ navigation, route }: any) {
         <SafeAreaView style={styles.profileScreenContainer}>
           <TouchableOpacity style={{ display: "flex", alignItems: "center" }} onPress={launchPhotosAlert}>
             {userData?.userImage || formData.userImage ? (
-            <Image
-              source={{ uri: formData.userImage || userData?.userImage }}
-              style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
-            />
+              <FastImage
+                source={{ uri: formData.userImage || userData?.userImage }}
+                style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
+              />
             ) : (
               <>
                 <View style={{ borderRadius: 100, borderWidth: 1, padding: 10, marginBottom: 10 }}>
-                  <Image source={require("../assets/Add_Profile_Logo.png")} style={{ width: 120, height: 120 }} />
+                  <FastImage source={require("../assets/Add_Profile_Logo.png")} style={{ width: 120, height: 120 }} />
                 </View>
                 <Text style={styles.caption}>Add Profile Picture</Text>
               </>

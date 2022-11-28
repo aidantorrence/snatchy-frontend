@@ -1,12 +1,4 @@
 import {
-  deleteUser as deleteUserFirebase,
-  getAuth,
-  reauthenticateWithCredential,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth/react-native";
-import { useState } from "react";
-import {
   View,
   Text,
   SafeAreaView,
@@ -25,6 +17,7 @@ import { blockUser, deleteUser, fetchUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import * as WebBrowser from "expo-web-browser";
 import { modusTypes } from "./QuizSuccessScreen";
+import FastImage from "react-native-fast-image";
 
 export default function ViewProfileScreen({ navigation, route }: any) {
   const ownerId = route?.params?.ownerId;
@@ -117,18 +110,18 @@ export default function ViewProfileScreen({ navigation, route }: any) {
               style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}
               onPress={handleSettingsClick}
             >
-              <Image style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
+              <FastImage style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
               style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}
               onPress={handleActionsClick}
             >
-              <Image style={{ width: 20, height: 20 }} source={require("../assets/Ellipsis_Logo.png")} />
+              <FastImage style={{ width: 20, height: 20 }} source={require("../assets/Ellipsis_Logo.png")} />
             </TouchableOpacity>
           )}
           <View style={{ display: "flex", alignItems: "center", alignSelf: "center" }}>
-            <Image
+            <FastImage
               source={userData?.userImage ? { uri: userData?.userImage } : require("../assets/Monkey_Profile_Logo.png")}
               style={{ width: 104, height: 104, borderRadius: 100 }}
             />
@@ -136,27 +129,32 @@ export default function ViewProfileScreen({ navigation, route }: any) {
           <View style={{ flexDirection: "row", marginTop: 5, alignSelf: "center" }}>
             <Text style={styles.sellerName}>{userData?.firstName + " " + userData?.lastName}</Text>
             {userData?.userType === "EXPERT" ? (
-              <Image source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} />
+              <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.userImage} />
             ) : null}
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('ModusDescription', { modusType: userData?.modusType })} style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ModusDescription", { modusType: userData?.modusType })}
+            style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}
+          >
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
           </TouchableOpacity>
           <View>
-            { userData?.outfits.length ? <FlatList
-              horizontal={false}
-              numColumns={3}
-              columnWrapperStyle={styles.column}
-              data={userData?.outfits}
-              renderItem={({ item }: any) => (
-                <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
-                  <Image source={{ uri: item.images[0] }} style={styles.userImages} />
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item.id}
-            /> : (
+            {userData?.outfits.length ? (
+              <FlatList
+                horizontal={false}
+                numColumns={3}
+                columnWrapperStyle={styles.column}
+                data={userData?.outfits}
+                renderItem={({ item }: any) => (
+                  <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
+                    <FastImage source={{ uri: item.images[0] }} style={styles.userImages} />
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.id}
+              />
+            ) : (
               <View style={{ alignItems: "center" }}>
-                <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
+                <FastImage source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
                 <Text style={{ textAlign: "center", fontSize: 18 }}>No Outfits Yet!</Text>
               </View>
             )}
@@ -165,14 +163,14 @@ export default function ViewProfileScreen({ navigation, route }: any) {
                 <ScrollView contentContainerStyle={styles.userImagesContainer}>
                   {userData?.outfits.map((outfit: any, index: number) => (
                     <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
-                      <Image source={{ uri: outfit.images[0] }} style={styles.userImages} />
+                      <FastImage source={{ uri: outfit.images[0] }} style={styles.userImages} />
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
               </>
             ) : (
               <View style={{ alignItems: "center" }}>
-                <Image source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
+                <FastImage source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
                 <Text style={{ textAlign: "center", fontSize: 20 }}>No Outfits Yet!</Text>
               </View>
             )} */}

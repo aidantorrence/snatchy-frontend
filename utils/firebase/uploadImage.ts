@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import storage from '@react-native-firebase/storage';
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { API_URL } from "../../data/api";
@@ -42,8 +42,8 @@ export default async function uploadImageAsync(uri: string) {
         "Content-Type": "multipart/form-data",
       },
     });
-    const fileRef = ref(getStorage(), data);
-    const url = await getDownloadURL(fileRef)
+    const fileRef = storage().ref(data);
+    const url = await fileRef.getDownloadURL();
     return url
   } catch (e) {
     console.log(`${API_URL}/upload-images`, e);

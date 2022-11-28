@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { NavigationHelpersContext } from "@react-navigation/native";
 import { Dimensions } from "react-native";
+import analytics from "@react-native-firebase/analytics";
 
 export default function FilterScreen({ navigation }: any) {
   const handleModusTypePress = () => {
@@ -41,32 +42,42 @@ export function ModusTypeFilterScreen({ navigation }: any) {
       }),
     });
     navigation.navigate("Home");
+    analytics().logEvent("modus_type_filter_selected", {
+      modus_types: checked.map((el, index) => {
+        if (el) return modusTypes[index];
+      }),
+    });
   }
+  const toggleCheckbox = (index: number) => {
+    const newChecked = [...checked];
+    newChecked[index] = !checked[index];
+    setChecked(newChecked);
+  };
 
   return (
     <SafeAreaView style={styles.filterContainer}>
       <View style={styles.secondaryContainer}>
-      <FlatList
-        numColumns={3}
-        columnWrapperStyle={styles.column}
-        data={modusTypes}
-        renderItem={({ item, index }: any) => (
-          <View style={styles.checkboxContainerModus}>
-            <Checkbox
-              style={styles.checkbox}
-              value={checked[index]}
-              onValueChange={(newValue) => {
-                const newChecked = [...checked];
-                newChecked[index] = newValue;
-                setChecked(newChecked);
-              }}
-            />
-            <Text style={styles.checkboxText}>{item}</Text>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      {/* {modusTypes.map((modusType, index) => {
+        <FlatList
+          numColumns={3}
+          columnWrapperStyle={styles.column}
+          data={modusTypes}
+          renderItem={({ item, index }: any) => (
+            <TouchableOpacity onPress={() => toggleCheckbox(index)} style={styles.checkboxContainerModus}>
+              <Checkbox
+                style={styles.checkbox}
+                value={checked[index]}
+                onValueChange={(newValue) => {
+                  const newChecked = [...checked];
+                  newChecked[index] = newValue;
+                  setChecked(newChecked);
+                }}
+              />
+              <Text style={styles.checkboxText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+        {/* {modusTypes.map((modusType, index) => {
         return (
           <View style={styles.checkboxContainer} key={index}>
             <Text style={styles.checkboxText}>{modusType}</Text>
@@ -82,9 +93,9 @@ export function ModusTypeFilterScreen({ navigation }: any) {
           </View>
         );
       })} */}
-      <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
-        <Text style={styles.filterButtonText}>Filter</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
+          <Text style={styles.filterButtonText}>Filter</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -116,41 +127,46 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
       }),
     });
     navigation.navigate("Home");
+    analytics().logEvent("seasonal_color_filter_selected", {
+      seasonal_colors: checked.map((el, index) => {
+        if (el) return seasonalColors[index];
+      }),
+    });
   }
+  const toggleCheckbox = (index: number) => {
+    const newChecked = [...checked];
+    newChecked[index] = !checked[index];
+    setChecked(newChecked);
+  };
 
   return (
     <SafeAreaView style={styles.filterContainer}>
       <View style={styles.secondaryContainer}>
-      <FlatList
-        numColumns={2}
-        columnWrapperStyle={styles.column}
-        data={seasonalColors}
-        renderItem={({ item, index }: any) => (
-          <View style={styles.checkboxContainer}>
-            <Checkbox
-              style={styles.checkbox}
-              value={checked[index]}
-              onValueChange={(newValue) => {
-                const newChecked = [...checked];
-                newChecked[index] = newValue;
-                setChecked(newChecked);
-              }}
-            />
-            <Text style={styles.checkboxText}>{item}</Text>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
-        <Text style={styles.filterButtonText}>Filter</Text>
-      </TouchableOpacity>
+        <FlatList
+          numColumns={2}
+          columnWrapperStyle={styles.column}
+          data={seasonalColors}
+          renderItem={({ item, index }: any) => (
+            <TouchableOpacity onPress={() => toggleCheckbox(index)} style={styles.checkboxContainer}>
+              <Checkbox
+                style={styles.checkbox}
+                value={checked[index]}
+              />
+              <Text style={styles.checkboxText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+        />
+        <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
+          <Text style={styles.filterButtonText}>Filter</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
   secondaryContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   column: {
     flex: 1,
@@ -159,23 +175,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginVertical: 10,
     paddingHorizontal: 30,
-    width: Dimensions.get('window').width / 2,
+    width: Dimensions.get("window").width / 2,
     // justifyContent: "center",
-    alignItems: 'center',
+    alignItems: "center",
   },
   checkboxContainerModus: {
     flexDirection: "row",
     marginVertical: 10,
     paddingLeft: 30,
-    width: Dimensions.get('window').width / 3,
+    width: Dimensions.get("window").width / 3,
     // justifyContent: "center",
-    alignItems: 'center',
+    alignItems: "center",
   },
-  checkboxText: {
-  },
+  checkboxText: {},
   checkbox: {
     width: 15,
-    height:15,
+    height: 15,
     marginRight: 5,
   },
   container: {

@@ -16,6 +16,7 @@ import {
 } from "../data/api";
 import { LinearGradient } from "expo-linear-gradient";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
+import FastImage from 'react-native-fast-image'
 
 export default function SetupPaymentsScreen({ route, navigation }: any) {
   const [setupIntentClientSecret, setSetupIntentClientSecret] = useState(undefined) as any;
@@ -98,7 +99,7 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
           {additionalFunds === undefined ? (
             <View style={styles.listingContainer}>
               <View style={styles.imageContainer}>
-                <Image source={{ uri: listingData?.images[0] }} style={styles.image} />
+                <FastImage source={{ uri: listingData?.images[0] }} style={styles.image} />
               </View>
               <View style={styles.listingDetailsContainer}>
                 <Text style={styles.title}>{listingData?.name}</Text>
@@ -147,7 +148,7 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
               <View style={styles.cardTitleContainer}>
                 <Text style={styles.cardTitle}>Shipping Details</Text>
                 <TouchableOpacity onPress={handleShippingDetails}>
-                  <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+                  <FastImage source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
                 </TouchableOpacity>
               </View>
               <View style={styles.cardContainer}>
@@ -185,7 +186,7 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
                 <View style={styles.cardTitleContainer}>
                   <Text style={styles.cardTitle}>Payment Details</Text>
                   <TouchableOpacity onPress={openPaymentSheet}>
-                    <Image source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
+                    <FastImage source={require("../assets/Edit_Logo.png")} style={styles.editLogo} />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.cardContainer}>
@@ -222,7 +223,7 @@ export default function SetupPaymentsScreen({ route, navigation }: any) {
       >
         <SafeAreaView style={styles.confirmModalContainer}>
           <TouchableOpacity onPress={() => setConfirmModalIsVisible(!confirmModalIsVisible)} style={styles.closeIconContainer}>
-            <Image source={require("../assets/Close_Logo.png")} style={styles.closeIcon} />
+            <FastImage source={require("../assets/Close_Logo.png")} style={styles.closeIcon} />
           </TouchableOpacity>
           <View style={styles.confirmModalTextContainer}>
             <Text style={styles.confirmModalText}>

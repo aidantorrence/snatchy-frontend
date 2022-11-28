@@ -24,6 +24,7 @@ import { fetchListing, updateListing } from "../data/api";
 import * as ImagePicker from "expo-image-picker";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
+import FastImage from "react-native-fast-image";
 
 export default function EditListingScreen({ navigation, route }: any) {
   const [formData, setFormData] = useState({
@@ -217,7 +218,7 @@ export default function EditListingScreen({ navigation, route }: any) {
     return (
       <ScaleDecorator>
         <TouchableOpacity activeOpacity={1} onLongPress={drag} disabled={isActive} style={styles.imageContainer}>
-          <Image source={{ uri: item }} style={styles.images} />
+          <FastImage source={{ uri: item }} style={styles.images} />
         </TouchableOpacity>
       </ScaleDecorator>
     );
@@ -225,7 +226,7 @@ export default function EditListingScreen({ navigation, route }: any) {
   const renderAddPhotoTemplates = ({ _, index }: any) => {
     return (
       <TouchableOpacity style={styles.imageContainer} key={index} onPress={() => editPhoto()}>
-        <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
+        <FastImage source={require("../assets/Add_Photos.png")} style={styles.images} />
       </TouchableOpacity>
     );
   };
@@ -254,14 +255,14 @@ export default function EditListingScreen({ navigation, route }: any) {
             {/* <ScrollView style={styles.imageContainer} horizontal={true}>
               {data.images.map((image: string, index: number) => (
                 <TouchableOpacity key={index} onPress={() => editPhoto(index)}>
-                  <Image source={{ uri: image }} style={styles.images} />
+                  <FastImage source={{ uri: image }} style={styles.images} />
                 </TouchableOpacity>
               ))}
               {Array(photosToAdd)
                 .fill("")
                 .map((val, idx) => (
                   <TouchableOpacity key={idx} onPress={() => editPhoto()}>
-                    <Image source={require("../assets/Add_Photos.png")} style={styles.images} />
+                    <FastImage source={require("../assets/Add_Photos.png")} style={styles.images} />
                   </TouchableOpacity>
                 ))}
             </ScrollView> */}
@@ -473,7 +474,7 @@ export default function EditListingScreen({ navigation, route }: any) {
 
 const styles = StyleSheet.create({
   photosList: {
-    flexDirection: 'row', 
+    flexDirection: "row",
   },
   imageContainer: {
     paddingTop: 7,

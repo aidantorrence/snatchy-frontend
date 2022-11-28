@@ -1,24 +1,36 @@
 import { setUser } from "@sentry/react-native";
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity, Image, ScrollView, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TextInput,
+  SafeAreaView,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import analytics from "@react-native-firebase/analytics";
 
-  export const modusTypes = {
-    D: "Queen",
-    DC: "Boss",
-    FG: "Coquette",
-    FN: "Supermodel",
-    R: "Siren",
-    SC: "Lady",
-    SD: "Feline",
-    SG: "Ingenue",
-    SN: "Vixen",
-    TR: "Femme Fatale",
-  } as any;
+export const modusTypes = {
+  D: "Queen",
+  DC: "Boss",
+  FG: "Coquette",
+  FN: "Supermodel",
+  R: "Siren",
+  SC: "Lady",
+  SD: "Feline",
+  SG: "Ingenue",
+  SN: "Vixen",
+  TR: "Femme Fatale",
+} as any;
 
 export default function QuizSuccessScreen({ navigation, route, refetch }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -36,16 +48,16 @@ export default function QuizSuccessScreen({ navigation, route, refetch }: any) {
   } as any;
 
   const modusImages = {
-    D: <Image source={require(`../assets/D_Queen.png`)} style={styles.image} />,
-    DC: <Image source={require(`../assets/DC_Boss.png`)} style={styles.image} />,
-    FG: <Image source={require(`../assets/FG_Coquette.png`)} style={styles.image} />,
-    FN: <Image source={require(`../assets/FN_Supermodel.png`)} style={styles.image} />,
-    R: <Image source={require(`../assets/R_Siren.png`)} style={styles.image} />,
-    SC: <Image source={require(`../assets/SC_Lady.png`)} style={styles.image} />,
-    SD: <Image source={require(`../assets/SD_Feline.png`)} style={styles.image} />,
-    SG: <Image source={require(`../assets/SG_Ingenue.png`)} style={styles.image} />,
-    SN: <Image source={require(`../assets/SN_Vixen.png`)} style={styles.image} />,
-    TR: <Image source={require(`../assets/TR_Femme_Fatale.png`)} style={styles.image} />,
+    D: <FastImage source={require(`../assets/D_Queen.png`)} style={styles.image} />,
+    DC: <FastImage source={require(`../assets/DC_Boss.png`)} style={styles.image} />,
+    FG: <FastImage source={require(`../assets/FG_Coquette.png`)} style={styles.image} />,
+    FN: <FastImage source={require(`../assets/FN_Supermodel.png`)} style={styles.image} />,
+    R: <FastImage source={require(`../assets/R_Siren.png`)} style={styles.image} />,
+    SC: <FastImage source={require(`../assets/SC_Lady.png`)} style={styles.image} />,
+    SD: <FastImage source={require(`../assets/SD_Feline.png`)} style={styles.image} />,
+    SG: <FastImage source={require(`../assets/SG_Ingenue.png`)} style={styles.image} />,
+    SN: <FastImage source={require(`../assets/SN_Vixen.png`)} style={styles.image} />,
+    TR: <FastImage source={require(`../assets/TR_Femme_Fatale.png`)} style={styles.image} />,
   } as any;
 
   // AsyncStorage.clear();
@@ -103,7 +115,7 @@ const styles = StyleSheet.create({
     textAlign: "auto",
   },
   image: {
-    width: Dimensions.get('window').width,
+    width: Dimensions.get("window").width,
     height: 300,
     resizeMode: "cover",
   },

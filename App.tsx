@@ -48,7 +48,8 @@ import QuizThickMaterialsScreen from "./Screens/QuizThickMaterialsScreen";
 import QuizSuccessScreen from "./Screens/QuizSuccessScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModusDescriptionScreen from "./Screens/ModusDescriptionScreen";
-import analytics from '@react-native-firebase/analytics';
+import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
 
 const queryClient = new QueryClient();
 
@@ -61,7 +62,7 @@ Sentry.init({
 function Icon({ imgSrc, style }: any) {
   return (
     <View style={{ paddingTop: 8 }}>
-      <Image source={imgSrc} resizeMode="contain" style={[styles.icon, style]} />
+      <FastImage source={imgSrc} resizeMode="contain" style={[styles.icon, style]} />
     </View>
   );
 }
@@ -116,6 +117,7 @@ export default function App({ navigation, route }: any) {
   const routeNameRef = useRef();
   const navigationRef = useRef() as any;
   const user = useAuthentication();
+  analytics().logAppOpen();
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer
@@ -126,7 +128,7 @@ export default function App({ navigation, route }: any) {
         onStateChange={async () => {
           const previousRouteName = routeNameRef.current;
           const currentRouteName = navigationRef?.current?.getCurrentRoute()?.name;
-  
+
           if (previousRouteName !== currentRouteName) {
             await analytics().logScreenView({
               screen_name: currentRouteName,
@@ -141,7 +143,7 @@ export default function App({ navigation, route }: any) {
             headerShown: false,
             headerBackTitleVisible: false,
             headerBackImage: () => (
-              <Image style={{ height: 30, width: 30, marginLeft: 10 }} source={require("./assets/Header_Back_Logo.png")} />
+              <FastImage style={{ height: 30, width: 30, marginLeft: 10 }} source={require("./assets/Header_Back_Logo.png")} />
             ),
             headerTitleStyle: {
               fontWeight: "bold",
@@ -167,8 +169,7 @@ export default function App({ navigation, route }: any) {
             options={{ headerTitle: "", title: "", headerShown: true }}
             component={ViewProfileScreen}
           />
-          <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "" }} component={SignUpScreen} />
-          <Stack.Screen name="SignIn" options={{ headerTitle: "", title: "" }} component={SignInScreen} />
+          <Stack.Screen name="SignupStackNavigation" options={{ headerTitle: "", title: "" }} component={SignupStackNavigation} />
           <Stack.Screen name="Filter" options={{ headerTitle: "", headerShown: true }} component={FilterScreen} />
           <Stack.Screen
             name="ModusTypeFilter"

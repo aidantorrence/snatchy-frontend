@@ -1,38 +1,39 @@
 import { Button, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import FastImage from "react-native-fast-image";
 
 const fieldTitles = {
   kibbeTypes: {
     text: "Choose Modus Type(s) for this outfit",
-    level: 'optional',
+    level: "optional",
   },
   description: {
     text: "Name your outfit",
-    level: 'required',
+    level: "required",
   },
   content: {
     text: "Ask for feedback, describe your outfit, etc",
-    level: 'required',
+    level: "required",
     multiline: true,
   },
   occasions: {
     text: "Occasion(s)",
-    level: 'optional',
+    level: "optional",
   },
   aesthetic: {
     text: "Aesthetic",
-    level: 'optional',
+    level: "optional",
   },
   seasonalColors: {
     text: "Choose Seasonal Color(s) for this outfit",
-    level: 'optional',
+    level: "optional",
   },
   purchaseLink: {
     text: "Add a purchase link",
-    level: 'optional',
+    level: "optional",
   },
   postReason: {
-    text: 'Are you posting for feedback or inspiration?',
-    level: 'required',
+    text: "Are you posting for feedback or inspiration?",
+    level: "required",
   },
 } as any;
 
@@ -49,10 +50,10 @@ export function InputForm({ formData, setFormData, focusedState, setFocusedState
   const handleBlur = () => {
     setFocusedState({ ...focusedState, [field]: false });
   };
-  const level = fieldTitles[field]?.level === 'required' ? styles.requiredText : styles.optionalText
+  const level = fieldTitles[field]?.level === "required" ? styles.requiredText : styles.optionalText;
   return (
     <View style={styles.detailsContainer}>
-        <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
+      <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
       <View style={styles.inputContainer}>
         <TextInput
           value={formData[field]}
@@ -67,7 +68,7 @@ export function InputForm({ formData, setFormData, focusedState, setFocusedState
           multiline={fieldTitles[field].multiline}
         />
       </View>
-        {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
+      {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
     </View>
   );
 }
@@ -77,14 +78,14 @@ export function DropDownForm({ formData, error, setError, field, openOptionsModa
     setError({ ...error, [field]: "" });
     openOptionsModal(field);
   };
-  const level = fieldTitles[field]?.level === 'required' ? styles.requiredText : styles.optionalText
+  const level = fieldTitles[field]?.level === "required" ? styles.requiredText : styles.optionalText;
   return (
     <TouchableOpacity style={styles.detailsContainer} onPress={handlePress}>
-        <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
+      <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
       <View style={styles.dropDownContainer}>
-        { formData[field] ? '' : <Text style={styles.detailsPlaceholder}>{fieldTitles[field].text}</Text>}
+        {formData[field] ? "" : <Text style={styles.detailsPlaceholder}>{fieldTitles[field].text}</Text>}
         {formData[field] ? <Text style={styles.detailsAnswer}>{formData[field]}</Text> : null}
-      <Image source={require("../assets/dropDownCaret.png")} style={styles.dropDownCaret} />
+        <FastImage source={require("../assets/dropDownCaret.png")} style={styles.dropDownCaret} />
       </View>
       {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
     </TouchableOpacity>
@@ -102,24 +103,24 @@ export function MultiDropDownForm({ formData, setFormData, error, setError, fiel
     openOptionsModal(field);
   };
 
-  const level = fieldTitles[field]?.level === 'required' ? styles.requiredText : styles.optionalText
+  const level = fieldTitles[field]?.level === "required" ? styles.requiredText : styles.optionalText;
 
   return (
     <TouchableOpacity style={styles.detailsContainer} onPress={handlePress}>
-        <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
+      <Text style={[styles.levelText, level]}>{fieldTitles[field].level}</Text>
       <View style={styles.dropDownContainer}>
-        { formData[field].length ? '' : <Text style={styles.detailsPlaceholder}>{fieldTitles[field].text}</Text>}
+        {formData[field].length ? "" : <Text style={styles.detailsPlaceholder}>{fieldTitles[field].text}</Text>}
         <View style={styles.multiDropDownButtonContainer}>
           {formData[field].map((item: any, index: number) => {
             return (
               <TouchableOpacity key={index} style={styles.multiDropDownButton} onPress={() => handleDeleteMultiOption(index)}>
                 <Text style={styles.multiDropDownText}>{item}</Text>
-                <Image source={require("../assets/X_Logo.png")} style={styles.xLogo} />
+                <FastImage source={require("../assets/X_Logo.png")} style={styles.xLogo} />
               </TouchableOpacity>
             );
           })}
         </View>
-      <Image source={require("../assets/Caret_Logo.png")} style={styles.dropDownCaret} />
+        <FastImage source={require("../assets/Caret_Logo.png")} style={styles.dropDownCaret} />
       </View>
       {error[field] ? <Text style={styles.error}>{error[field]}</Text> : null}
     </TouchableOpacity>
@@ -203,17 +204,17 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 10,
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
   },
   requiredText: {
     color: "#AD0053",
   },
   optionalText: {
-    color: '#797979',
+    color: "#797979",
   },
   multiDropDownButtonContainer: {
     flexDirection: "row",
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   multiDropDownButton: {
     flexDirection: "row",
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
     borderWidth: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   multiDropDownText: {
     fontSize: 11,
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     // width: Dimensions.get("window").width,
   },
   detailsTitle: {
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginTop: 2,
     borderColor: "#aaa",
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
     paddingVertical: 5,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -270,9 +271,9 @@ const styles = StyleSheet.create({
   },
   dropDownContainer: {
     marginTop: 2,
-    borderColor: 'gray',
-    borderWidth: .25,
-    backgroundColor: '#f2f2f2',
+    borderColor: "gray",
+    borderWidth: 0.25,
+    backgroundColor: "#f2f2f2",
     paddingVertical: 5,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -290,7 +291,7 @@ const styles = StyleSheet.create({
     height: 10,
     resizeMode: "contain",
     marginRight: 10,
-    opacity: .5,
+    opacity: 0.5,
   },
   xLogo: {
     width: 15,

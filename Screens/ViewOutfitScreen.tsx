@@ -22,6 +22,8 @@ import useAuthentication, { useStore } from "../utils/firebase/useAuthentication
 import { modusTypes } from "./QuizSuccessScreen";
 import * as WebBrowser from "expo-web-browser";
 import { modusTypesReverse } from "./ModusDescriptionScreen";
+import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
@@ -62,13 +64,13 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
   const postVoteMutation: any = useMutation((data) => postVote(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
-      queryClient.invalidateQueries({queryKey: [`listing-${id}`]});
+      queryClient.invalidateQueries({ queryKey: [`listing-${id}`] });
     },
   });
   const updatePostMutation: any = useMutation((data) => updateOutfit(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
-      queryClient.invalidateQueries({queryKey: [`listing-${id}`]});
+      queryClient.invalidateQueries({ queryKey: [`listing-${id}`] });
     },
   });
 
@@ -180,7 +182,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
     return (
       <Swiper style={{ height: 300 }}>
         {item.images.map((image: any, index: any) => {
-          return <Image key={index} source={{ uri: image }} style={styles.image} />;
+          return <FastImage key={index} source={{ uri: image }} style={styles.image} />;
         })}
       </Swiper>
     );
@@ -225,6 +227,11 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
         },
       ]);
     }
+    analytics().logEvent("shopping_bag_click", {
+      item_id: id,
+      item_name: outfit?.description,
+      purchase_link: outfit?.purchaseLink,
+    });
   };
 
   const handleVote = (vote: number) => {
@@ -248,15 +255,15 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
             <TouchableOpacity onPress={() => handleProfilePress(outfit.ownerId)} style={styles.userContainer}>
               <View style={styles.userInfo}>
                 {outfit.owner.userImage ? (
-                  <Image source={{ uri: outfit.owner.userImage }} style={styles.userImage} />
+                  <FastImage source={{ uri: outfit.owner.userImage }} style={styles.userImage} />
                 ) : (
-                  <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
+                  <FastImage source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
                 )}
                 <View>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text style={styles.sellerName}>{outfit.owner.firstName + " " + outfit.owner.lastName}</Text>
                     {outfit.owner.userType === "EXPERT" ? (
-                      <Image source={require("../assets/Verified_Logo_2.png")} style={styles.verifiedImage} />
+                      <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.verifiedImage} />
                     ) : null}
                   </View>
                   <Text style={styles.modusType}>{modusTypes[outfit.owner.modusType]}</Text>
@@ -264,15 +271,15 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               </View>
               {isCurrentUserPost ? (
                 <TouchableOpacity style={{ padding: 5 }} onPress={handleAlert}>
-                  <Image style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
+                  <FastImage style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity style={{ padding: 5 }} onPress={handleActions}>
-                  <Image style={{ width: 15, height: 15 }} source={require("../assets/Ellipsis_Logo.png")} />
+                  <FastImage style={{ width: 15, height: 15 }} source={require("../assets/Ellipsis_Logo.png")} />
                 </TouchableOpacity>
               )}
             </TouchableOpacity>
-            <Image source={{ uri: outfit.images[0] }} style={styles.image} />
+            <FastImage source={{ uri: outfit.images[0] }} style={styles.image} />
             <View style={styles.titleContainer}>
               <Text style={styles.description}>{outfit.description}</Text>
             </View>
@@ -280,51 +287,69 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               <View>
                 <View style={styles.votesContainer}>
                   <TouchableOpacity onPress={() => handleVote(1)}>
-                    {outfit?.postVote[0]?.vote !== 1 ? <Image style={styles.votesIcon} source={require("../assets/Upvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Upvote_Focused_Compressed.jpg")} />}
+                    {outfit?.postVote[0]?.vote !== 1 ? (
+                      <FastImage style={styles.votesIcon} source={require("../assets/Upvote.png")} />
+                    ) : (
+                      <FastImage style={styles.votesIcon} source={require("../assets/Upvote_Focused_Compressed.jpg")} />
+                    )}
                   </TouchableOpacity>
                   <Text style={styles.votes}>{outfit.votes}</Text>
                   <TouchableOpacity onPress={() => handleVote(-1)}>
-                    {outfit?.postVote[0]?.vote !== -1 ? <Image style={styles.votesIcon} source={require("../assets/Downvote.png")} /> : <Image style={styles.votesIcon} source={require("../assets/Downvote_Focused_Compressed.jpg")} />}
+                    {outfit?.postVote[0]?.vote !== -1 ? (
+                      <FastImage style={styles.votesIcon} source={require("../assets/Downvote.png")} />
+                    ) : (
+                      <FastImage style={styles.votesIcon} source={require("../assets/Downvote_Focused_Compressed.jpg")} />
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.tagsContainer}>
-                {outfit.kibbeTypes.length ? outfit.kibbeTypes.map((item: any, index: number) => {
-                  return (
-                    <TouchableOpacity onPress={() => navigation.navigate('ModusDescription', { modusType: modusTypesReverse[item] })} key={index} style={[styles.tags, styles.kibbeTypes]}>
-                      <Text style={styles.tagsText}>{item}</Text>
-                    </TouchableOpacity>
-                  );
-                }) : null}
-                {outfit.seasonalColors.length ? outfit.seasonalColors.map((item: any, index: number) => {
-                  return (
-                    <View key={index} style={[styles.tags, styles.seasonalColors]}>
-                      <Text style={styles.tagsText}>{item}</Text>
-                    </View>
-                  );
-                }) : null}
+                {outfit.kibbeTypes.length
+                  ? outfit.kibbeTypes.map((item: any, index: number) => {
+                      return (
+                        <TouchableOpacity
+                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}
+                          key={index}
+                          style={[styles.tags, styles.kibbeTypes]}
+                        >
+                          <Text style={styles.tagsText}>{item}</Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  : null}
+                {outfit.seasonalColors.length
+                  ? outfit.seasonalColors.map((item: any, index: number) => {
+                      return (
+                        <View key={index} style={[styles.tags, styles.seasonalColors]}>
+                          <Text style={styles.tagsText}>{item}</Text>
+                        </View>
+                      );
+                    })
+                  : null}
               </View>
-                <TouchableOpacity onPress={handleShoppingBagClick} style={{ alignItems: "center", marginLeft: 5, marginRight: 10 }}>
-                  <Image source={require("../assets/Shopping_Bag_Logo.png")} style={styles.shoppingBagImage} />
-                </TouchableOpacity>
+              <TouchableOpacity onPress={handleShoppingBagClick} style={{ alignItems: "center", marginLeft: 5, marginRight: 10 }}>
+                <FastImage source={require("../assets/Shopping_Bag_Logo.png")} style={styles.shoppingBagImage} />
+              </TouchableOpacity>
             </View>
-            { outfit?.content ? <View style={styles.postContainer}>
-              <View style={styles.postHeader}>
+            {outfit?.content ? (
+              <View style={styles.postContainer}>
+                <View style={styles.postHeader}>
                   <Text style={styles.postHeaderText}>
-                    {outfit?.owner?.firstName + " " + outfit?.owner?.lastName + ' '}
+                    {outfit?.owner?.firstName + " " + outfit?.owner?.lastName + " "}
                     <Text style={styles.postText}>{outfit?.content}</Text>
                   </Text>
+                </View>
               </View>
-            </View> : null }
+            ) : null}
             <View style={styles.commentsContainer}>
               {outfit?.Comment?.map((comment: any, index: number) => {
                 return (
                   <View key={index} style={styles.commentContainer}>
                     <View style={styles.commentHeader}>
                       {comment?.owner?.userImage ? (
-                        <Image source={{ uri: comment?.owner?.userImage }} style={styles.commentUserImage} />
+                        <FastImage source={{ uri: comment?.owner?.userImage }} style={styles.commentUserImage} />
                       ) : (
-                        <Image source={require("../assets/Monkey_Profile_Logo.png")} style={styles.commentUserImage} />
+                        <FastImage source={require("../assets/Monkey_Profile_Logo.png")} style={styles.commentUserImage} />
                       )}
                       <View>
                         <Text style={styles.commentUserTitle}>{comment?.owner?.firstName + " " + comment?.owner?.lastName}</Text>
@@ -762,7 +787,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     paddingBottom: 7,
-    textAlign: 'center',
+    textAlign: "center",
   },
   titleContainer: {
     paddingTop: 5,

@@ -21,6 +21,8 @@ import { fetchOutfits, fetchUser, postOutfit } from "../data/api";
 import { DropDownForm, InputForm, MultiDropDownForm } from "../Components/Forms";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
+import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
 
 const modalOptions = {
   kibbeTypes: ["", "Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"],
@@ -293,14 +295,14 @@ export default function PostOutfitScreen({ navigation }: any) {
             <TouchableOpacity style={styles.imageButton} onPress={() => editPhoto()}>
               {formData.images.length ? (
                 <>
-                  <Image source={{ uri: formData.images[0] }} style={styles.uploadedImage} />
+                  <FastImage source={{ uri: formData.images[0] }} style={styles.uploadedImage} />
                   <Text style={styles.imageText}>Replace Photo</Text>
                 </>
               ) : photoLoading ? (
                 <ActivityIndicator size="large" />
               ) : (
                 <View style={styles.imageContainer}>
-                  <Image source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
+                  <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
                   <Text style={styles.placeholderImageText}>Upload Outfit</Text>
                   {error.images ? <Text style={styles.error}>{error.images}</Text> : null}
                 </View>
@@ -358,7 +360,7 @@ export default function PostOutfitScreen({ navigation }: any) {
             error={error}
             field="purchaseLink"
           />
-          <TouchableOpacity onPress={handlePost} style={[styles.completeButton, styles.buttonContainer]}>
+          <TouchableOpacity onPress={handlePost} disabled={photoLoading} style={[styles.completeButton, styles.buttonContainer]}>
             <Text style={styles.completeButtonText}>Post</Text>
           </TouchableOpacity>
         </KeyboardAwareScrollView>

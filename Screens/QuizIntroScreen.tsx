@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpaci
 import { StackScreenProps } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
+import analytics from '@react-native-firebase/analytics';
 
 export default function QuizIntroScreen({ navigation, route }: any) {
   const [quizAnswersObj, setQuizAnswersObj] = useState({}) as any;
