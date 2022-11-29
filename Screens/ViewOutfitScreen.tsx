@@ -24,6 +24,7 @@ import * as WebBrowser from "expo-web-browser";
 import { modusTypesReverse } from "./ModusDescriptionScreen";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
+import { mixpanel } from "../utils/mixpanel";
 
 const defaultProfile = "https://yt3.ggpht.com/-2lcjvQfkrNY/AAAAAAAAAAI/AAAAAAAAAAA/ouxs6ZByypg/s900-c-k-no/photo.jpg";
 
@@ -232,6 +233,11 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
       item_name: outfit?.description,
       purchase_link: outfit?.purchaseLink,
     });
+    mixpanel.track("shopping_bag_click", {
+      item_id: id,
+      item_name: outfit?.description,
+      purchase_link: outfit?.purchaseLink,
+      });
   };
 
   const handleVote = (vote: number) => {
@@ -279,7 +285,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                 </TouchableOpacity>
               )}
             </TouchableOpacity>
-            <FastImage source={{ uri: outfit.images[0] }} style={styles.image} />
+            <FastImage source={{ uri: outfit.imagesOptimized[0] || outfit.images[0] }} style={styles.image} />
             <View style={styles.titleContainer}>
               <Text style={styles.description}>{outfit.description}</Text>
             </View>

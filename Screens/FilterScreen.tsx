@@ -6,6 +6,7 @@ import { useStore } from "../utils/firebase/useAuthentication";
 import { NavigationHelpersContext } from "@react-navigation/native";
 import { Dimensions } from "react-native";
 import analytics from "@react-native-firebase/analytics";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function FilterScreen({ navigation }: any) {
   const handleModusTypePress = () => {
@@ -46,6 +47,11 @@ export function ModusTypeFilterScreen({ navigation }: any) {
       modus_types: checked.map((el, index) => {
         if (el) return modusTypes[index];
       }),
+    });
+    mixpanel.track("modus_type_filter_selected", {
+      modus_types: checked.map((el, index) => {
+        if (el) return modusTypes[index];
+      }).filter(el => el)
     });
   }
   const toggleCheckbox = (index: number) => {
@@ -131,6 +137,11 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
       seasonal_colors: checked.map((el, index) => {
         if (el) return seasonalColors[index];
       }),
+    });
+    mixpanel.track("seasonal_color_filter_selected", {
+      seasonal_colors: checked.map((el, index) => {
+        if (el) return seasonalColors[index];
+      }).filter(el => el)
     });
   }
   const toggleCheckbox = (index: number) => {

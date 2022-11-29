@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
 import auth from "@react-native-firebase/auth";
 import analytics from "@react-native-firebase/analytics";
+import { mixpanel } from "../utils/mixpanel";
 
 
 const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
@@ -30,6 +31,7 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
     try {
       const { user } = await firebaseAuth.signInWithEmailAndPassword(value.email, value.password);
       analytics().logEvent("upload_profile_picture");
+      mixpanel.track("upload_profile_picture");
       navigation.navigate("HomeTabs");
     } catch (error: any) {
       setValue({
@@ -46,10 +48,6 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           <Text>{value.error}</Text>
         </View>
       )}
-
-      <View style={styles.title}>
-        <Text style={styles.titleText}>LooksMax</Text>
-      </View>
       <View style={styles.controls}>
         <TextInput
           autoCorrect={false}
@@ -86,7 +84,7 @@ const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 
 const styles = StyleSheet.create({
   signUpButtonText: {
-    color: "#2b414d",
+    color: "#666",
     fontSize: 16,
   },
   signUp: {
@@ -120,7 +118,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#2b414d",
+    backgroundColor: "#666",
     borderRadius: 50,
     padding: 10,
     width: 150,
@@ -133,14 +131,15 @@ const styles = StyleSheet.create({
   },
 
   controls: {
+    marginTop: 20,
     width: "80%",
   },
 
   control: {
     paddingVertical: 10,
-    borderColor: "#2b414d",
+    borderColor: "black",
     borderBottomWidth: 1,
-    fontSize: 20,
+    fontSize: 18,
   },
 
   error: {

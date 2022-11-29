@@ -30,9 +30,7 @@ import * as Sentry from "sentry-expo";
 import SettingsScreen from "./Screens/SettingsScreen";
 import PostOutfitScreen from "./Screens/PostOutfitScreen";
 import FilterScreen, {
-  AestheticFilterScreen,
   ModusTypeFilterScreen,
-  OccasionFilterScreen,
   SeasonalColorFilterScreen,
 } from "./Screens/FilterScreen";
 import ViewOutfitScreen from "./Screens/ViewOutfitScreen";
@@ -50,6 +48,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModusDescriptionScreen from "./Screens/ModusDescriptionScreen";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
+import Smartlook from 'smartlook-react-native-wrapper';
+import { mixpanel } from "./utils/mixpanel";
+import { setUser } from "@sentry/react-native";
+
+Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0");
+
+mixpanel.init();
 
 const queryClient = new QueryClient();
 
@@ -84,7 +89,6 @@ function ProfileScreenStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
       <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={EditProfileScreen} />
-      <Stack.Screen name="Settings" options={{ headerTitle: "", title: "", headerShown: true }} component={SettingsScreen} />
     </Stack.Navigator>
   );
 }
@@ -118,6 +122,7 @@ export default function App({ navigation, route }: any) {
   const navigationRef = useRef() as any;
   const user = useAuthentication();
   analytics().logAppOpen();
+  mixpanel.track("app opened");
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer
@@ -158,6 +163,7 @@ export default function App({ navigation, route }: any) {
           />
           <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
           <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
+        <Stack.Screen name="Settings" options={{ headerTitle: "LooksMax", title: "", headerShown: true }} component={SettingsScreen} />
           <Stack.Screen
             name="ViewOutfit"
             options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
@@ -169,7 +175,7 @@ export default function App({ navigation, route }: any) {
             options={{ headerTitle: "", title: "", headerShown: true }}
             component={ViewProfileScreen}
           />
-          <Stack.Screen name="SignupStackNavigation" options={{ headerTitle: "", title: "" }} component={SignupStackNavigation} />
+          {/* <Stack.Screen name="SignupStackNavigation" options={{ headerTitle: "", title: "" }} component={SignupStackNavigation} /> */}
           <Stack.Screen name="Filter" options={{ headerTitle: "", headerShown: true }} component={FilterScreen} />
           <Stack.Screen
             name="ModusTypeFilter"
@@ -198,7 +204,7 @@ export default function App({ navigation, route }: any) {
 function SignupStackNavigation() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "" }} component={SignUpScreen} />
+      <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "", headerShown: false }} component={SignUpScreen} />
       <Stack.Screen name="SignIn" options={{ headerTitle: "Sign In", title: "", headerShown: false }} component={SignInScreen} />
       {/* <Stack.Screen name="QuizIntro" options={{ headerTitle: "", title: "", headerShown: false }} component={QuizIntroScreen} />
       <Stack.Screen name="QuizLimbLength" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizLimbLengthScreen} />
@@ -279,9 +285,35 @@ function HomeTabs() {
   const { isLoading } = useQuery("currentUser", () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
     onSuccess: (data) => {
-      setUser({ ...user, ...data });
+      if (data) {
+        setUser({ ...data, ...user });
+        mixpanel.registerSuperProperties({
+          email: data.email,
+          name: data.firstName + " " + data.lastName,
+          modusType: data.modusType,
+        });
+        mixpanel.getPeople().set("email", data.email);
+        mixpanel.getPeople().set("name", data.firstName + " " + data.lastName);
+        mixpanel.getPeople().set("modusType", data.modusType);
+        Smartlook.setUserIdentifier(user?.uid, { email: data.email, name: data.firstName + " " + data.lastName, modusType: data.modusType });
+      }
     },
   });
+
+  if (user?.uid) {
+    Smartlook.registerIntegrationListener(
+      (visitor) => {
+          mixpanel.getPeople().set({ "smartlook_visitor_url": visitor });
+          mixpanel.identify(user?.uid);
+      },
+      (dash) => {
+          mixpanel.track(
+              "Smartlook session URL",
+              {"session_url": dash});
+      }
+    );
+  }
+
   return isLoading ? (
     <SafeAreaView style={styles.screenAreaView}>
       <ActivityIndicator size="large" />

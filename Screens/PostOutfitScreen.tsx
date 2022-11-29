@@ -23,6 +23,7 @@ import uploadImageAsync from "../utils/firebase/uploadImage";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
+import { mixpanel } from "../utils/mixpanel";
 
 const modalOptions = {
   kibbeTypes: ["", "Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"],
@@ -147,14 +148,6 @@ export default function PostOutfitScreen({ navigation }: any) {
 
   const outfit = {
     ...formData,
-    // images: formData.images,
-    // kibbeTypes: formData.kibbeTypes,
-    // description: formData.description,
-    // occasions: formData.occasions,
-    // aesthetic: formData.aesthetic,
-    // seasonalColors: formData.seasonalColors,
-    // purchaseLink: formData.purchaseLink,
-    // content: formData.content,
     ownerId: user?.uid,
   };
 
@@ -207,10 +200,6 @@ export default function PostOutfitScreen({ navigation }: any) {
         text: "Select from Camera Roll",
         onPress: () => pickImage(false, index),
       },
-      // {
-      //   text: "Paste URL",
-      //   onPress: pasteURL,
-      // },
       {
         text: "Cancel",
         style: "cancel",
@@ -270,6 +259,8 @@ export default function PostOutfitScreen({ navigation }: any) {
     mutate(outfit);
     setFormData(JSON.parse(JSON.stringify(initialFormState)));
     navigation.navigate("Home");
+    analytics().logEvent("outfit_posted", { ...outfit });
+    mixpanel.track("Outfit Created", { ...outfit });
   };
   const handleOptionsModalClose = () => {
     if (["occasions", "kibbeTypes", "seasonalColors"].includes(currentModal)) {

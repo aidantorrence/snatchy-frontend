@@ -35,9 +35,6 @@ export default function QuizIntroScreen({ navigation, route }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.title}>
-        <Text style={styles.titleText}>LooksMax</Text>
-      </View>
       <View>
         <Text style={styles.introText}>Answer a few questions about yourself so we can recommend clothes that flatter you</Text>
       </View>

@@ -18,6 +18,7 @@ import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import analytics from "@react-native-firebase/analytics";
+import FastImage from "react-native-fast-image";
 
 export const modusTypes = {
   D: "Queen",
@@ -62,7 +63,6 @@ export default function QuizSuccessScreen({ navigation, route, refetch }: any) {
 
   // AsyncStorage.clear();
   const user = useStore((state) => state.user);
-  const setUser = useStore((state) => state.setUser);
   const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
   });

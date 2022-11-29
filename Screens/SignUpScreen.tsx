@@ -1,7 +1,7 @@
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as ImagePicker from "expo-image-picker";
-import { StyleSheet, Text, View, TextInput, Button, SafeAreaView, TouchableOpacity, Image, Alert } from "react-native";
+import { StyleSheet, Text, View, TextInput, Button, SafeAreaView, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import Checkbox from "expo-checkbox";
 import auth from "@react-native-firebase/auth";
@@ -11,6 +11,9 @@ import { postUser } from "../data/api";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
+import { mixpanel } from "../utils/mixpanel";
+import { useStore } from "../utils/firebase/useAuthentication";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const initialFormState = {
   userImage: "",
@@ -21,6 +24,8 @@ const initialFormState = {
 };
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
   const firebaseAuth = auth();
+  const user = useStore((state) => state.user);
+  const setUser = useStore((state) => state.setUser);
   const [formData, setFormData] = useState(initialFormState) as any;
   const [value, setValue] = useState({
     email: "",
@@ -28,13 +33,13 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
     error: "",
   });
   const [isChecked, setIsChecked] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => postUser(data), {
-    onSuccess: () => {
-      queryClient.invalidateQueries("currentUser");
-      queryClient.invalidateQueries("userTrades");
-      queryClient.invalidateQueries("userOffers");
+    onSuccess: (data) => {
+      setUser({ ...data, ...user });
+      queryClient.setQueryData("currentUser", data);
     },
   });
 
@@ -69,16 +74,17 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         password: undefined,
       });
       analytics().logSignUp({ method: "email" });
+      mixpanel.track("sign_up");
       // navigation.goBack();
       // navigation.navigate(route.name);
-      navigation.navigate("HomeTabs", {
-        screen: "CreateStack",
-        //   params: {
-        //     screen: "ShippingDetails",
-        //     id,
-        //     ownerId,
-        //   },
-      });
+      // navigation.navigate("HomeTabs", {
+      //   screen: "CreateStack",
+      //   //   params: {
+      //   //     screen: "ShippingDetails",
+      //   //     id,
+      //   //     ownerId,
+      //   //   },
+      // });
     } catch (error: any) {
       setValue({
         ...value,
@@ -121,6 +127,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 
       result = await ImagePicker.launchCameraAsync();
       analytics().logEvent("take_profile_picture");
+      mixpanel.track("take_profile_picture");
     } else {
       // No permissions request is necessary for launching the image library
       result = await ImagePicker.launchImageLibraryAsync({
@@ -130,6 +137,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         quality: 0.1,
       });
       analytics().logEvent("select_profile_picture");
+      mixpanel.track("select_profile_picture");
     }
 
     if (!result?.cancelled) {
@@ -138,6 +146,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         setFormData({ ...formData });
       });
       analytics().logEvent("upload_profile_picture");
+      mixpanel.track("upload_profile_picture");
     }
   };
 
@@ -148,18 +157,23 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           <Text>{value.error}</Text>
         </View>
       )}
-      <View style={styles.title}>
-        <Text style={styles.titleText}>LooksMax</Text>
-      </View>
-      <View style={styles.container}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.containerContent} style={styles.container}>
         {/* <Text style={styles.title}>GET STARTED</Text> */}
-        <TouchableOpacity style={styles.imageContainer} onPress={launchPhotosAlert}>
-          <FastImage
-            source={formData.userImage ? { uri: formData.userImage } : require("../assets/Default_Profile.png")}
-            style={styles.images}
-          />
+        <TouchableOpacity style={styles.imageButton} onPress={launchPhotosAlert}>
+          {formData.userImage ? (
+            <>
+              <FastImage source={{ uri: formData.userImage }} style={styles.images} />
+              <Text style={styles.imageText}>Replace Photo</Text>
+            </>
+          ) : photoLoading ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            <View style={styles.imageContainer}>
+              <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
+              <Text style={styles.placeholderImageText}>Add Profile Photo</Text>
+            </View>
+          )}
         </TouchableOpacity>
-        <Text style={styles.profile}>Add Profile Photo</Text>
         <View style={styles.controls}>
           <TextInput
             placeholder="First Name"
@@ -204,22 +218,40 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           <TouchableOpacity
             style={styles.signInButton}
             onPress={() =>
-              navigation.navigate("SignupStackNavigation", {
-                screen: "SignIn",
-              })
+              navigation.navigate("SignIn")
             }
           >
             <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  imageButton: {
+    flex: 1,
+    flexBasis: 1,
+    alignItems: "center",
+    paddingTop: 7,
+    paddingBottom: 12,
+  },
+  imageText: {
+    fontSize: 15,
+    color: "gray",
+  },
+  addPhoto: {
+    width: 25,
+    height: 25,
+    marginBottom: 5,
+    opacity: 0.7,
+  },
+  placeholderImageText: {
+    fontSize: 10,
+  },
   linkText: {
-    color: "darkblue",
+    color: "pink",
   },
   checkboxContainer: {
     flexDirection: "row",
@@ -230,6 +262,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   imageContainer: {
+    alignItems: 'center',
     marginVertical: 10,
   },
   profile: {
@@ -246,7 +279,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signInButtonText: {
-    color: "#2b414d",
+    color: '#666',
     fontSize: 16,
   },
   images: {
@@ -255,14 +288,14 @@ const styles = StyleSheet.create({
     height: 120,
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
     color: "white",
   },
   button: {
     marginTop: 20,
-    backgroundColor: "#2b414d",
+    backgroundColor: '#666',
     borderRadius: 50,
     padding: 10,
     width: 150,
@@ -283,24 +316,26 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 20,
     backgroundColor: "#fff",
+  },
+  containerContent: {
     alignItems: "center",
     justifyContent: "center",
   },
   controls: {},
 
   control: {
-    paddingVertical: 10,
-    borderColor: "#2b414d",
-    borderBottomWidth: 1,
-    fontSize: 20,
+    paddingVertical: 7,
+    borderColor: "black",
+    borderBottomWidth: .5,
+    fontSize: 16,
   },
-
   error: {
     marginTop: 10,
     padding: 10,
     color: "#fff",
     backgroundColor: "#D54826FF",
   },
+
 });
 
 export default SignUpScreen;

@@ -139,7 +139,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
           </TouchableOpacity>
           <View>
-            {userData?.outfits.length ? (
+            {userData?.outfits?.length ? (
               <FlatList
                 horizontal={false}
                 numColumns={3}

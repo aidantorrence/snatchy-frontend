@@ -17,11 +17,12 @@ import { modusTypes } from "./QuizSuccessScreen";
 import { FlashList } from "@shopify/flash-list";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
+import { mixpanel } from "../utils/mixpanel";
 const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  // queryCache.clear();
+  queryCache.clear();
   const user = useStore((state) => state.user);
   const {
     isFetching: isFetchingOutfits,
@@ -41,6 +42,10 @@ export default function HomeScreen({ navigation }: any) {
           item_name: outfit.description,
         },
       ],
+    });
+    mixpanel.track("View Outfit", {
+      id: outfit.id.toString(),
+      ownerId: outfit.ownerId,
     });
   };
 
@@ -82,7 +87,7 @@ export default function HomeScreen({ navigation }: any) {
           ) : null}
         </View>
         <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
-          <FastImage source={{ uri: item.images[0] }} style={styles.image} />
+          <FastImage source={{ uri: item.imagesThumbnails[0] || item.images[0] }} style={styles.image} />
         </TouchableOpacity>
         <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{item.description}</Text>
@@ -99,10 +104,12 @@ export default function HomeScreen({ navigation }: any) {
   const handleModusTypePress = () => {
     navigation.navigate("ModusTypeFilter");
     analytics().logEvent("modus_type_filter_click");
+    mixpanel.track("Modus Type Filter Click");
   };
   const handleSeasonalColorPress = () => {
     navigation.navigate("SeasonalColorFilter");
     analytics().logEvent("seasonal_color_filter_click");
+    mixpanel.track("Seasonal Color Filter Click");
   };
 
   const handleFilterPress = () => {
