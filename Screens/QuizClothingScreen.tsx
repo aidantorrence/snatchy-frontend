@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizClothingScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -20,6 +21,9 @@ export default function QuizClothingScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_clothing_screen_next_button_clicked", {
+      clothing: quizAnswersObj.clothing,
+    });
 
     switch (quizAnswersObj.clothing) {
       case "I can take it or leave it":

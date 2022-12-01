@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpaci
 import { StackScreenProps } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizLimbLengthScreen({ navigation, route }: any) {
   const [quizAnswersObj, setQuizAnswersObj] = useState(route.params.quizAnswersObj) as any;
@@ -18,6 +19,9 @@ export default function QuizLimbLengthScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_limb_length_screen_next_button_clicked", {
+      limbLength: quizAnswersObj.limbLength,
+    });
 
     switch (quizAnswersObj.limbLength) {
       case "Short":

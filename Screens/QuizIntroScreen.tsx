@@ -4,6 +4,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
 import analytics from '@react-native-firebase/analytics';
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizIntroScreen({ navigation, route }: any) {
   const [quizAnswersObj, setQuizAnswersObj] = useState({}) as any;
@@ -19,6 +20,9 @@ export default function QuizIntroScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_intro_screen_next_button_clicked", {
+      height: quizAnswersObj.height,
+    });
 
     switch (quizAnswersObj.height) {
       case "5'5 or below":

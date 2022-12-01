@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity } from "react-native";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizRestrictedScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -20,6 +21,9 @@ export default function QuizRestrictedScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_restricted_next_button_clicked", {
+      restricted: quizAnswersObj.restricted,
+    });
 
     switch (quizAnswersObj.restricted) {
       case "Yes it almost looks like I'm being choked even at the right size":

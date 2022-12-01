@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
-import { StackScreenProps } from "@react-navigation/stack";
-import { useQuery, useQueryClient } from "react-query";
-import { fetchUser } from "../data/api";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizThickMaterialsScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -23,6 +21,9 @@ export default function QuizThickMaterialsScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_thick_materials_screen_next_button_clicked", {
+      thickMaterials: quizAnswersObj.thickMaterials,
+    });
 
     switch (quizAnswersObj.materials) {
       case "No, it can look harsh on me":

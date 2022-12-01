@@ -29,10 +29,7 @@ import TradePaymentsScreen from "./Screens/TradePaymentsScreen";
 import * as Sentry from "sentry-expo";
 import SettingsScreen from "./Screens/SettingsScreen";
 import PostOutfitScreen from "./Screens/PostOutfitScreen";
-import FilterScreen, {
-  ModusTypeFilterScreen,
-  SeasonalColorFilterScreen,
-} from "./Screens/FilterScreen";
+import FilterScreen, { ModusTypeFilterScreen, SeasonalColorFilterScreen } from "./Screens/FilterScreen";
 import ViewOutfitScreen from "./Screens/ViewOutfitScreen";
 import ModusTypeQuizScreen from "./Screens/ModusTypeQuizScreen";
 import QuizIntroScreen from "./Screens/QuizIntroScreen";
@@ -48,13 +45,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModusDescriptionScreen from "./Screens/ModusDescriptionScreen";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
-import Smartlook from 'smartlook-react-native-wrapper';
+import Smartlook from "smartlook-react-native-wrapper";
 import { mixpanel } from "./utils/mixpanel";
 import { setUser } from "@sentry/react-native";
+import Constants from "expo-constants";
 
-Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0");
-
-mixpanel.init();
+if (Constants?.expoConfig?.extra?.env !== "development") {
+  mixpanel.init();
+  Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0");
+}
 
 const queryClient = new QueryClient();
 
@@ -79,7 +78,6 @@ export function CreateScreenStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="PostOutfit" options={{ headerTitle: "" }} component={PostOutfitScreen} />
       <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
-      {/* <Stack.Screen name="EditProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} /> */}
       <Stack.Screen name="Settings" options={{ headerTitle: "", title: "" }} component={SettingsScreen} />
     </Stack.Navigator>
   );
@@ -122,7 +120,6 @@ export default function App({ navigation, route }: any) {
   const navigationRef = useRef() as any;
   const user = useAuthentication();
   analytics().logAppOpen();
-  mixpanel.track("app opened");
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer
@@ -163,7 +160,11 @@ export default function App({ navigation, route }: any) {
           />
           <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
           <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
-        <Stack.Screen name="Settings" options={{ headerTitle: "LooksMax", title: "", headerShown: true }} component={SettingsScreen} />
+          <Stack.Screen
+            name="Settings"
+            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            component={SettingsScreen}
+          />
           <Stack.Screen
             name="ViewOutfit"
             options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
@@ -295,7 +296,11 @@ function HomeTabs() {
         mixpanel.getPeople().set("email", data.email);
         mixpanel.getPeople().set("name", data.firstName + " " + data.lastName);
         mixpanel.getPeople().set("modusType", data.modusType);
-        Smartlook.setUserIdentifier(user?.uid, { email: data.email, name: data.firstName + " " + data.lastName, modusType: data.modusType });
+        Smartlook.setUserIdentifier(user?.uid, {
+          email: data.email,
+          name: data.firstName + " " + data.lastName,
+          modusType: data.modusType,
+        });
       }
     },
   });
@@ -303,13 +308,11 @@ function HomeTabs() {
   if (user?.uid) {
     Smartlook.registerIntegrationListener(
       (visitor) => {
-          mixpanel.getPeople().set({ "smartlook_visitor_url": visitor });
-          mixpanel.identify(user?.uid);
+        mixpanel.getPeople().set({ smartlook_visitor_url: visitor });
+        mixpanel.identify(user?.uid);
       },
       (dash) => {
-          mixpanel.track(
-              "Smartlook session URL",
-              {"session_url": dash});
+        mixpanel.track("Smartlook session URL", { session_url: dash });
       }
     );
   }

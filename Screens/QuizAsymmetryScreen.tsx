@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizAsymmetryScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -23,6 +24,9 @@ export default function QuizAsymmetryScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_asymmetry_screen_next_button_clicked", {
+      asymmetry: quizAnswersObj.asymmetry,
+    });
 
     switch (quizAnswersObj.asymmetry) {
       case "Sure, it's flattering":

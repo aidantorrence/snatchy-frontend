@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function QuizSilhouetteScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -20,6 +21,9 @@ export default function QuizSilhouetteScreen({ navigation, route }: any) {
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
+    mixpanel.track("quiz_silhouette_screen_next_button_clicked", {
+      silhouette: quizAnswersObj.silhouette,
+    });
 
     switch (quizAnswersObj.silhouette) {
       case "Softly wide through the front but narrow from the side":
