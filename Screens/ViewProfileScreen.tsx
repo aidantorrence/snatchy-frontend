@@ -104,6 +104,19 @@ export default function ViewProfileScreen({ navigation, route }: any) {
     ]);
   };
 
+  const handleQuestionMarkClick = () => {
+    Alert.alert("Select action", "", [
+      {
+        text: "Provide Feedback",
+        onPress: () => WebBrowser.openBrowserAsync('https://calendly.com/jenxiao/30-minute-meeting'),
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  }
+
   return (
     <>
       {isLoading ? (
@@ -113,12 +126,18 @@ export default function ViewProfileScreen({ navigation, route }: any) {
       ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
           {isCurrentUser ? (
+            <View style={{padding: 10, flexDirection: 'row', justifyContent: "space-between"}}>
             <TouchableOpacity
-              style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}
+              onPress={handleQuestionMarkClick}
+            >
+              <FastImage style={{ width: 15, height: 15 }} source={require("../assets/Question_Logo.png")} />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={handleSettingsClick}
             >
               <FastImage style={{ width: 15, height: 15 }} source={require("../assets/Settings.png")} />
             </TouchableOpacity>
+            </View>
           ) : (
             <TouchableOpacity
               style={{ padding: 10, flexDirection: "row", justifyContent: "flex-end" }}

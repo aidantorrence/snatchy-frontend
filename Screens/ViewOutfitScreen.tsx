@@ -358,7 +358,6 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                         <Text style={styles.commentUserTitle}>{comment?.owner?.firstName + " " + comment?.owner?.lastName}</Text>
                         <Text style={styles.commentModusType}>{modusTypes[comment?.owner?.modusType]}</Text>
                       </View>
-                      {/* <Text style={styles.commentText}>{new Date(comment.createdAt).toDateString()}</Text> */}
                     </View>
                     <Text style={styles.commentText}>{comment.content}</Text>
                   </View>

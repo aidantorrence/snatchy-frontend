@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Alert,
 } from "react-native";
 import { QueryCache, useMutation, useQuery, useQueryClient } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
@@ -17,6 +18,9 @@ import { FlashList } from "@shopify/flash-list";
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
 import { mixpanel } from "../utils/mixpanel";
+import { useEffect } from "react";
+import * as WebBrowser from "expo-web-browser";
+import { useUpdateUser } from "../data/mutations";
 const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
@@ -28,9 +32,7 @@ export default function HomeScreen({ navigation }: any) {
     data: outfitsData,
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
-  const {
-    data: outfitVotes,
-  } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
+  const { data: outfitVotes } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
   const currentModusTypes = user?.currentModusTypes?.length ? user?.currentModusTypes : [modusTypes[user?.modusType]];
   const queryClient = useQueryClient();
   const postVoteMutation: any = useMutation((data) => postVote(data), {
@@ -41,8 +43,26 @@ export default function HomeScreen({ navigation }: any) {
     },
   });
   outfitsData = outfitsData?.map((outfit: any) => {
-    return {...outfit, votes: outfitVotes?.find((vote: any) => vote?.id === outfit?.id)?.votes || 0};
-  })
+    return { ...outfit, votes: outfitVotes?.find((vote: any) => vote?.id === outfit?.id)?.votes || 0 };
+  });
+  const { mutate } = useUpdateUser() as any;
+
+  useEffect(() => {
+    if (user?.hasSeenFeedbackAlert) return;
+    setTimeout(() => {
+      mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
+      Alert.alert("We would love if you could provide feedback for us!", "", [
+        {
+          text: "Provide Feedback",
+          onPress: () => WebBrowser.openBrowserAsync("https://calendly.com/jenxiao/30-minute-meeting"),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    }, 60 * 5 * 1000);
+  }, []);
 
   const handlePress = (outfit: any) => {
     navigation.navigate("ViewOutfit", {
@@ -115,7 +135,10 @@ export default function HomeScreen({ navigation }: any) {
   function Item({ item }: any) {
     return (
       <>
-        <TouchableOpacity onPress={() => handleProfilePress(item?.ownerId)} style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}>
+        <TouchableOpacity
+          onPress={() => handleProfilePress(item?.ownerId)}
+          style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}
+        >
           {item?.owner?.userImage ? (
             <FastImage source={{ uri: item.owner.userImage }} style={styles.userImage} />
           ) : (
@@ -149,7 +172,7 @@ export default function HomeScreen({ navigation }: any) {
             )}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handlePress(item)}>
-              <FastImage style={styles.commentIcon} source={require("../assets/Comment_Logo.png")} />
+            <FastImage style={styles.commentIcon} source={require("../assets/Comment_Logo.png")} />
           </TouchableOpacity>
           <Text style={styles.votes}>{item?._count?.Comment}</Text>
         </View>
@@ -222,7 +245,7 @@ const styles = StyleSheet.create({
   votesContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   filterContainer: {
     flexDirection: "row",
