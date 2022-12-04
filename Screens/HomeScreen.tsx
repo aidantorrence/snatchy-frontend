@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Image,
   View,
@@ -10,9 +9,9 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
-import { QueryCache, useQuery } from "react-query";
+import { QueryCache, useMutation, useQuery, useQueryClient } from "react-query";
 import { useStore } from "../utils/firebase/useAuthentication";
-import { fetchOutfits } from "../data/api";
+import { fetchOutfits, fetchOutfitVotes, postVote } from "../data/api";
 import { modusTypes } from "./QuizSuccessScreen";
 import { FlashList } from "@shopify/flash-list";
 import analytics from "@react-native-firebase/analytics";
@@ -22,13 +21,28 @@ const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  queryCache.clear();
+  // queryCache.clear();
   const user = useStore((state) => state.user);
-  const {
-    isFetching: isFetchingOutfits,
+  let {
+    isLoading: isLoadingOutfits,
     data: outfitsData,
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
+  const {
+    data: outfitVotes,
+  } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
+  const currentModusTypes = user?.currentModusTypes?.length ? user?.currentModusTypes : [modusTypes[user?.modusType]];
+  const queryClient = useQueryClient();
+  const postVoteMutation: any = useMutation((data) => postVote(data), {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries("outfit-votes");
+      queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({ queryKey: [`listing-${data?.id}`] });
+    },
+  });
+  outfitsData = outfitsData?.map((outfit: any) => {
+    return {...outfit, votes: outfitVotes?.find((vote: any) => vote?.id === outfit?.id)?.votes || 0};
+  })
 
   const handlePress = (outfit: any) => {
     navigation.navigate("ViewOutfit", {
@@ -50,11 +64,7 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   let outfits = outfitsData?.filter((outfit: any) => {
-    if (!user?.currentModusTypes?.length) {
-      return !outfit?.kibbeTypes.length || (outfit?.kibbeTypes || []).includes(modusTypes[user?.modusType]);
-    } else {
-      return (outfit?.kibbeTypes || []).some((item: any) => (user?.currentModusTypes || []).includes(item));
-    }
+    return (outfit?.kibbeTypes || []).some((item: any) => (currentModusTypes || []).includes(item));
   });
 
   outfits = outfits
@@ -72,29 +82,15 @@ export default function HomeScreen({ navigation }: any) {
       );
     });
 
-  function Item({ item }: any) {
-    return (
-      <>
-        <View style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}>
-          {item?.owner?.userImage ? (
-            <FastImage source={{ uri: item.owner.userImage }} style={styles.userImage} />
-          ) : (
-            <FastImage source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
-          )}
-          <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
-          {item.owner.userType === "EXPERT" ? (
-            <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} />
-          ) : null}
-        </View>
-        <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
-          <FastImage source={{ uri: item.imagesThumbnails[0] || item.images[0] }} style={styles.image} />
-        </TouchableOpacity>
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-      </>
-    );
-  }
+  const handleVote = (vote: number, outfit: any) => {
+    if (outfit?.postVote[0]?.vote === 0) {
+      postVoteMutation.mutate({ outfitId: outfit.id, uid: user?.uid, vote: vote });
+    } else if (outfit?.postVote[0]?.vote === vote) {
+      postVoteMutation.mutate({ outfitId: outfit.id, uid: user?.uid, vote: 0 });
+    } else {
+      postVoteMutation.mutate({ outfitId: outfit.id, uid: user?.uid, vote: vote });
+    }
+  };
 
   const handleProfilePress = (uid: any) => {
     navigation.navigate("ViewProfile", {
@@ -102,7 +98,7 @@ export default function HomeScreen({ navigation }: any) {
     });
   };
   const handleModusTypePress = () => {
-    navigation.navigate("ModusTypeFilter");
+    navigation.navigate("ModusTypeFilter", { currentModusTypes: currentModusTypes });
     analytics().logEvent("modus_type_filter_click");
     mixpanel.track("Modus Type Filter Click");
   };
@@ -116,9 +112,54 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate("Filter");
   };
 
+  function Item({ item }: any) {
+    return (
+      <>
+        <TouchableOpacity onPress={() => handleProfilePress(item?.ownerId)} style={{ flexDirection: "row", marginLeft: 5, marginBottom: 5, alignItems: "center" }}>
+          {item?.owner?.userImage ? (
+            <FastImage source={{ uri: item.owner.userImage }} style={styles.userImage} />
+          ) : (
+            <FastImage source={require("../assets/Monkey_Profile_Logo.png")} style={styles.userImage} />
+          )}
+          <Text style={styles.subTitle}>{item.owner.firstName + " " + item.owner.lastName}</Text>
+          {item.owner.userType === "EXPERT" ? (
+            <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.verifedImage} />
+          ) : null}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handlePress(item)} style={styles.item}>
+          <FastImage source={{ uri: item.imagesThumbnails[0] || item.images[0] }} style={styles.image} />
+        </TouchableOpacity>
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>{item.description}</Text>
+        </View>
+        <View style={styles.votesContainer}>
+          <TouchableOpacity onPress={() => handleVote(1, item)}>
+            {item?.postVote[0]?.vote !== 1 ? (
+              <FastImage style={styles.votesIcon} source={require("../assets/Upvote.png")} />
+            ) : (
+              <FastImage style={styles.votesIcon} source={require("../assets/Upvote_Focused_Compressed.jpg")} />
+            )}
+          </TouchableOpacity>
+          <Text style={styles.votes}>{(item.votes || 0) + item.upvotes - item.downvotes}</Text>
+          <TouchableOpacity onPress={() => handleVote(-1, item)}>
+            {item?.postVote[0]?.vote !== -1 ? (
+              <FastImage style={styles.votesIcon} source={require("../assets/Downvote.png")} />
+            ) : (
+              <FastImage style={styles.votesIcon} source={require("../assets/Downvote_Focused_Compressed.jpg")} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handlePress(item)}>
+              <FastImage style={styles.commentIcon} source={require("../assets/Comment_Logo.png")} />
+          </TouchableOpacity>
+          <Text style={styles.votes}>{item?._count?.Comment}</Text>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
-      {isFetchingOutfits ? (
+      {isLoadingOutfits ? (
         <SafeAreaView style={styles.screenAreaView}>
           <ActivityIndicator size="large" />
         </SafeAreaView>
@@ -164,6 +205,25 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  votes: {
+    fontSize: 13,
+    marginHorizontal: 2,
+  },
+  votesIcon: {
+    width: 16,
+    height: 16,
+    marginHorizontal: 2,
+  },
+  commentIcon: {
+    width: 21,
+    height: 21,
+    marginHorizontal: 2,
+  },
+  votesContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'center',
+  },
   filterContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

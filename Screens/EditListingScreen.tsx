@@ -200,7 +200,7 @@ export default function EditListingScreen({ navigation, route }: any) {
       });
     }
 
-    if (!result.cancelled) {
+    if (!result.canceled) {
       uploadImageAsync(result.uri).then((url: any) => {
         if (index !== undefined) {
           handleReplacePhoto(url, index);

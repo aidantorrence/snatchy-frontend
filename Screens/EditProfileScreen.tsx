@@ -1,30 +1,53 @@
 import { useState } from "react";
-import { View, Text, SafeAreaView, Image, Button, StyleSheet, TouchableOpacity, Alert, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Image,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { fetchUser, updateUser } from "../data/api";
 import { useStore } from "../utils/firebase/useAuthentication";
 import * as ImagePicker from "expo-image-picker";
 import uploadImageAsync from "../utils/firebase/uploadImage";
 import FastImage from "react-native-fast-image";
+import Checkbox from "expo-checkbox";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function EditProfileScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    sellerName: "",
-    userImage: "",
-  });
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => updateUser(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("currentUser");
-      queryClient.invalidateQueries("listings");
+      queryClient.invalidateQueries("outfits");
     },
   });
   const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
+    onSuccess: (data) => {
+      setFormData({
+        firstName: data?.firstName,
+        lastName: data?.lastName,
+        userImage: data?.userImage,
+      });
+    },
+  });
+
+  const [formData, setFormData] = useState({
+    firstName: userData?.firstName,
+    lastName: userData?.lastName,
+    userImage: userData?.userImage,
   });
 
   const launchPhotosAlert = () => {
@@ -42,33 +65,42 @@ export default function EditProfileScreen({ navigation, route }: any) {
   const pickImage = async (takePhoto: boolean) => {
     // clear form error
     // setError({ ...error, images: "" });
+    setPhotoLoading(true);
 
-    let result: any;
+    try {
+      let result: any;
 
-    if (takePhoto) {
-      // take a photo
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (takePhoto) {
+        // take a photo
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-      // if permission not granted, return
-      if (status !== "granted") return;
+        // if permission not granted, return
+        if (status !== "granted") return;
 
-      result = await ImagePicker.launchCameraAsync();
-    } else {
-      // No permissions request is necessary for launching the image library
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 4],
-        quality: 0.1,
-      });
+        result = await ImagePicker.launchCameraAsync();
+        mixpanel.track("take_profile_picture");
+      } else {
+        // No permissions request is necessary for launching the image library
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          allowsEditing: true,
+          aspect: [4, 4],
+          quality: 0.1,
+        });
+        mixpanel.track("select_profile_picture");
+      }
+
+      if (!result?.canceled) {
+        uploadImageAsync(result.uri).then((url) => {
+          formData.userImage = url as any;
+          setFormData({ ...formData });
+        });
+      }
+      mixpanel.track("upload_profile_picture");
+    } catch (e) {
+      setPhotoLoading(false);
     }
-
-    if (!result?.cancelled) {
-      uploadImageAsync(result.uri).then((url) => {
-        formData.userImage = url as any;
-        setFormData({ ...formData });
-      });
-    }
+    setPhotoLoading(false);
   };
 
   const handleUpdatePress = async () => {
@@ -79,140 +111,162 @@ export default function EditProfileScreen({ navigation, route }: any) {
     navigation.goBack();
   };
 
-  return (
-    <>
-      {isLoading ? (
-        <Text>Loading</Text>
-      ) : (
-        <SafeAreaView style={styles.profileScreenContainer}>
-          <TouchableOpacity style={{ display: "flex", alignItems: "center" }} onPress={launchPhotosAlert}>
-            {userData?.userImage || formData.userImage ? (
-              <FastImage
-                source={{ uri: formData.userImage || userData?.userImage }}
-                style={{ width: 120, height: 120, borderRadius: 100, borderWidth: 1 }}
-              />
-            ) : (
-              <>
-                <View style={{ borderRadius: 100, borderWidth: 1, padding: 10, marginBottom: 10 }}>
-                  <FastImage source={require("../assets/Add_Profile_Logo.png")} style={{ width: 120, height: 120 }} />
-                </View>
-                <Text style={styles.caption}>Add Profile Picture</Text>
-              </>
-            )}
-          </TouchableOpacity>
-          <View style={styles.controls}>
-            <TextInput
-              placeholder="First Name"
-              style={styles.control}
-              value={formData.firstName}
-              onChangeText={(text: string) => setFormData({ ...formData, firstName: text })}
-            />
-            <TextInput
-              placeholder="Last Name"
-              style={styles.control}
-              value={formData.lastName}
-              onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
-            />
-            <TextInput
-              placeholder="Shop Name (optional)"
-              style={styles.control}
-              value={formData.sellerName}
-              onChangeText={(text: string) => setFormData({ ...formData, sellerName: text })}
-            />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={handleUpdatePress}>
-                <Text style={styles.buttonText}>Update</Text>
-              </TouchableOpacity>
+  return isLoading ? (
+    <SafeAreaView style={styles.screenAreaView}>
+      <ActivityIndicator size="large" />
+    </SafeAreaView>
+  ) : (
+    <SafeAreaView style={styles.safeAreaContainer}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.containerContent} style={styles.container}>
+        <TouchableOpacity style={styles.imageButton} onPress={launchPhotosAlert}>
+          {formData.userImage ? (
+            <>
+              <FastImage source={{ uri: formData.userImage }} style={styles.images} />
+              <Text style={styles.imageText}>Replace Photo</Text>
+            </>
+          ) : photoLoading ? (
+            <ActivityIndicator size="large" />
+          ) : (
+            <View style={styles.imageContainer}>
+              <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
+              <Text style={styles.placeholderImageText}>Add Profile Photo</Text>
             </View>
-          </View>
-        </SafeAreaView>
-      )}
-    </>
+          )}
+        </TouchableOpacity>
+        <View style={styles.controls}>
+          <TextInput
+            placeholder="First Name"
+            style={styles.control}
+            value={formData.firstName}
+            onChangeText={(text: string) => setFormData({ ...formData, firstName: text })}
+          />
+          <TextInput
+            placeholder="Last Name"
+            style={styles.control}
+            value={formData.lastName}
+            onChangeText={(text: string) => setFormData({ ...formData, lastName: text })}
+          />
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleUpdatePress}>
+            <Text style={styles.buttonText}>Update</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    marginTop: 20,
-    backgroundColor: "#2b414d",
-    borderRadius: 50,
-    padding: 10,
-    width: 150,
+  screenAreaView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  buttonText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "white",
+  imageButton: {
+    flex: 1,
+    flexBasis: 1,
+    alignItems: "center",
+    paddingTop: 7,
+    paddingBottom: 12,
+  },
+  imageText: {
+    fontSize: 15,
+    color: "gray",
+  },
+  addPhoto: {
+    width: 25,
+    height: 25,
+    marginBottom: 5,
+    opacity: 0.7,
+  },
+  placeholderImageText: {
+    fontSize: 10,
+  },
+  linkText: {
+    color: "pink",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkbox: {
+    margin: 10,
+  },
+  imageContainer: {
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  profile: {
+    fontSize: 14,
+    color: "gray",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "center",
   },
-  control: {
-    paddingVertical: 10,
-    borderColor: "#2b414d",
-    borderBottomWidth: 1,
-    fontSize: 20,
-  },
-  controls: {
-    margin: 20,
-    flex: 1,
-  },
-  caption: {},
-  profileScreenContainer: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  userImagesContainer: {
+  signInButton: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "center",
+    marginTop: 10,
   },
-  userImages: {
-    width: 80,
-    height: 80,
-    margin: 10,
+  signInButtonText: {
+    color: "#666",
+    fontSize: 16,
+  },
+  images: {
+    borderRadius: 500,
+    width: 120,
+    height: 120,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: "#666",
+    borderRadius: 50,
+    padding: 10,
+    width: 150,
   },
   title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  header: {
-    fontWeight: "bold",
-    fontSize: 22,
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  body: {
-    fontSize: 22,
-  },
-  bio: {
-    fontSize: 17,
-  },
-  buttons: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
+    marginTop: 20,
     alignItems: "center",
   },
-  // button: {
-  //   backgroundColor: "white",
-  //   borderWidth: 0.5,
-  //   borderRadius: 30,
-  //   padding: 4,
-  //   paddingTop: 1,
-  //   paddingBottom: 1,
-  //   marginTop: 5,
-  //   shadowColor: "#000",
-  //   shadowOffset: {
-  //     width: 0,
-  //     height: 1,
-  //   },
-  //   shadowOpacity: 1,
-  //   shadowRadius: 1,
-  //   elevation: 2,
-  //   marginRight: 15,
-  // },
+  titleText: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  safeAreaContainer: {
+    flex: 1,
+    paddingTop: 20,
+    backgroundColor: "#fff",
+  },
+  container: {
+    paddingTop: 20,
+    backgroundColor: "#fff",
+  },
+  containerContent: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  controls: {},
+
+  control: {
+    paddingVertical: 7,
+    borderColor: "black",
+    borderBottomWidth: 0.5,
+    fontSize: 16,
+    width: Dimensions.get("window").width - 40,
+  },
+  error: {
+    marginTop: 10,
+    padding: 10,
+    color: "#fff",
+    backgroundColor: "#D54826FF",
+  },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity, Dimensions } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser } from "../data/api";
@@ -38,10 +38,7 @@ export default function QuizLimbLengthScreen({ navigation, route }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.title}>
-        <Text style={styles.titleText}>LooksMax</Text>
-      </View>
-      <View>
+      <View style={styles.headerContainer}>
         <Text style={styles.headerText}>How would you describe the length of your limbs?</Text>
       </View>
       {answers.map((answer: any, index: number) => {
@@ -51,22 +48,32 @@ export default function QuizLimbLengthScreen({ navigation, route }: any) {
             onPress={() => handleAnswerSelection(answer, index)}
             style={[styles.button, index === selectedAnswer.findIndex((el) => el) ? styles.selected : styles.unselected]}
           >
-            <Text style={styles.buttonText}>{answer}</Text>
+            <Text style={[styles.buttonText, index === selectedAnswer.findIndex((el) => el) ? styles.selectedButtonText : undefined]}>{answer}</Text>
           </TouchableOpacity>
         );
       })}
-      <TouchableOpacity onPress={handleNextPageNavigate} style={styles.continueButton}>
-        <Text style={styles.buttonText}>Continue</Text>
+      <View style={styles.controlsButtonContainer}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.continueButton}>
+        <Text style={styles.continueButtonText}>BACK</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={handleNextPageNavigate} style={styles.continueButton}>
+        <Text style={styles.continueButtonText}>NEXT</Text>
+      </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    marginTop: 20,
+  },
+  controlsButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   headerText: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 20,
+    fontSize: 16,
   },
   introText: {
     fontSize: 20,
@@ -74,10 +81,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   unselected: {
-    backgroundColor: "gray",
   },
   selected: {
-    backgroundColor: "#111111",
+    backgroundColor: "#F487D2",
+    shadowOpacity: 0.50,
+  },
+  selectedButtonText: {
+    color: 'white',
+    fontWeight: '500',
   },
   title: {
     alignItems: "center",
@@ -92,24 +103,33 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonText: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 13,
     textAlign: "center",
-    color: "white",
+  },
+  continueButtonText: {
+    fontSize: 16,
+    textAlign: "center",
   },
   button: {
     marginTop: 30,
-    backgroundColor: "#2b414d",
-    borderRadius: 50,
-    padding: 10,
-    width: 250,
+    backgroundColor: "white",
+    width: Dimensions.get("window").width * 0.9,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.30,
+    shadowRadius: 3.27,
+    padding: 18,
+    elevation: 3,
   },
   continueButton: {
-    marginTop: 60,
-    backgroundColor: "#F487D2",
-    borderRadius: 50,
-    padding: 10,
-    width: 150,
+    marginTop: 40,
+    borderRadius: 8,
+    padding: 15,
+    marginHorizontal:  Dimensions.get("window").width * 0.01,
+    width: Dimensions.get("window").width * 0.44,
+    backgroundColor: '#f2f2f2',
   },
   container: {
     flex: 1,

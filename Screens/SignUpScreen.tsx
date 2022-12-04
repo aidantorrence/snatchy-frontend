@@ -140,7 +140,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       mixpanel.track("select_profile_picture");
     }
 
-    if (!result?.cancelled) {
+    if (!result?.canceled) {
       uploadImageAsync(result.uri).then((url) => {
         formData.userImage = url;
         setFormData({ ...formData });
@@ -158,7 +158,6 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
         </View>
       )}
       <KeyboardAwareScrollView contentContainerStyle={styles.containerContent} style={styles.container}>
-        {/* <Text style={styles.title}>GET STARTED</Text> */}
         <TouchableOpacity style={styles.imageButton} onPress={launchPhotosAlert}>
           {formData.userImage ? (
             <>
@@ -217,10 +216,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
           </View>
           <TouchableOpacity
             style={styles.signInButton}
-            onPress={() =>
-              navigation.navigate("SignIn")
-            }
-          >
+            onPress={() =>navigation.navigate('SignIn')}>
             <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
           </TouchableOpacity>
         </View>

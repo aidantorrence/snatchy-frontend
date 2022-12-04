@@ -1,5 +1,15 @@
-import { Image, View, Text, SafeAreaView, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
-import { getFocusedRouteNameFromRoute, NavigationContainer, useNavigation } from "@react-navigation/native";
+import {
+  Image,
+  View,
+  Text,
+  SafeAreaView,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
+import { getFocusedRouteNameFromRoute, NavigationContainer, useNavigation, useNavigationState } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { icons } from "./utils/icons";
@@ -18,13 +28,9 @@ import ItemsWantedScreen from "./Screens/ItemsWantedScreen";
 import OfferScreen from "./Screens/OfferScreen";
 import ItemsToTradeScreen from "./Screens/ItemsToTradeScreen";
 import TradeSummaryScreen from "./Screens/TradeSummaryScreen";
-import CheckoutScreen from "./Screens/CheckoutScreen";
 import { fetchUser } from "./data/api";
-import CreateSellerScreen from "./Screens/CreateSellerScreen";
 import OrderConfirmationScreen from "./Screens/OrderConfirmationScreen";
 import SetupPaymentsScreen from "./Screens/SetupPaymentsScreen";
-import MessagesScreen from "./Screens/MessagesScreen";
-import ViewOfferScreen from "./Screens/ViewOffersScreen";
 import TradePaymentsScreen from "./Screens/TradePaymentsScreen";
 import * as Sentry from "sentry-expo";
 import SettingsScreen from "./Screens/SettingsScreen";
@@ -32,7 +38,7 @@ import PostOutfitScreen from "./Screens/PostOutfitScreen";
 import FilterScreen, { ModusTypeFilterScreen, SeasonalColorFilterScreen } from "./Screens/FilterScreen";
 import ViewOutfitScreen from "./Screens/ViewOutfitScreen";
 import ModusTypeQuizScreen from "./Screens/ModusTypeQuizScreen";
-import QuizIntroScreen from "./Screens/QuizIntroScreen";
+import QuizHeightScreen from "./Screens/QuizHeightScreen";
 import QuizLimbLengthScreen from "./Screens/QuizLimbLengthScreen";
 import QuizClothingScreen from "./Screens/QuizClothingScreen";
 import QuizAsymmetryScreen from "./Screens/QuizAsymmetryScreen";
@@ -49,6 +55,11 @@ import Smartlook from "smartlook-react-native-wrapper";
 import { mixpanel } from "./utils/mixpanel";
 import { setUser } from "@sentry/react-native";
 import Constants from "expo-constants";
+import QuizMainGoalScreen from "./Screens/QuizMainGoalScreen";
+import QuizShoppingExperienceScreen from "./Screens/QuizShoppingExperienceScreen";
+import QuizImportantFactorsScreen from "./Screens/QuizImportantFactorsScreen";
+import QuizPlatformScreen from "./Screens/QuizPlatformScreen";
+import ModusTypeQuizIntroScreen from "./Screens/ModusTypeQuizIntroScreen";
 
 if (Constants?.expoConfig?.extra?.env !== "development") {
   mixpanel.init();
@@ -207,63 +218,78 @@ function SignupStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "", headerShown: false }} component={SignUpScreen} />
       <Stack.Screen name="SignIn" options={{ headerTitle: "Sign In", title: "", headerShown: false }} component={SignInScreen} />
-      {/* <Stack.Screen name="QuizIntro" options={{ headerTitle: "", title: "", headerShown: false }} component={QuizIntroScreen} />
-      <Stack.Screen name="QuizLimbLength" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizLimbLengthScreen} />
-      <Stack.Screen name="QuizClothing" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizClothingScreen} />
-      <Stack.Screen name="QuizAsymmetry" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizAsymmetryScreen} />
-      <Stack.Screen name="QuizRestricted" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizRestrictedScreen} />
-      <Stack.Screen name="QuizSilhouette" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizSilhouetteScreen} />
-      <Stack.Screen name="QuizOrnateDetails" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizOrnateDetailsScreen} />
-      <Stack.Screen name="QuizThickMaterials" options={{ headerTitle: "", title: "", headerShown: true }} component={QuizThickMaterialsScreen} />
-      <Stack.Screen name="ModusTypeQuiz" options={{ headerTitle: "", title: "", headerShown: true }} component={ModusTypeQuizScreen} /> */}
     </Stack.Navigator>
   );
 }
 
-function OnboardingQuizNavigation() {
+function ModusQuizNavigation() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="QuizIntro" options={{ headerTitle: "", title: "", headerShown: false }} component={QuizIntroScreen} />
+      <Stack.Screen name="ModusTypeQuizIntro" options={{ headerTitle: "", title: "", headerShown: false }} component={ModusTypeQuizIntroScreen} />
+      <Stack.Screen name="QuizHeight" options={{ headerTitle: "", title: "", headerShown: false }} component={QuizHeightScreen} />
       <Stack.Screen
         name="QuizLimbLength"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizLimbLengthScreen}
       />
       <Stack.Screen
         name="QuizClothing"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizClothingScreen}
       />
       <Stack.Screen
         name="QuizAsymmetry"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizAsymmetryScreen}
       />
       <Stack.Screen
         name="QuizRestricted"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizRestrictedScreen}
       />
       <Stack.Screen
         name="QuizSilhouette"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizSilhouetteScreen}
       />
       <Stack.Screen
         name="QuizOrnateDetails"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizOrnateDetailsScreen}
       />
       <Stack.Screen
         name="QuizThickMaterials"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizThickMaterialsScreen}
       />
       <Stack.Screen
         name="QuizSuccess"
-        options={{ headerTitle: "", title: "", headerShown: true }}
+        options={{ headerTitle: "", title: "" }}
         component={QuizSuccessScreen}
       />
+    </Stack.Navigator>
+  );
+}
+
+function LogoTitle({index}: any) {
+  return (
+    <View style={styles.onboardingHeaderTitle}>
+      {new Array(4).fill(0).map((_, i) => (
+      <View key={i} style={[styles.onboardingHeaderBars, index === i ? styles.activeHeader : undefined]}></View>
+      ))}
+    </View>
+  );
+}
+function OnboardingQuizNavigation() {
+  const index = useNavigationState(state => state?.routes[0]?.state?.index);
+  return (
+    <Stack.Navigator
+      screenOptions={{ headerShown: true, headerStyle: styles.onboardingHeader, headerTitle: () => <LogoTitle index={index} />, headerLeft: () => null, }}
+    >
+      <Stack.Screen name="QuizMainGoal" options={{}} component={QuizMainGoalScreen} />
+      <Stack.Screen name="QuizShoppingExperience" options={{}} component={QuizShoppingExperienceScreen} />
+      <Stack.Screen name="QuizImportantFactors" options={{}} component={QuizImportantFactorsScreen} />
+      <Stack.Screen name="QuizPlatform" options={{}} component={QuizPlatformScreen} />
     </Stack.Navigator>
   );
 }
@@ -323,8 +349,10 @@ function HomeTabs() {
     </SafeAreaView>
   ) : !user?.uid ? (
     <SignupStackNavigation />
-  ) : !user?.modusType ? (
+  ) : !user?.hasSeenIntroQuiz ? (
     <OnboardingQuizNavigation />
+  ) : !user?.modusType ? (
+    <ModusQuizNavigation />
   ) : !user?.hasSeenModusType ? (
     <QuizSuccessScreen />
   ) : (
@@ -361,6 +389,28 @@ function HomeTabs() {
 }
 
 const styles = StyleSheet.create({
+  onboardingHeaderBars: { 
+    height: 4, 
+    width: Dimensions.get("window").width / 4 - 7, 
+    backgroundColor: "#e0e0e0",
+    marginHorizontal: 2.5,
+  },
+  activeHeader: {
+    backgroundColor: "#333333",
+  },
+  onboardingHeaderTitle: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: 'center',
+  },
+  onboardingHeader: {
+    borderBottomWidth: 0,
+    shadowOpacity: 0,
+    shadowOffset: {
+      height: 0,
+      width: 0,
+    },
+  },
   screenAreaView: {
     flex: 1,
     justifyContent: "center",

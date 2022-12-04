@@ -102,12 +102,26 @@ export default function QuizSuccessScreen({ navigation, route, refetch }: any) {
         </View>
       </ScrollView>
       <TouchableOpacity onPress={handleNextPageNavigate} style={styles.continueButton}>
-        <Text style={styles.buttonText}>Finish</Text>
+        <Text style={styles.continueButtonText}>Finish</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
+  continueButtonText: {
+    fontSize: 16,
+    textAlign: "center",
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  continueButton: {
+    marginTop: 40,
+    borderRadius: 8,
+    padding: 15,
+    marginHorizontal:  Dimensions.get("window").width * 0.01,
+    width: Dimensions.get("window").width * 0.44,
+    backgroundColor: "#6F3284",
+  },
   descriptionText: {
     marginHorizontal: 30,
     marginVertical: 15,
@@ -159,13 +173,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 10,
     width: 250,
-  },
-  continueButton: {
-    marginTop: 10,
-    backgroundColor: "#6F3284",
-    borderRadius: 50,
-    padding: 10,
-    width: 150,
   },
   container: {
     flex: 1,

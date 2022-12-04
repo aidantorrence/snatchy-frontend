@@ -243,13 +243,10 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
   const handleVote = (vote: number) => {
     if (outfit?.postVote[0]?.vote === 0) {
       postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: vote });
-      // setCurrentVote(vote);
     } else if (outfit?.postVote[0]?.vote === vote) {
       postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: 0 });
-      // setCurrentVote('unvoted');
     } else {
       postVoteMutation.mutate({ outfitId: id, uid: user?.uid, vote: vote });
-      // setCurrentVote(vote);
     }
   };
 

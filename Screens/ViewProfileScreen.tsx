@@ -18,8 +18,11 @@ import useAuthentication, { useStore } from "../utils/firebase/useAuthentication
 import * as WebBrowser from "expo-web-browser";
 import { modusTypes } from "./QuizSuccessScreen";
 import FastImage from "react-native-fast-image";
+import { FlashList } from "@shopify/flash-list";
+import { useUpdateUser } from "../data/mutations";
 
 export default function ViewProfileScreen({ navigation, route }: any) {
+  const { mutate } = useUpdateUser() as any;
   const ownerId = route?.params?.ownerId;
   const queryClient = useQueryClient();
   const user = useStore((state) => state.user);
@@ -66,6 +69,10 @@ export default function ViewProfileScreen({ navigation, route }: any) {
       },
     ]);
   };
+
+  const retakeQuiz = () => {
+    mutate({ uid: user?.uid, hasSeenModusType: false, modusType: null });
+  }
 
   const handleBlockUser = () => {
     mutateBlockUser.mutate();
@@ -134,16 +141,21 @@ export default function ViewProfileScreen({ navigation, route }: any) {
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate("ModusDescription", { modusType: userData?.modusType })}
-            style={{ flexDirection: "row", alignSelf: "center", marginBottom: 20 }}
+            style={{ flexDirection: "row", alignSelf: "center", marginBottom: 8, }}
           >
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
           </TouchableOpacity>
+          {isCurrentUser ? <TouchableOpacity
+            onPress={retakeQuiz}
+            style={styles.retakeQuizButton}
+          >
+            <Text style={styles.modusTypeText}>Retake Quiz</Text>
+          </TouchableOpacity> : null}
           <View>
             {userData?.outfits?.length ? (
               <FlatList
                 horizontal={false}
                 numColumns={3}
-                columnWrapperStyle={styles.column}
                 data={userData?.outfits}
                 renderItem={({ item }: any) => (
                   <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
@@ -182,6 +194,15 @@ export default function ViewProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  retakeQuizButton: {
+    alignSelf: 'center',
+    borderWidth: 1,
+    padding: 4,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    borderColor: '#d7d7d7',
+    marginBottom: 20,
+  },
   screenAreaView: {
     flex: 1,
     justifyContent: "center",
@@ -198,7 +219,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modusTypeText: {
-    fontSize: 12,
+    fontSize: 14,
   },
   listingsHeader: {
     display: "flex",

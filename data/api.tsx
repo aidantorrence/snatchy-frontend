@@ -11,6 +11,14 @@ export async function fetchOutfits(uid: string | undefined) {
     console.log(`${API_URL}/outfits failed`, e);
   }
 }
+export async function fetchOutfitVotes(uid: string | undefined) {
+  try {
+    const { data } = await axios.get(`${API_URL}/outfits-with-votes`, { params: { uid } });
+    return data;
+  } catch (e) {
+    console.log(`${API_URL}/outfits failed`, e);
+  }
+}
 
 export async function fetchOutfit(id: number, uid: string) {
   try {
@@ -149,6 +157,7 @@ export async function postVote(postVote: any) {
 }
 
 export async function updateUser(user: any) {
+  console.log(user);
   try {
     const { data } = await axios.patch(`${API_URL}/user`, user);
     return data;

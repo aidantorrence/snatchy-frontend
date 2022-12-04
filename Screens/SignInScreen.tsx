@@ -11,8 +11,6 @@ import { mixpanel } from "../utils/mixpanel";
 const SignInScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
   const firebaseAuth = auth();
   let uid = "";
-  const { data: userData, isLoading, refetch } = useQuery(`currentUser`, () => fetchUser(uid));
-  const queryClient = useQueryClient();
   const [value, setValue] = React.useState({
     email: "",
     password: "",

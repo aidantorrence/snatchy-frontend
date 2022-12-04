@@ -30,11 +30,12 @@ export default function FilterScreen({ navigation }: any) {
   );
 }
 
-export function ModusTypeFilterScreen({ navigation }: any) {
+export function ModusTypeFilterScreen({ navigation, route }: any) {
+  const { currentModusTypes } = route?.params;
   const modusTypes = ["Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
-  const [checked, setChecked] = useState(new Array(modusTypes.length).fill(false));
+  const [checked, setChecked] = useState(modusTypes.map((modusType) => currentModusTypes.includes(modusType)));
   function handleReturn() {
     setUser({
       ...user,
@@ -49,15 +50,20 @@ export function ModusTypeFilterScreen({ navigation }: any) {
       }),
     });
     mixpanel.track("modus_type_filter_selected", {
-      modus_types: checked.map((el, index) => {
-        if (el) return modusTypes[index];
-      }).filter(el => el)
+      modus_types: checked
+        .map((el, index) => {
+          if (el) return modusTypes[index];
+        })
+        .filter((el) => el),
     });
   }
   const toggleCheckbox = (index: number) => {
     const newChecked = [...checked];
     newChecked[index] = !checked[index];
     setChecked(newChecked);
+  };
+  const handleClear = () => {
+    setChecked(new Array(modusTypes.length).fill(false));
   };
 
   return (
@@ -99,9 +105,14 @@ export function ModusTypeFilterScreen({ navigation }: any) {
           </View>
         );
       })} */}
-        <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
-          <Text style={styles.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
+        <View style={styles.controlsButtonContainer}>
+          <TouchableOpacity onPress={handleClear} style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>CLEAR</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleReturn} style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>FILTER</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -124,7 +135,7 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
   ];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
-  const [checked, setChecked] = useState(new Array(seasonalColors.length).fill(false));
+  const [checked, setChecked] = useState(new Array(seasonalColors.length).fill(true));
   function handleReturn() {
     setUser({
       ...user,
@@ -139,15 +150,20 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
       }),
     });
     mixpanel.track("seasonal_color_filter_selected", {
-      seasonal_colors: checked.map((el, index) => {
-        if (el) return seasonalColors[index];
-      }).filter(el => el)
+      seasonal_colors: checked
+        .map((el, index) => {
+          if (el) return seasonalColors[index];
+        })
+        .filter((el) => el),
     });
   }
   const toggleCheckbox = (index: number) => {
     const newChecked = [...checked];
     newChecked[index] = !checked[index];
     setChecked(newChecked);
+  };
+  const handleClear = () => {
+    setChecked(new Array(seasonalColors.length).fill(false));
   };
 
   return (
@@ -162,20 +178,46 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
               <Checkbox
                 style={styles.checkbox}
                 value={checked[index]}
+                onValueChange={(newValue) => {
+                  const newChecked = [...checked];
+                  newChecked[index] = newValue;
+                  setChecked(newChecked);
+                }}
               />
               <Text style={styles.checkboxText}>{item}</Text>
             </TouchableOpacity>
           )}
           keyExtractor={(item, index) => index.toString()}
         />
-        <TouchableOpacity style={styles.filterCompleteButton} onPress={handleReturn}>
-          <Text style={styles.filterButtonText}>Filter</Text>
-        </TouchableOpacity>
+        <View style={styles.controlsButtonContainer}>
+          <TouchableOpacity onPress={handleClear} style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>CLEAR</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleReturn} style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>FILTER</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
+  continueButton: {
+    marginTop: 40,
+    borderRadius: 8,
+    padding: 15,
+    marginHorizontal: Dimensions.get("window").width * 0.01,
+    width: Dimensions.get("window").width * 0.44,
+    backgroundColor: "#f2f2f2",
+  },
+  controlsButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  continueButtonText: {
+    fontSize: 16,
+    textAlign: "center",
+  },
   secondaryContainer: {
     alignItems: "center",
   },

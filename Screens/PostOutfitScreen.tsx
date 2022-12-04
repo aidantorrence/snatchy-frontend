@@ -232,7 +232,7 @@ export default function PostOutfitScreen({ navigation }: any) {
           quality: 0.1,
         });
       }
-      if (!result.cancelled) {
+      if (!result.canceled) {
         const url = await uploadImageAsync(result.uri);
         if (index !== undefined) {
           formData.images[index] = url;

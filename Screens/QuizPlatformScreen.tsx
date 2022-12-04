@@ -4,45 +4,33 @@ import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { mixpanel } from "../utils/mixpanel";
 
-export default function QuizRestrictedScreen({ navigation, route }: any) {
+export default function QuizPlatformScreen({ navigation, route }: any) {
+  const [quizAnswersObj, setQuizAnswersObj] = useState(route?.params?.quizAnswersObj || {}) as any;
+  const answers = ['Reddit', 'Pinterest', 'Word of Mouth', 'Other'];
+  const quizName = 'platform';
+  const [selectedAnswer, setSelectedAnswer] = useState(new Array(answers.length).fill(false));
   const { mutate } = useUpdateUser() as any;
   const user = useStore((state) => state.user);
-  const setUser = useStore((state) => state.setUser);
-  const [quizAnswersObj, setQuizAnswersObj] = useState(route.params.quizAnswersObj) as any;
-  const answers = ["Yes it almost looks like I'm being choked even at the right size", "No I can pull it off if I want to"];
-  const [selectedAnswer, setSelectedAnswer] = useState(new Array(answers.length).fill(false));
 
   function handleAnswerSelection(answer: any, index: number) {
     const newSelectedAnswer = new Array(answers.length).fill(false);
     newSelectedAnswer[index] = true;
     setSelectedAnswer(newSelectedAnswer);
-    setQuizAnswersObj({ ...quizAnswersObj, restricted: answer });
+    setQuizAnswersObj({ ...quizAnswersObj, [quizName]: answer });
   }
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
-    mixpanel.track("quiz_restricted_next_button_clicked", {
-      restricted: quizAnswersObj.restricted,
+    mixpanel.track(`quiz_${quizName}_screen_next_button_clicked`, {
+      [quizName]: quizAnswersObj[quizName],
     });
-
-    switch (quizAnswersObj.restricted) {
-      case "Yes it almost looks like I'm being choked even at the right size":
-        mutate({ uid: user?.uid, modusType: "FN" });
-        setUser({ ...user, modusType: "FN" });
-        navigation.navigate("QuizSuccess", { modusType: "FN" });
-        break;
-      case "No I can pull it off if I want to":
-        mutate({ uid: user?.uid, modusType: "D" });
-        setUser({ ...user, modusType: "D" });
-        navigation.navigate("QuizSuccess", { modusType: "D" });
-        break;
-    }
+    mutate({ uid: user?.uid, hasSeenIntroQuiz: true, introQuizAnswers: quizAnswersObj });
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Do you look restricted if you button your shirt to the neck?</Text>
+      <View>
+        <Text style={styles.headerText}>How did you hear about us?</Text>
       </View>
       {answers.map((answer: any, index: number) => {
         return (
@@ -68,16 +56,12 @@ export default function QuizRestrictedScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    marginTop: 20,
-  },
   controlsButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
   headerText: {
     fontSize: 16,
-    textAlign: 'center',
   },
   introText: {
     fontSize: 20,

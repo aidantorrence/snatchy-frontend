@@ -1,48 +1,37 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, Dimensions } from "react-native";
-import { useUpdateUser } from "../data/mutations";
-import { useStore } from "../utils/firebase/useAuthentication";
+import { StyleSheet, Text, View, Button, TextInput, SafeAreaView, TouchableOpacity, Dimensions } from "react-native";
 import { mixpanel } from "../utils/mixpanel";
 
-export default function QuizRestrictedScreen({ navigation, route }: any) {
-  const { mutate } = useUpdateUser() as any;
-  const user = useStore((state) => state.user);
-  const setUser = useStore((state) => state.setUser);
-  const [quizAnswersObj, setQuizAnswersObj] = useState(route.params.quizAnswersObj) as any;
-  const answers = ["Yes it almost looks like I'm being choked even at the right size", "No I can pull it off if I want to"];
+export default function QuizMainGoalScreen({ navigation, route }: any) {
+  const [quizAnswersObj, setQuizAnswersObj] = useState(route?.params?.quizAnswersObj || {}) as any;
+  const answers = [
+    "Find clothes that suit my physical traits or style",
+    "Get feedback on my outfits",
+    "Create and Share outfits to inspire others",
+    "Give feedback on others' outfits",
+  ];
+  const quizName = "mainGoal";
   const [selectedAnswer, setSelectedAnswer] = useState(new Array(answers.length).fill(false));
 
   function handleAnswerSelection(answer: any, index: number) {
     const newSelectedAnswer = new Array(answers.length).fill(false);
     newSelectedAnswer[index] = true;
     setSelectedAnswer(newSelectedAnswer);
-    setQuizAnswersObj({ ...quizAnswersObj, restricted: answer });
+    setQuizAnswersObj({ ...quizAnswersObj, [quizName]: answer });
   }
 
   function handleNextPageNavigate() {
     if (!selectedAnswer.includes(true)) return;
-    mixpanel.track("quiz_restricted_next_button_clicked", {
-      restricted: quizAnswersObj.restricted,
+    mixpanel.track(`quiz_${quizName}_screen_next_button_clicked`, {
+      [quizName]: quizAnswersObj[quizName],
     });
-
-    switch (quizAnswersObj.restricted) {
-      case "Yes it almost looks like I'm being choked even at the right size":
-        mutate({ uid: user?.uid, modusType: "FN" });
-        setUser({ ...user, modusType: "FN" });
-        navigation.navigate("QuizSuccess", { modusType: "FN" });
-        break;
-      case "No I can pull it off if I want to":
-        mutate({ uid: user?.uid, modusType: "D" });
-        setUser({ ...user, modusType: "D" });
-        navigation.navigate("QuizSuccess", { modusType: "D" });
-        break;
-    }
+    navigation.navigate("QuizShoppingExperience", { quizAnswersObj });
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Do you look restricted if you button your shirt to the neck?</Text>
+      <View>
+        <Text style={styles.headerText}>What's your main goal for using LooksMax?</Text>
       </View>
       {answers.map((answer: any, index: number) => {
         return (
@@ -55,29 +44,16 @@ export default function QuizRestrictedScreen({ navigation, route }: any) {
           </TouchableOpacity>
         );
       })}
-      <View style={styles.controlsButtonContainer}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.continueButton}>
-        <Text style={styles.continueButtonText}>BACK</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={handleNextPageNavigate} style={styles.continueButton}>
         <Text style={styles.continueButtonText}>NEXT</Text>
       </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    marginTop: 20,
-  },
-  controlsButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
   headerText: {
     fontSize: 16,
-    textAlign: 'center',
   },
   introText: {
     fontSize: 20,
@@ -131,8 +107,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
     borderRadius: 8,
     padding: 15,
-    marginHorizontal:  Dimensions.get("window").width * 0.01,
-    width: Dimensions.get("window").width * 0.44,
+    width: Dimensions.get("window").width * 0.9,
     backgroundColor: '#f2f2f2',
   },
   container: {
