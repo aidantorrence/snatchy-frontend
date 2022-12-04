@@ -32,7 +32,7 @@ export default function HomeScreen({ navigation }: any) {
     data: outfitsData,
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
-  const { data: outfitVotes } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
+  // const { data: outfitVotes } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
   const currentModusTypes = user?.currentModusTypes?.length ? user?.currentModusTypes : [modusTypes[user?.modusType]];
   const queryClient = useQueryClient();
   const postVoteMutation: any = useMutation((data) => postVote(data), {
@@ -42,13 +42,10 @@ export default function HomeScreen({ navigation }: any) {
       queryClient.invalidateQueries({ queryKey: [`listing-${data?.id}`] });
     },
   });
-  outfitsData = outfitsData?.map((outfit: any) => {
-    return { ...outfit, votes: outfitVotes?.find((vote: any) => vote?.id === outfit?.id)?.votes || 0 };
-  });
   const { mutate } = useUpdateUser() as any;
 
   useEffect(() => {
-    if (user?.hasSeenFeedbackAlert) return;
+    if (!user || user?.hasSeenFeedbackAlert) return;
     setTimeout(() => {
       mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
       Alert.alert("We would love if you could provide feedback for us!", "", [
@@ -126,10 +123,6 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate("SeasonalColorFilter");
     analytics().logEvent("seasonal_color_filter_click");
     mixpanel.track("Seasonal Color Filter Click");
-  };
-
-  const handleFilterPress = () => {
-    navigation.navigate("Filter");
   };
 
   function Item({ item }: any) {
