@@ -70,8 +70,8 @@ export default function ViewProfileScreen({ navigation, route }: any) {
     ]);
   };
 
-  const retakeQuiz = () => {
-    mutate({ uid: user?.uid, hasSeenModusType: false, modusType: null });
+  const clickFindYourStyleProfileButton = () => {
+    navigation.navigate('StyleProfile')
   }
 
   const handleBlockUser = () => {
@@ -160,15 +160,16 @@ export default function ViewProfileScreen({ navigation, route }: any) {
           </View>
           <TouchableOpacity
             onPress={() => navigation.navigate("ModusDescription", { modusType: userData?.modusType })}
-            style={{ flexDirection: "row", alignSelf: "center", marginBottom: 8, }}
+            style={{ flexDirection: "row", alignSelf: "center", marginBottom: 8 }}
           >
-            <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}</Text>
+            <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}{ userData?.seasonalColor ? " • " + userData?.seasonalColor : ''}</Text>
+            <FastImage style={{ width: 13, height: 13, alignSelf: 'center', }} source={require("../assets/question-mark-filled.png")} />
           </TouchableOpacity>
           {isCurrentUser ? <TouchableOpacity
-            onPress={retakeQuiz}
-            style={styles.retakeQuizButton}
+            onPress={clickFindYourStyleProfileButton}
+            style={styles.styleProfileButton}
           >
-            <Text style={styles.modusTypeText}>Retake Quiz</Text>
+            <Text style={styles.modusTypeText}>Find Your Style Profile</Text>
           </TouchableOpacity> : null}
           <View>
             {userData?.outfits?.length ? (
@@ -178,7 +179,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
                 data={userData?.outfits}
                 renderItem={({ item }: any) => (
                   <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
-                    <FastImage source={{ uri: item.images[0] }} style={styles.userImages} />
+                    <FastImage source={{ uri: item.imagesThumbnails[0] || item.images[0]}} style={styles.userImages} />
                   </TouchableOpacity>
                 )}
                 keyExtractor={(item) => item.id}
@@ -213,7 +214,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  retakeQuizButton: {
+  styleProfileButton: {
     alignSelf: 'center',
     borderWidth: 1,
     padding: 4,
@@ -239,6 +240,7 @@ const styles = StyleSheet.create({
   },
   modusTypeText: {
     fontSize: 14,
+    marginRight: 4,
   },
   listingsHeader: {
     display: "flex",

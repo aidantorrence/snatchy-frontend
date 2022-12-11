@@ -25,6 +25,8 @@ export default function QuizClothingScreen({ navigation, route }: any) {
       clothing: quizAnswersObj.clothing,
     });
 
+    console.log(quizAnswersObj);
+
     switch (quizAnswersObj.clothing) {
       case "I can take it or leave it":
         switch (quizAnswersObj.limbLength) {
@@ -41,10 +43,11 @@ export default function QuizClothingScreen({ navigation, route }: any) {
           case "Long and Lanky":
             navigation.navigate("QuizRestricted", { quizAnswersObj });
             break;
-          case undefined:
+          default:
             navigation.navigate("QuizRestricted", { quizAnswersObj });
             break;
         }
+        break;
       case "It's a strict requirement":
         switch (quizAnswersObj.limbLength) {
           case "Short":
@@ -58,12 +61,13 @@ export default function QuizClothingScreen({ navigation, route }: any) {
             setUser({ ...user, modusType: "SD" });
             navigation.navigate("QuizSuccess", { modusType: "SD" });
             break;
-          case undefined:
+          default:
             mutate({ uid: user?.uid, modusType: "SD" });
             setUser({ ...user, modusType: "SD" });
             navigation.navigate("QuizSuccess", { modusType: "SD" });
             break;
         }
+        break;
     }
   }
 

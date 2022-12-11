@@ -70,7 +70,7 @@ export default function QuizSuccessScreen({ navigation, route, refetch }: any) {
   function handleNextPageNavigate() {
     mutate({ uid: user?.uid, hasSeenModusType: true });
     // navigation.navigate('QuizIntro')
-    // navigation?.navigate('HomeTabs');
+    navigation?.navigate('HomeTabs');
     // navigation.pop(1);
     // navigation.navigate("HomeTabs", {
     //   screen: "CreateStack",

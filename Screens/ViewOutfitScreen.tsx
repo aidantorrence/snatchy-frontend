@@ -47,18 +47,21 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
   const { mutate, isMutationLoading }: any = useMutation(() => deleteOutfit({ id }), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({ queryKey: [`listing-${id}`] });
     },
   });
 
   const { mutate: mutatePurchaseLink }: any = useMutation((data) => updateOutfit(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({ queryKey: [`listing-${id}`] });
     },
   });
 
   const postCommentMutation: any = useMutation((data) => postComment(data), {
     onSuccess: () => {
       queryClient.invalidateQueries("outfits");
+      queryClient.invalidateQueries({ queryKey: [`listing-${id}`] });
     },
   });
 

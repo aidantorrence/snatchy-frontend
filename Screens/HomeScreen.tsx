@@ -25,7 +25,7 @@ const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  // queryCache.clear();
+  queryCache.clear();
   const user = useStore((state) => state.user);
   let {
     isLoading: isLoadingOutfits,
@@ -37,29 +37,28 @@ export default function HomeScreen({ navigation }: any) {
   const queryClient = useQueryClient();
   const postVoteMutation: any = useMutation((data) => postVote(data), {
     onSuccess: (data) => {
-      queryClient.invalidateQueries("outfit-votes");
       queryClient.invalidateQueries("outfits");
       queryClient.invalidateQueries({ queryKey: [`listing-${data?.id}`] });
     },
   });
   const { mutate } = useUpdateUser() as any;
 
-  useEffect(() => {
-    if (!user || user?.hasSeenFeedbackAlert) return;
-    setTimeout(() => {
-      mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
-      Alert.alert("We would love if you could provide feedback for us!", "", [
-        {
-          text: "Provide Feedback",
-          onPress: () => WebBrowser.openBrowserAsync("https://calendly.com/jenxiao/30-minute-meeting"),
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ]);
-    }, 60 * 5 * 1000);
-  }, []);
+  // useEffect(() => {
+  //   if (!user || user?.hasSeenFeedbackAlert) return;
+  //   setTimeout(() => {
+  //     mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
+  //     Alert.alert("We would love if you could provide feedback for us!", "", [
+  //       {
+  //         text: "Provide Feedback",
+  //         onPress: () => WebBrowser.openBrowserAsync("https://calendly.com/jenxiao/30-minute-meeting"),
+  //       },
+  //       {
+  //         text: "Cancel",
+  //         style: "cancel",
+  //       },
+  //     ]);
+  //   }, 60 * 5 * 1000);
+  // }, []);
 
   const handlePress = (outfit: any) => {
     navigation.navigate("ViewOutfit", {

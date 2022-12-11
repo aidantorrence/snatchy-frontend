@@ -7,6 +7,8 @@ import { NavigationHelpersContext } from "@react-navigation/native";
 import { Dimensions } from "react-native";
 import analytics from "@react-native-firebase/analytics";
 import { mixpanel } from "../utils/mixpanel";
+import FastImage from "react-native-fast-image";
+import { modusTypesReverse } from "./ModusDescriptionScreen";
 
 export default function FilterScreen({ navigation }: any) {
   const handleModusTypePress = () => {
@@ -74,18 +76,28 @@ export function ModusTypeFilterScreen({ navigation, route }: any) {
           columnWrapperStyle={styles.column}
           data={modusTypes}
           renderItem={({ item, index }: any) => (
-            <TouchableOpacity onPress={() => toggleCheckbox(index)} style={styles.checkboxContainerModus}>
-              <Checkbox
-                style={styles.checkbox}
-                value={checked[index]}
-                onValueChange={(newValue) => {
-                  const newChecked = [...checked];
-                  newChecked[index] = newValue;
-                  setChecked(newChecked);
-                }}
-              />
-              <Text style={styles.checkboxText}>{item}</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity style={styles.checkboxContainerModus}>
+                <Checkbox
+                  style={styles.checkbox}
+                  value={checked[index]}
+                  onValueChange={(newValue) => {
+                    const newChecked = [...checked];
+                    newChecked[index] = newValue;
+                    setChecked(newChecked);
+                  }}
+                />
+                <Text onPress={() => toggleCheckbox(index)} style={styles.checkboxText}>
+                  {item}
+                </Text>
+                <TouchableOpacity onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}>                     
+                  <FastImage
+                    style={{ width: 13, height: 13, alignSelf: "center" }}
+                    source={require("../assets/question-mark-filled.png")}
+                  />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </>
           )}
           keyExtractor={(item, index) => index.toString()}
         />
@@ -240,7 +252,9 @@ const styles = StyleSheet.create({
     // justifyContent: "center",
     alignItems: "center",
   },
-  checkboxText: {},
+  checkboxText: {
+    marginRight: 2,
+  },
   checkbox: {
     width: 15,
     height: 15,

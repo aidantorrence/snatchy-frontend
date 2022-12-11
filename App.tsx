@@ -53,17 +53,19 @@ import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
 import Smartlook from "smartlook-react-native-wrapper";
 import { mixpanel } from "./utils/mixpanel";
-import { setUser } from "@sentry/react-native";
 import Constants from "expo-constants";
 import QuizMainGoalScreen from "./Screens/QuizMainGoalScreen";
 import QuizShoppingExperienceScreen from "./Screens/QuizShoppingExperienceScreen";
 import QuizImportantFactorsScreen from "./Screens/QuizImportantFactorsScreen";
 import QuizPlatformScreen from "./Screens/QuizPlatformScreen";
 import ModusTypeQuizIntroScreen from "./Screens/ModusTypeQuizIntroScreen";
+import StyleProfileScreen from "./Screens/StyleProfileScreen";
+import SeasonalColorsQuizIntroScreen from "./Screens/SeasonalColorsQuizIntroScreen";
+import SeasonalColorsQuizSuccessScreen from "./Screens/SeasonalColorsQuizSuccessScreen";
 
 if (Constants?.expoConfig?.extra?.env !== "development") {
   mixpanel.init();
-  Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0");
+  Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0")
 }
 
 const queryClient = new QueryClient();
@@ -101,29 +103,6 @@ function ProfileScreenStackNavigation() {
     </Stack.Navigator>
   );
 }
-function PaymentScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="ShippingDetails" options={{ headerTitle: "", title: "" }} component={ShippingDetailsScreen} />
-      <Stack.Screen name="Payment" options={{ headerTitle: "", title: "" }} component={PaymentScreen} />
-      <Stack.Screen name="Offer" options={{ headerTitle: "", title: "" }} component={OfferScreen} />
-      <Stack.Screen name="SetupPayments" options={{ headerTitle: "", title: "" }} component={SetupPaymentsScreen} />
-      <Stack.Screen name="OrderConfirmation" options={{ headerTitle: "", title: "" }} component={OrderConfirmationScreen} />
-      <Stack.Screen name="TradePayment" options={{ headerTitle: "", title: "" }} component={TradePaymentsScreen} />
-    </Stack.Navigator>
-  );
-}
-function TradeScreenStackNavigation() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="ItemsWanted" options={{ headerTitle: "", title: "" }} component={ItemsWantedScreen} />
-      <Stack.Screen name="ItemsToTrade" options={{ headerTitle: "", title: "" }} component={ItemsToTradeScreen} />
-      <Stack.Screen name="TradeSummary" options={{ headerTitle: "", title: "" }} component={TradeSummaryScreen} />
-      <Stack.Screen name="PostOutfit" options={{ headerTitle: "Post an Outfit" }} component={PostOutfitScreen} />
-    </Stack.Navigator>
-  );
-}
-
 const Tab = createBottomTabNavigator();
 
 export default function App({ navigation, route }: any) {
@@ -169,12 +148,25 @@ export default function App({ navigation, route }: any) {
             options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
             component={HomeTabs}
           />
-          <Stack.Screen name="PaymentStack" options={{ headerTitle: "", title: "" }} component={PaymentScreenStackNavigation} />
-          <Stack.Screen name="TradeStack" options={{ headerTitle: "", title: "" }} component={TradeScreenStackNavigation} />
           <Stack.Screen
             name="Settings"
             options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
             component={SettingsScreen}
+          />
+          <Stack.Screen
+            name="StyleProfile"
+            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            component={StyleProfileScreen}
+          />
+          <Stack.Screen
+            name="SeasonalColorsQuizNavigation"
+            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            component={SeasonalColorsQuizNavigation}
+          />
+          <Stack.Screen
+            name="ModusQuizNavigation"
+            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            component={ModusQuizNavigation}
           />
           <Stack.Screen
             name="ViewOutfit"
@@ -218,6 +210,15 @@ function SignupStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "", headerShown: false }} component={SignUpScreen} />
       <Stack.Screen name="SignIn" options={{ headerTitle: "Sign In", title: "", headerShown: false }} component={SignInScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function SeasonalColorsQuizNavigation() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SeasonalColorsQuizIntro" options={{ headerTitle: "", title: "" }} component={SeasonalColorsQuizIntroScreen} />
+      <Stack.Screen name="SeasonalColorsQuizSuccess" options={{ headerTitle: "", title: "" }} component={SeasonalColorsQuizSuccessScreen} />
     </Stack.Navigator>
   );
 }
@@ -322,7 +323,7 @@ function HomeTabs() {
         mixpanel.getPeople().set("email", data.email);
         mixpanel.getPeople().set("name", data.firstName + " " + data.lastName);
         mixpanel.getPeople().set("modusType", data.modusType);
-        Smartlook.setUserIdentifier(user?.uid, {
+        if (user?.uid) Smartlook.setUserIdentifier(user?.uid, {
           email: data.email,
           name: data.firstName + " " + data.lastName,
           modusType: data.modusType,
@@ -332,15 +333,15 @@ function HomeTabs() {
   });
 
   if (user?.uid) {
-    Smartlook.registerIntegrationListener(
-      (visitor) => {
-        mixpanel.getPeople().set({ smartlook_visitor_url: visitor });
-        mixpanel.identify(user?.uid);
-      },
-      (dash) => {
-        mixpanel.track("Smartlook session URL", { session_url: dash });
-      }
-    );
+    // Smartlook.registerIntegrationListener(
+    //   (visitor) => {
+    //     mixpanel.getPeople().set({ smartlook_visitor_url: visitor });
+    //     mixpanel.identify(user?.uid);
+    //   },
+    //   (dash) => {
+    //     mixpanel.track("Smartlook session URL", { session_url: dash });
+    //   }
+    // );
   }
 
   return isLoading ? (
