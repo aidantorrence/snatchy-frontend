@@ -20,22 +20,7 @@ import FastImage from "react-native-fast-image";
 import { useUpdateUser } from "../data/mutations";
 
 export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: any) {
-  const { mutate } = useUpdateUser() as any;
-  const ownerId = route?.params?.ownerId;
-  const queryClient = useQueryClient();
-  const user = useStore((state) => state.user);
-  let userData: any;
-  let isLoading;
-  const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
-  const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
-
-  const clickRetakeQuizButton = () => {
-    navigation.navigate('ModusQuizNavigation')
-  }
-
-  const clickFindYourSeasonalColorButton = () => {
-    navigation.navigate('SeasonalColorsQuizNavigation')
-  }
+  const {seasonalColor} = route?.params
 
   const seasonalColorSwitch = (seasonalColor: string) => {
     switch (seasonalColor) {
@@ -54,21 +39,15 @@ export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: a
 
   return (
     <>
-      {isLoading ? (
-        <SafeAreaView style={styles.screenAreaView}>
-          <ActivityIndicator size="large" />
-        </SafeAreaView>
-      ) : (
         <SafeAreaView style={styles.profileScreenContainer}>
           <View style={styles.buttonsContainer}>
-            <Text style={styles.congratsText}>Congrats, you are a {user?.seasonalColor}!</Text>
-            <FastImage source={seasonalColorSwitch(user?.seasonalColor)} style={styles.uploadedImage} />
+            <Text style={styles.congratsText}>Congrats, your seasonal color is {seasonalColor}!</Text>
+            <FastImage source={seasonalColorSwitch(seasonalColor)} style={styles.uploadedImage} />
               <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('ViewProfile')}>
                 <Text style={styles.continueButtonText}>Complete</Text>
               </TouchableOpacity>
           </View>
         </SafeAreaView>
-      )}
     </>
   );
 }

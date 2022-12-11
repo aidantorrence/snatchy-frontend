@@ -92,7 +92,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
     try {
       const data = await postSeasonalColorInput(user?.uid, image || "");
       mutate({ uid: user?.uid, seasonalColor: data?.Season?.Simple });
-      navigation.navigate("SeasonalColorsQuizSuccess");
+      navigation.navigate("SeasonalColorsQuizSuccess", { seasonalColor: data?.Season?.Simple });
     } catch (e) {
       setIsButtonClickLoading(false);
     }

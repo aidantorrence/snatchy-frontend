@@ -368,7 +368,7 @@ function HomeTabs() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.homeFocused : icons.home} />,
+          tabBarIcon: ({ focused }) => <Icon style={styles.leftIcon} imgSrc={focused ? icons.homeFocused : icons.home} />,
         }}
       />
       <Tab.Screen
@@ -382,7 +382,7 @@ function HomeTabs() {
         name="Profile"
         component={ProfileScreenStackNavigation}
         options={{
-          tabBarIcon: ({ focused }) => <Icon imgSrc={focused ? icons.profileFocused : icons.profile} />,
+          tabBarIcon: ({ focused }) => <Icon style={styles.rightIcon} imgSrc={focused ? icons.profileFocused : icons.profile} />,
         }}
       />
     </Tab.Navigator>
@@ -422,7 +422,17 @@ const styles = StyleSheet.create({
     height: 36,
   },
   centerIcon: {
-    width: 43,
-    height: 43,
+    width: 40,
+    height: 40,
+  },
+  leftIcon: {
+    marginLeft: 50,
+    width: 32,
+    height: 32,
+  },
+  rightIcon: {
+    marginRight: 50,
+    width: 30,
+    height: 30,
   },
 });
