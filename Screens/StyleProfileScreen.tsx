@@ -2,71 +2,35 @@ import {
   View,
   Text,
   SafeAreaView,
-  Image,
-  Button,
   StyleSheet,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
   Dimensions,
-  FlatList,
 } from "react-native";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { blockUser, deleteUser, fetchUser } from "../data/api";
-import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
-import { modusTypes } from "./QuizSuccessScreen";
-import FastImage from "react-native-fast-image";
-import { useUpdateUser } from "../data/mutations";
+import { mixpanel } from "../utils/mixpanel";
 
 export default function StyleProfileScreen({ navigation, route }: any) {
-  const { mutate } = useUpdateUser() as any;
-  const ownerId = route?.params?.ownerId;
-  const queryClient = useQueryClient();
-  const user = useStore((state) => state.user);
-  let userData: any;
-  let isLoading;
-  const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
-  const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
-
-  const clickFindYourStyleProfileButton = () => {
-    navigation.navigate('StyleProfile')
-    navigation.navigate('ModusQuizNavigation')
-    // mutate({ uid: user?.uid, hasSeenModusType: false, modusType: null });
-  }
-
   const clickRetakeQuizButton = () => {
-    navigation.navigate('ModusQuizNavigation');
-  }
+    mixpanel.track("click_retake_modus_quiz_button");
+    navigation.navigate("ModusQuizNavigation");
+  };
 
   const clickFindYourSeasonalColorButton = () => {
-    navigation.navigate('SeasonalColorsQuizNavigation');
-  }
+    mixpanel.track("click_seasonal_colors_quiz_button");
+    navigation.navigate("SeasonalColorsQuizNavigation");
+  };
 
   return (
     <>
-      {isLoading ? (
-        <SafeAreaView style={styles.screenAreaView}>
-          <ActivityIndicator size="large" />
-        </SafeAreaView>
-      ) : (
-        <SafeAreaView style={styles.profileScreenContainer}>
-          <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            onPress={clickRetakeQuizButton}
-            style={styles.styleProfileButton}
-          >
+      <SafeAreaView style={styles.profileScreenContainer}>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity onPress={clickRetakeQuizButton} style={styles.styleProfileButton}>
             <Text style={styles.modusTypeText}>Retake Modus Type Quiz</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={clickFindYourSeasonalColorButton}
-            style={styles.styleProfileButton}
-          >
+          <TouchableOpacity onPress={clickFindYourSeasonalColorButton} style={styles.styleProfileButton}>
             <Text style={styles.modusTypeText}>Take the Seasonal Colors Quiz</Text>
           </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      )}
+        </View>
+      </SafeAreaView>
     </>
   );
 }
@@ -76,12 +40,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   styleProfileButton: {
-    alignSelf: 'center',
+    alignSelf: "center",
     borderWidth: 1,
     padding: 4,
     paddingHorizontal: 10,
     borderRadius: 5,
-    borderColor: '#d7d7d7',
+    borderColor: "#d7d7d7",
     marginBottom: 20,
   },
   screenAreaView: {

@@ -88,6 +88,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
   };
 
   const handleSubmitPicture = async () => {
+    mixpanel.track("seasonal_color_analysis_submitted");
     setIsButtonClickLoading(true);
     try {
       const data = await postSeasonalColorInput(user?.uid, image || "");

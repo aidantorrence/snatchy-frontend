@@ -21,11 +21,12 @@ import { mixpanel } from "../utils/mixpanel";
 import { useEffect } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { useUpdateUser } from "../data/mutations";
+import { modusTypesReverse } from "./ModusDescriptionScreen";
 const queryCache = new QueryCache({});
 
 export default function HomeScreen({ navigation }: any) {
   // AsyncStorage.clear();
-  queryCache.clear();
+  // queryCache.clear();
   const user = useStore((state) => state.user);
   let {
     isLoading: isLoadingOutfits,
@@ -33,7 +34,7 @@ export default function HomeScreen({ navigation }: any) {
     error: outfitsError,
   } = useQuery(["outfits", user?.uid], () => fetchOutfits(user?.uid));
   // const { data: outfitVotes } = useQuery(["outfit-votes", user?.uid], () => fetchOutfitVotes(user?.uid));
-  const currentModusTypes = user?.currentModusTypes?.length ? user?.currentModusTypes : [modusTypes[user?.modusType]];
+  // const currentModusTypes = user?.currentModusTypes?.length ? user?.currentModusTypes : [modusTypes[user?.modusType]];
   const queryClient = useQueryClient();
   const postVoteMutation: any = useMutation((data) => postVote(data), {
     onSuccess: (data) => {
@@ -43,22 +44,22 @@ export default function HomeScreen({ navigation }: any) {
   });
   const { mutate } = useUpdateUser() as any;
 
-  // useEffect(() => {
-  //   if (!user || user?.hasSeenFeedbackAlert) return;
-  //   setTimeout(() => {
-  //     mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
-  //     Alert.alert("We would love if you could provide feedback for us!", "", [
-  //       {
-  //         text: "Provide Feedback",
-  //         onPress: () => WebBrowser.openBrowserAsync("https://calendly.com/jenxiao/30-minute-meeting"),
-  //       },
-  //       {
-  //         text: "Cancel",
-  //         style: "cancel",
-  //       },
-  //     ]);
-  //   }, 60 * 5 * 1000);
-  // }, []);
+  useEffect(() => {
+    if (!user || user?.hasSeenFeedbackAlert) return;
+    setTimeout(() => {
+      mutate({ uid: user?.uid, hasSeenFeedbackAlert: true });
+      Alert.alert("We would love if you could provide feedback for us!", "", [
+        {
+          text: "Provide Feedback",
+          onPress: () => WebBrowser.openBrowserAsync("https://calendly.com/jenxiao/30-minute-meeting"),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    }, 60 * 5 * 1000);
+  }, []);
 
   const handlePress = (outfit: any) => {
     navigation.navigate("ViewOutfit", {
@@ -80,7 +81,10 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   let outfits = outfitsData?.filter((outfit: any) => {
-    return (outfit?.kibbeTypes || []).some((item: any) => (currentModusTypes || []).includes(item));
+    if (!user?.currentModusTypes?.length) {
+      return outfitsData;
+    }
+    return (outfit?.kibbeTypes || []).some((item: any) => (user?.currentModusTypes || []).includes(item));
   });
 
   outfits = outfits
@@ -114,7 +118,7 @@ export default function HomeScreen({ navigation }: any) {
     });
   };
   const handleModusTypePress = () => {
-    navigation.navigate("ModusTypeFilter", { currentModusTypes: currentModusTypes });
+    navigation.navigate("ModusTypeFilter");
     analytics().logEvent("modus_type_filter_click");
     mixpanel.track("Modus Type Filter Click");
   };
@@ -147,6 +151,30 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.descriptionContainer}>
           <Text style={styles.description}>{item.description}</Text>
         </View>
+              <View style={styles.tagsContainer}>
+                {item.kibbeTypes.length
+                  ? [item.kibbeTypes[0]].map((item: any, index: number) => {
+                      return (
+                        <TouchableOpacity
+                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}
+                          key={index}
+                          style={[styles.tags, styles.kibbeTypes]}
+                        >
+                          <Text style={styles.tagsText}>{item}</Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  : null}
+                {item.seasonalColors.length
+                  ? [item.seasonalColors[0]].map((item: any, index: number) => {
+                      return (
+                        <View key={index} style={[styles.tags, styles.seasonalColors]}>
+                          <Text style={styles.tagsText}>{item}</Text>
+                        </View>
+                      );
+                    })
+                  : null}
+              </View>
         <View style={styles.votesContainer}>
           <TouchableOpacity onPress={() => handleVote(1, item)}>
             {item?.postVote[0]?.vote !== 1 ? (
@@ -204,7 +232,7 @@ export default function HomeScreen({ navigation }: any) {
           <FlashList
             horizontal={false}
             numColumns={2}
-            estimatedItemSize={8}
+            estimatedItemSize={200}
             data={outfits}
             renderItem={({ item }: any) => (
               <View style={styles.itemContainer}>
@@ -298,15 +326,15 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: 'center',
   },
   tags: {
     flexDirection: "row",
-    margin: 5,
+    marginVertical: 2,
     marginRight: 5,
-    padding: 10,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 20,
-    borderWidth: 1,
   },
   expertTag: {
     flexDirection: "row",
@@ -322,7 +350,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 10,
     fontWeight: "bold",
-    marginRight: 5,
+    // marginRight: 5,
   },
   expertTagText: {
     fontSize: 10,
@@ -355,7 +383,6 @@ const styles = StyleSheet.create({
     // paddingRight: 20,
   },
   descriptionContainer: {
-    marginBottom: 5,
   },
   description: {
     paddingHorizontal: 5,
@@ -407,8 +434,8 @@ const styles = StyleSheet.create({
   },
   seasonalColors: {
     flexDirection: "row",
-    margin: 5,
-    marginRight: 5,
+    // margin: 5,
+    // marginRight: 5,
     padding: 10,
     paddingVertical: 3,
     borderRadius: 20,
@@ -416,11 +443,8 @@ const styles = StyleSheet.create({
   },
   kibbeTypes: {
     flexDirection: "row",
-    margin: 5,
-    marginRight: 5,
-    padding: 10,
-    paddingVertical: 3,
-    borderRadius: 20,
+    // margin: 5,
+    // marginRight: 5,
     backgroundColor: "#F487D2",
   },
   aesthetic: {

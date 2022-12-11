@@ -240,7 +240,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
       item_id: id,
       item_name: outfit?.description,
       purchase_link: outfit?.purchaseLink,
-      });
+    });
   };
 
   const handleVote = (vote: number) => {
@@ -272,7 +272,20 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                       <FastImage source={require("../assets/Verified_Logo_2.png")} style={styles.verifiedImage} />
                     ) : null}
                   </View>
-                  <Text style={styles.modusType}>{modusTypes[outfit.owner.modusType]}</Text>
+                  {/* <Text style={styles.modusType}>{modusTypes[outfit.owner.modusType]}</Text> */}
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("ModusDescription", { modusType: outfit.owner?.modusType })}
+                    style={{ flexDirection: "row" }}
+                  >
+                    <Text style={styles.modusType}>
+                      {modusTypes[outfit.owner.modusType]}
+                      {outfit.owner?.seasonalColor ? " • " + outfit.owner?.seasonalColor : ""}
+                    </Text>
+                    <FastImage
+                      style={{ width: 13, height: 13, alignSelf: "center" }}
+                      source={require("../assets/question-mark-filled.png")}
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
               {isCurrentUserPost ? (

@@ -33,11 +33,11 @@ export default function FilterScreen({ navigation }: any) {
 }
 
 export function ModusTypeFilterScreen({ navigation, route }: any) {
-  const { currentModusTypes } = route?.params;
+  // const { currentModusTypes } = route?.params;
   const modusTypes = ["Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
-  const [checked, setChecked] = useState(modusTypes.map((modusType) => currentModusTypes.includes(modusType)));
+  const [checked, setChecked] = useState(modusTypes.map((modusType) => user?.currentModusTypes?.length ? user?.currentModusTypes?.includes(modusType) : true));
   function handleReturn() {
     setUser({
       ...user,
@@ -147,7 +147,8 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
   ];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
-  const [checked, setChecked] = useState(new Array(seasonalColors.length).fill(true));
+  const [checked, setChecked] = useState(seasonalColors.map((seasonalColor) => user?.currentSeasonalColors?.length ? user?.currentSeasonalColors?.includes(seasonalColor) : true));
+  // const [checked, setChecked] = useState(new Array(seasonalColors.length).fill(true));
   function handleReturn() {
     setUser({
       ...user,

@@ -12,6 +12,7 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
+import { mixpanel } from "../utils/mixpanel";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { blockUser, deleteUser, fetchUser } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
@@ -71,6 +72,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
   };
 
   const clickFindYourStyleProfileButton = () => {
+    mixpanel.track("click_find_your_style_profile_button");
     navigation.navigate('StyleProfile')
   }
 
