@@ -43,7 +43,7 @@ export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: a
           <View style={styles.buttonsContainer}>
             <Text style={styles.congratsText}>Congrats, your seasonal color is {seasonalColor}!</Text>
             <FastImage source={seasonalColorSwitch(seasonalColor)} style={styles.uploadedImage} />
-              <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('ViewProfile')}>
+              <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('HomeTabs')}>
                 <Text style={styles.continueButtonText}>Complete</Text>
               </TouchableOpacity>
           </View>

@@ -1,8 +1,8 @@
 import axios from "axios";
 import Constants from "expo-constants";
 
-// export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
-export const API_URL = 'https://a61b-104-139-116-146.ngrok.io'
+export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
+// export const API_URL = 'https://a61b-104-139-116-146.ngrok.io'
 
 export async function postSeasonalColorInputsk(imageUrl: string) {
   try {
