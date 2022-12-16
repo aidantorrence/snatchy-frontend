@@ -1,7 +1,18 @@
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as ImagePicker from "expo-image-picker";
-import { StyleSheet, Text, View, TextInput, Button, SafeAreaView, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  SafeAreaView,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import Checkbox from "expo-checkbox";
 import auth from "@react-native-firebase/auth";
@@ -14,6 +25,7 @@ import FastImage from "react-native-fast-image";
 import { mixpanel } from "../utils/mixpanel";
 import { useStore } from "../utils/firebase/useAuthentication";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Linking } from "react-native";
 
 const initialFormState = {
   userImage: "",
@@ -23,7 +35,7 @@ const initialFormState = {
   password: "",
 };
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const firebaseAuth = auth();
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
@@ -43,6 +55,19 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       queryClient.setQueryData("currentUser", data);
     },
   });
+
+  const cameraAccessAlert = () => {
+    Alert.alert("LooksMax Would Like Access to Your Camera", "", [
+      {
+        text: "OK",
+        onPress: () => Linking.openSettings(),
+      },
+      {
+        text: "Don't Allow",
+        style: "cancel",
+      },
+    ]);
+  };
 
   async function signUp() {
     if (formData.firstName === "" || formData.lastName === "") {
@@ -98,7 +123,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
   };
 
   const launchPhotosAlert = () => {
-    setError("")
+    setError("");
     Alert.alert("Take a Photo", "Select from Camera Roll", [
       {
         text: "Take a Photo",
@@ -125,10 +150,10 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
       // if permission not granted, return
-        if (status !== "granted") { 
-          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
-          return;
-        }
+      if (status !== "granted") {
+        cameraAccessAlert();
+        return;
+      }
 
       result = await ImagePicker.launchCameraAsync();
       analytics().logEvent("take_profile_picture");
@@ -220,9 +245,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
               <Text style={styles.buttonText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.signInButton}
-            onPress={() =>navigation.navigate('SignIn')}>
+          <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("SignIn")}>
             <Text style={styles.signInButtonText}>Already signed up? Sign in instead</Text>
           </TouchableOpacity>
         </View>
@@ -233,10 +256,10 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 
 const styles = StyleSheet.create({
   errorText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 15,
-    fontWeight: '500',
-    color: 'red',
+    fontWeight: "500",
+    color: "red",
     width: 280,
   },
   imageButton: {
@@ -271,7 +294,7 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   imageContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 10,
   },
   profile: {
@@ -288,7 +311,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   signInButtonText: {
-    color: '#666',
+    color: "#666",
     fontSize: 16,
   },
   images: {
@@ -304,7 +327,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: '#666',
+    backgroundColor: "#666",
     borderRadius: 50,
     padding: 10,
     width: 150,
@@ -335,7 +358,7 @@ const styles = StyleSheet.create({
   control: {
     paddingVertical: 7,
     borderColor: "black",
-    borderBottomWidth: .5,
+    borderBottomWidth: 0.5,
     fontSize: 16,
   },
   error: {
@@ -344,7 +367,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     backgroundColor: "#D54826FF",
   },
-
 });
 
 export default SignUpScreen;

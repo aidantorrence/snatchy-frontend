@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     // marginTop: 20,
+    marginBottom: 91,
   },
   styleProfileButton: {
     alignSelf: "center",
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
     borderColor: "#d7d7d7",
-    marginVertical: 20,
+    marginVertical: 30,
   },
   screenAreaView: {
     flex: 1,
@@ -73,7 +74,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modusTypeText: {
-    fontSize: 28,
+    fontSize: 35,
+    fontStyle: "italic",
+    fontFamily: 'Hoefler Text',
+    fontWeight: '400',
   },
   listingsHeader: {
     display: "flex",

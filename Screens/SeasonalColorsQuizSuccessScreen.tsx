@@ -39,7 +39,7 @@ export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: a
             <Text style={styles.congratsText}>Congrats, your seasonal color is {seasonalColor}!</Text>
             <FastImage source={seasonalColorSwitch(seasonalColor)} style={styles.uploadedImage} />
               <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('HomeTabs')}>
-                <Text style={styles.continueButtonText}>Complete</Text>
+                <Text style={styles.continueButtonText}>COMPLETE</Text>
               </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -49,18 +49,15 @@ export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: a
 
 const styles = StyleSheet.create({
   continueButton: {
-    marginTop: 20,
+    marginTop: 40,
     borderRadius: 8,
     padding: 15,
-    marginHorizontal: Dimensions.get("window").width * 0.01,
-    width: Dimensions.get("window").width * 0.44,
-    backgroundColor: "#6F3284",
+    width: Dimensions.get("window").width * 0.9,
+    backgroundColor: '#f2f2f2',
   },
   continueButtonText: {
     fontSize: 16,
     textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
   },
   uploadedImage: {
     marginTop: 20,

@@ -21,6 +21,7 @@ import FastImage from "react-native-fast-image";
 import Checkbox from "expo-checkbox";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { mixpanel } from "../utils/mixpanel";
+import { Linking } from 'react-native';
 
 export default function EditProfileScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
@@ -51,6 +52,20 @@ export default function EditProfileScreen({ navigation, route }: any) {
     userImage: userData?.userImage,
   });
 
+  const cameraAccessAlert = () => {
+  Alert.alert("LooksMax Would Like Access to Your Camera", "Camera access can be configured in your Settings", [
+    {
+      text: "OK",
+      onPress: () => Linking.openSettings(),
+    },
+    {
+      text: "Don't Allow",
+      style: "cancel",
+    },
+  ]);
+  
+  }
+
   const launchPhotosAlert = () => {
     Alert.alert("Take a Photo", "Select from Camera Roll", [
       {
@@ -78,7 +93,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
 
         // if permission not granted, return
         if (status !== "granted") { 
-          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
+          cameraAccessAlert();
           setPhotoLoading(false);
           return;
         }

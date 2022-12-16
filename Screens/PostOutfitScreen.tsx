@@ -24,6 +24,7 @@ import useAuthentication, { useStore } from "../utils/firebase/useAuthentication
 import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
 import { mixpanel } from "../utils/mixpanel";
+import { Linking } from "react-native";
 
 const modalOptions = {
   kibbeTypes: ["", "Queen", "Boss", "Coquette", "Supermodel", "Siren", "Lady", "Feline", "Ingenue", "Vixen", "Femme Fatale"],
@@ -151,6 +152,19 @@ export default function PostOutfitScreen({ navigation }: any) {
     ownerId: user?.uid,
   };
 
+  const cameraAccessAlert = () => {
+    Alert.alert("LooksMax Would Like Access to Your Camera", "", [
+      {
+        text: "OK",
+        onPress: () => Linking.openSettings(),
+      },
+      {
+        text: "Don't Allow",
+        style: "cancel",
+      },
+    ]);
+  };
+
   const editPhoto = (index?: number) => {
     if (index !== undefined) {
       Alert.alert("Select action", "", [
@@ -221,7 +235,7 @@ export default function PostOutfitScreen({ navigation }: any) {
 
         // if permission not granted, return
         if (status !== "granted") { 
-          setError({ ...error, images: "camera access is required, go to settings -> looksmax -> camera to enable camera access" });
+          cameraAccessAlert();
           setPhotoLoading(false);
           return;
         }

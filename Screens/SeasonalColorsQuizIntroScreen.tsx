@@ -22,7 +22,7 @@ import uploadImageAsync from "../utils/firebase/uploadImage";
 import * as ImagePicker from "expo-image-picker";
 import { mixpanel } from "../utils/mixpanel";
 import { useState } from "react";
-import { ScreenStackHeaderBackButtonImage } from "react-native-screens";
+import { Linking } from 'react-native';
 
 export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any) {
   const { mutate } = useUpdateUser() as any;
@@ -35,6 +35,20 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
   const [error, setError] = useState('');
 
   const isLoading = isCurrentUserLoading || isButtonClickLoading;
+
+  const cameraAccessAlert = () => {
+  Alert.alert("LooksMax Would Like Access to Your Camera", "", [
+    {
+      text: "OK",
+      onPress: () => Linking.openSettings(),
+    },
+    {
+      text: "Don't Allow",
+      style: "cancel",
+    },
+  ]);
+  
+  }
 
   const launchPhotosAlert = (index?: number) => {
     Alert.alert("Take a Photo", "Select from Camera Roll", [
@@ -66,7 +80,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
 
         // if permission not granted, return
         if (status !== "granted") { 
-          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
+          cameraAccessAlert();
           setPhotoLoading(false);
           return;
         }
@@ -142,7 +156,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
             </TouchableOpacity>
             {image ? (
               <TouchableOpacity style={styles.continueButton} onPress={handleSubmitPicture}>
-                <Text style={styles.continueButtonText}>Submit Picture</Text>
+                <Text style={styles.continueButtonText}>SUBMIT PICTURE</Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -154,18 +168,15 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
 
 const styles = StyleSheet.create({
   continueButton: {
-    marginTop: 20,
+    marginTop: 40,
     borderRadius: 8,
     padding: 15,
-    marginHorizontal: Dimensions.get("window").width * 0.01,
-    width: Dimensions.get("window").width * 0.44,
-    backgroundColor: "#6F3284",
+    width: Dimensions.get("window").width * 0.9,
+    backgroundColor: '#f2f2f2',
   },
   continueButtonText: {
     fontSize: 16,
     textAlign: "center",
-    color: "white",
-    fontWeight: "bold",
   },
   placeholderImageText: {
     textAlign: 'center',
