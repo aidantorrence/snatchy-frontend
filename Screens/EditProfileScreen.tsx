@@ -25,6 +25,7 @@ import { mixpanel } from "../utils/mixpanel";
 export default function EditProfileScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
   const [photoLoading, setPhotoLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const queryClient = useQueryClient();
   const mutation: any = useMutation((data) => updateUser(data), {
@@ -63,6 +64,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
     ]);
   };
   const pickImage = async (takePhoto: boolean) => {
+    setError("")
     // clear form error
     // setError({ ...error, images: "" });
     setPhotoLoading(true);
@@ -75,7 +77,11 @@ export default function EditProfileScreen({ navigation, route }: any) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
         // if permission not granted, return
-        if (status !== "granted") return;
+        if (status !== "granted") { 
+          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
+          setPhotoLoading(false);
+          return;
+        }
 
         result = await ImagePicker.launchCameraAsync();
         mixpanel.track("take_profile_picture");
@@ -123,6 +129,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
             <>
               <FastImage source={{ uri: formData.userImage }} style={styles.images} />
               <Text style={styles.imageText}>Replace Photo</Text>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </>
           ) : photoLoading ? (
             <ActivityIndicator size="large" />
@@ -130,6 +137,7 @@ export default function EditProfileScreen({ navigation, route }: any) {
             <View style={styles.imageContainer}>
               <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
               <Text style={styles.placeholderImageText}>Add Profile Photo</Text>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </View>
           )}
         </TouchableOpacity>
@@ -158,6 +166,13 @@ export default function EditProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  errorText: {
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'red',
+    width: 280,
+  },
   screenAreaView: {
     flex: 1,
     justifyContent: "center",

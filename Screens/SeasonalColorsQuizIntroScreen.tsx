@@ -32,6 +32,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
   const [image, setImage] = useState(undefined as string | undefined);
   const [photoLoading, setPhotoLoading] = useState(false);
   const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
+  const [error, setError] = useState('');
 
   const isLoading = isCurrentUserLoading || isButtonClickLoading;
 
@@ -53,6 +54,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
   };
 
   const pickImage = async (takePhoto: boolean, index: number | undefined) => {
+    setError("")
     setPhotoLoading(true);
 
     try {
@@ -63,7 +65,11 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
         // if permission not granted, return
-        if (status !== "granted") return;
+        if (status !== "granted") { 
+          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
+          setPhotoLoading(false);
+          return;
+        }
 
         result = await ImagePicker.launchCameraAsync();
       } else {
@@ -95,6 +101,7 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
       mutate({ uid: user?.uid, seasonalColor: data?.Season?.Simple });
       navigation.navigate("SeasonalColorsQuizSuccess", { seasonalColor: data?.Season?.Simple });
     } catch (e) {
+      setError("Something went wrong, please try again later")
       setIsButtonClickLoading(false);
     }
     setIsButtonClickLoading(false);
@@ -114,15 +121,24 @@ export default function SeasonalColorsQuizIntroScreen({ navigation, route }: any
                 <>
                   <FastImage source={{ uri: image }} style={styles.uploadedImage} />
                   <Text style={styles.imageText}>Replace Photo</Text>
+                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
                 </>
               ) : photoLoading ? (
                 <ActivityIndicator size="large" />
-              ) : (
+              ) : (<>
                 <View style={styles.imageContainer}>
                   <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
-                  <Text style={styles.placeholderImageText}>Upload a Picture of Your Face</Text>
+                  <Text style={styles.placeholderImageText}>Upload Photo of Your Face</Text>
                 </View>
-              )}
+                <View>
+                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                  <Text style={styles.firstLineText}>For best results,</Text>
+                  <Text style={styles.otherLinesText}>🧼✨ Clean your phone camera lens</Text>
+                  <Text style={styles.otherLinesText}>🌞 Go somewhere with natural light</Text>
+                  <Text style={styles.otherLinesText}>👓 Take off your glasses</Text>
+                  <Text style={styles.otherLinesText}>😌 Keep your face relaxed</Text>
+                </View>
+                </>)}
             </TouchableOpacity>
             {image ? (
               <TouchableOpacity style={styles.continueButton} onPress={handleSubmitPicture}>
@@ -153,11 +169,32 @@ const styles = StyleSheet.create({
   },
   placeholderImageText: {
     textAlign: 'center',
+    fontSize: 13,
+    width: 100,
+  },
+  errorText: {
+    textAlign: 'center',
     fontSize: 15,
+    fontWeight: '500',
+    color: 'red',
+    width: 280,
+  },
+  firstLineText: {
+    marginTop: 40,
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  otherLinesText: {
+    marginTop: 25,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '500',
+    width: 270,
   },
   addPhoto: {
-    width: 100,
-    height: 100,
+    width: 50,
+    height: 50,
     marginBottom: 10,
     opacity: 0.7,
   },
@@ -182,7 +219,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   buttonsContainer: {
-    marginTop: 20,
+    marginTop: 40,
     alignItems: "center",
   },
   styleProfileButton: {

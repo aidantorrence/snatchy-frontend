@@ -220,7 +220,11 @@ export default function PostOutfitScreen({ navigation }: any) {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
         // if permission not granted, return
-        if (status !== "granted") return;
+        if (status !== "granted") { 
+          setError({ ...error, images: "camera access is required, go to settings -> looksmax -> camera to enable camera access" });
+          setPhotoLoading(false);
+          return;
+        }
 
         result = await ImagePicker.launchCameraAsync();
       } else {

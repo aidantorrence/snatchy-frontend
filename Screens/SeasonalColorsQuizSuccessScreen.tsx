@@ -12,12 +12,7 @@ import {
   Dimensions,
   FlatList,
 } from "react-native";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { blockUser, deleteUser, fetchUser } from "../data/api";
-import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
-import { modusTypes } from "./QuizSuccessScreen";
 import FastImage from "react-native-fast-image";
-import { useUpdateUser } from "../data/mutations";
 
 export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: any) {
   const {seasonalColor} = route?.params

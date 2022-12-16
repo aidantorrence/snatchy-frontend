@@ -1,5 +1,6 @@
 {
   "expo": {
+    "name": "LooksMax_Dev",
     "extra": {
       "env": "development"
     }

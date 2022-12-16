@@ -23,6 +23,7 @@ const initialFormState = {
   password: "",
 };
 const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) => {
+  const [error, setError] = useState('');
   const firebaseAuth = auth();
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
@@ -97,6 +98,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
   };
 
   const launchPhotosAlert = () => {
+    setError("")
     Alert.alert("Take a Photo", "Select from Camera Roll", [
       {
         text: "Take a Photo",
@@ -123,7 +125,10 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
       // if permission not granted, return
-      if (status !== "granted") return;
+        if (status !== "granted") { 
+          setError("camera access is required, go to settings -> looksmax -> camera to enable camera access")
+          return;
+        }
 
       result = await ImagePicker.launchCameraAsync();
       analytics().logEvent("take_profile_picture");
@@ -170,6 +175,7 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
             <View style={styles.imageContainer}>
               <FastImage source={require("../assets/Plus_Button.png")} style={styles.addPhoto} />
               <Text style={styles.placeholderImageText}>Add Profile Photo</Text>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
             </View>
           )}
         </TouchableOpacity>
@@ -226,6 +232,13 @@ const SignUpScreen: React.FC<StackScreenProps<any>> = ({ navigation, route }) =>
 };
 
 const styles = StyleSheet.create({
+  errorText: {
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '500',
+    color: 'red',
+    width: 280,
+  },
   imageButton: {
     flex: 1,
     flexBasis: 1,

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +10,8 @@ import {
 import { mixpanel } from "../utils/mixpanel";
 
 export default function StyleProfileScreen({ navigation, route }: any) {
+  const [pressedRetakeQuiz, setPressedRetakeQuiz] = useState(false)
+  const [pressedSeasonalColor, setPressedSeasonalColor] = useState(false)
   const clickRetakeQuizButton = () => {
     mixpanel.track("click_retake_modus_quiz_button");
     navigation.navigate("ModusQuizNavigation");
@@ -23,12 +26,15 @@ export default function StyleProfileScreen({ navigation, route }: any) {
     <>
       <SafeAreaView style={styles.profileScreenContainer}>
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity onPress={clickRetakeQuizButton} style={styles.styleProfileButton}>
-            <Text style={styles.modusTypeText}>Retake Modus Type Quiz</Text>
+          <TouchableOpacity onPress={clickRetakeQuizButton} onPressIn={() => setPressedRetakeQuiz(true)} onPressOut={() => setPressedRetakeQuiz(false)} style={styles.styleProfileButton}>
+            <Text style={[styles.modusTypeText, pressedRetakeQuiz ? styles.pressed : null]}>Find Your Body Type</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={clickFindYourSeasonalColorButton} style={styles.styleProfileButton}>
-            <Text style={styles.modusTypeText}>Take the Seasonal Colors Quiz</Text>
+          <TouchableOpacity onPress={clickFindYourSeasonalColorButton} onPressIn={() => setPressedSeasonalColor(true)} onPressOut={() => setPressedSeasonalColor(false)} style={styles.styleProfileButton}>
+            <Text style={[styles.modusTypeText, pressedSeasonalColor ? styles.pressed : null]}>Find Your Seasonal Color</Text>
           </TouchableOpacity>
+          {/* <TouchableOpacity onPress={clickFindYourSeasonalColorButton} style={styles.styleProfileButton}>
+            <Text style={[styles.modusTypeText, pressed ? styles.pressed : null]}>Find Your Seasonal Color</Text>
+          </TouchableOpacity> */}
         </View>
       </SafeAreaView>
     </>
@@ -36,17 +42,20 @@ export default function StyleProfileScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
+  pressed: {
+    color: 'magenta',
+  },
   buttonsContainer: {
-    marginTop: 20,
+    // marginTop: 20,
   },
   styleProfileButton: {
     alignSelf: "center",
-    borderWidth: 1,
+    // borderWidth: 1,
     padding: 4,
     paddingHorizontal: 10,
     borderRadius: 5,
     borderColor: "#d7d7d7",
-    marginBottom: 20,
+    marginVertical: 20,
   },
   screenAreaView: {
     flex: 1,
@@ -64,7 +73,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modusTypeText: {
-    fontSize: 14,
+    fontSize: 28,
   },
   listingsHeader: {
     display: "flex",
@@ -77,6 +86,7 @@ const styles = StyleSheet.create({
   profileScreenContainer: {
     flex: 1,
     backgroundColor: "white",
+    justifyContent: 'center',
   },
   userImagesContainer: {
     flexDirection: "row",

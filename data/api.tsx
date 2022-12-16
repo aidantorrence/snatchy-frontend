@@ -21,7 +21,6 @@ export async function postSeasonalColorInputsk(imageUrl: string) {
     }
 
     const { data } = await axios.post('http://54.193.65.224/classify', formData, { headers });
-    console.log(data);
     return data;
   } catch (e: any) {
     console.log(`${API_URL}/classify failed`, e?.response?.data);
@@ -30,11 +29,11 @@ export async function postSeasonalColorInputsk(imageUrl: string) {
 
 export async function postSeasonalColorInput(uid: string, imageUrl: string) {
   try {
-    console.log('hello?', uid, imageUrl)
     const { data } = await axios.post(`${API_URL}/upload-image-seasonal-color-analysis`, { uid, imageUrl }); 
     return data;
   } catch (e: any) {
-    console.log(`${API_URL}/upload-image-seasonal-color-analysis failed`, e?.response?.data);
+    throw new Error(e?.response?.data?.message);
+    // console.log(`${API_URL}/upload-image-seasonal-color-analysis failed`, e?.response?.data);
   }
 }
 
