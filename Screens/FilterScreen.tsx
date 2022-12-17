@@ -90,7 +90,7 @@ export function ModusTypeFilterScreen({ navigation, route }: any) {
                 <Text onPress={() => toggleCheckbox(index)} style={styles.checkboxText}>
                   {item}
                 </Text>
-                <TouchableOpacity onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item], seasonalColor:user?.seasonalColor })}>                     
+                <TouchableOpacity onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}>                     
                   <FastImage
                     style={{ width: 13, height: 13, alignSelf: "center" }}
                     source={require("../assets/question-mark-filled.png")}
@@ -101,22 +101,6 @@ export function ModusTypeFilterScreen({ navigation, route }: any) {
           )}
           keyExtractor={(item, index) => index.toString()}
         />
-        {/* {modusTypes.map((modusType, index) => {
-        return (
-          <View style={styles.checkboxContainer} key={index}>
-            <Text style={styles.checkboxText}>{modusType}</Text>
-            <Checkbox
-              style={styles.checkbox}
-              value={checked[index]}
-              onValueChange={(newValue) => {
-                const newChecked = [...checked];
-                newChecked[index] = newValue;
-                setChecked(newChecked);
-              }}
-            />
-          </View>
-        );
-      })} */}
         <View style={styles.controlsButtonContainer}>
           <TouchableOpacity onPress={handleClear} style={styles.continueButton}>
             <Text style={styles.continueButtonText}>CLEAR</Text>
@@ -132,23 +116,14 @@ export function ModusTypeFilterScreen({ navigation, route }: any) {
 
 export function SeasonalColorFilterScreen({ navigation }: any) {
   const seasonalColors = [
-    "Light Spring",
-    "True Spring",
-    "Bright Spring",
-    "Light Summer",
-    "True Summer",
-    "Soft Summer",
-    "Dark Autumn",
-    "True Autumn",
-    "Soft Autumn",
-    "Dark Winter",
-    "True Winter",
-    "Bright Winter",
+    "Spring",
+    "Summer",
+    "Autumn",
+    "Winter",
   ];
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.setUser);
   const [checked, setChecked] = useState(seasonalColors.map((seasonalColor) => user?.currentSeasonalColors?.length ? user?.currentSeasonalColors?.includes(seasonalColor) : true));
-  // const [checked, setChecked] = useState(new Array(seasonalColors.length).fill(true));
   function handleReturn() {
     setUser({
       ...user,
@@ -198,6 +173,12 @@ export function SeasonalColorFilterScreen({ navigation }: any) {
                 }}
               />
               <Text style={styles.checkboxText}>{item}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("SeasonalColorDescription", { seasonalColor: item })}>                     
+                <FastImage
+                  style={{ width: 13, height: 13, alignSelf: "center" }}
+                  source={require("../assets/question-mark-filled.png")}
+                />
+              </TouchableOpacity>
             </TouchableOpacity>
           )}
           keyExtractor={(item, index) => index.toString()}

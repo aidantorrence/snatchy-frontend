@@ -325,7 +325,6 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               <View style={styles.tagsContainer}>
                 {outfit.kibbeTypes.length
                   ? outfit.kibbeTypes.map((item: any, index: number) => {
-                      console.log('seasonalColor on outfits page', outfit?.seasonalColors[0])
                       return (
                         <TouchableOpacity
                           onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item], seasonalColor: outfit?.seasonalColors[0].split(' ')?.at(-1) })}

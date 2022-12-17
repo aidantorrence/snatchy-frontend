@@ -177,7 +177,6 @@ export default function SeasonalColorDescriptionScreen({ navigation, route, refe
   });
 
   const seasonalColor = route?.params?.seasonalColor || user?.seasonalColor || userData?.seasonalColor;
-  console.log('seasonalColor', seasonalColor)
 
   return isLoading ? (
     <Text>Loading</Text>
