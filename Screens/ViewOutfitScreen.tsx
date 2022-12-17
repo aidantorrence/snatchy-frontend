@@ -274,7 +274,7 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
                   </View>
                   {/* <Text style={styles.modusType}>{modusTypes[outfit.owner.modusType]}</Text> */}
                   <TouchableOpacity
-                    onPress={() => navigation.navigate("ModusDescription", { modusType: outfit.owner?.modusType })}
+                    onPress={() => navigation.navigate("ModusDescription", { modusType: outfit?.owner?.modusType, seasonalColor: outfit?.owner?.seasonalColor })}
                     style={{ flexDirection: "row" }}
                   >
                     <Text style={styles.modusType}>
@@ -325,9 +325,10 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
               <View style={styles.tagsContainer}>
                 {outfit.kibbeTypes.length
                   ? outfit.kibbeTypes.map((item: any, index: number) => {
+                      console.log('seasonalColor on outfits page', outfit?.seasonalColors[0])
                       return (
                         <TouchableOpacity
-                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}
+                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item], seasonalColor: outfit?.seasonalColors[0].split(' ')?.at(-1) })}
                           key={index}
                           style={[styles.tags, styles.kibbeTypes]}
                         >

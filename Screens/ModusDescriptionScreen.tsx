@@ -1,5 +1,4 @@
-import { setUser } from "@sentry/react-native";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -14,9 +13,7 @@ import {
 } from "react-native";
 import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
-import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import FastImage from "react-native-fast-image";
 
 export const modusTypes = {
@@ -293,6 +290,18 @@ export default function ModusDescriptionScreen({ navigation, route, refetch }: a
   const { data: userData, isLoading } = useQuery(["currentUser", user?.uid], () => fetchUser(user?.uid), {
     enabled: !!user?.uid,
   });
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => route?.params?.seasonalColor ? (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("SeasonalColorDescription", { seasonalColor: route?.params?.seasonalColor })}
+        >
+          <Text style={{ fontSize: 14, paddingRight: 5 }}>{"Seasonal Color >"}</Text>
+        </TouchableOpacity>
+      ) : null,
+    });
+  }, [navigation, route?.params?.seasonalColor]);
 
   const modusType = route?.params?.modusType || user?.modusType || userData?.modusType;
 

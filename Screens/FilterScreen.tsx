@@ -90,7 +90,7 @@ export function ModusTypeFilterScreen({ navigation, route }: any) {
                 <Text onPress={() => toggleCheckbox(index)} style={styles.checkboxText}>
                   {item}
                 </Text>
-                <TouchableOpacity onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}>                     
+                <TouchableOpacity onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item], seasonalColor:user?.seasonalColor })}>                     
                   <FastImage
                     style={{ width: 13, height: 13, alignSelf: "center" }}
                     source={require("../assets/question-mark-filled.png")}

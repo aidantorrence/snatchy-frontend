@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Button,
 } from "react-native";
 import { getFocusedRouteNameFromRoute, NavigationContainer, useNavigation, useNavigationState } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -62,10 +63,11 @@ import ModusTypeQuizIntroScreen from "./Screens/ModusTypeQuizIntroScreen";
 import StyleProfileScreen from "./Screens/StyleProfileScreen";
 import SeasonalColorsQuizIntroScreen from "./Screens/SeasonalColorsQuizIntroScreen";
 import SeasonalColorsQuizSuccessScreen from "./Screens/SeasonalColorsQuizSuccessScreen";
+import SeasonalColorDescriptionScreen from "./Screens/SeasonalColorDescriptionScreen";
 
 if (Constants?.expoConfig?.extra?.env !== "development") {
   mixpanel.init();
-  Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0")
+  Smartlook.setupAndStartRecording("81e26ed67a2b57e7ec91148e4054faa7b37f03e0");
 }
 
 const queryClient = new QueryClient();
@@ -194,8 +196,17 @@ export default function App({ navigation, route }: any) {
           />
           <Stack.Screen
             name="ModusDescription"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{
+              headerTitle: "LooksMax",
+              headerShown: true,
+              headerRight: () => <Button title="Seasonal Color >" />,
+            }}
             component={ModusDescriptionScreen}
+          />
+          <Stack.Screen
+            name="SeasonalColorDescription"
+            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            component={SeasonalColorDescriptionScreen}
           />
           {/* <Stack.Screen name="Sign In" component={SignInScreen} />
           <Stack.Screen name="Sign Up" component={SignOutScreen} /> */}
@@ -217,8 +228,16 @@ function SignupStackNavigation() {
 function SeasonalColorsQuizNavigation() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SeasonalColorsQuizIntro" options={{ headerTitle: "", title: "" }} component={SeasonalColorsQuizIntroScreen} />
-      <Stack.Screen name="SeasonalColorsQuizSuccess" options={{ headerTitle: "", title: "" }} component={SeasonalColorsQuizSuccessScreen} />
+      <Stack.Screen
+        name="SeasonalColorsQuizIntro"
+        options={{ headerTitle: "", title: "" }}
+        component={SeasonalColorsQuizIntroScreen}
+      />
+      <Stack.Screen
+        name="SeasonalColorsQuizSuccess"
+        options={{ headerTitle: "", title: "" }}
+        component={SeasonalColorsQuizSuccessScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -226,66 +245,43 @@ function SeasonalColorsQuizNavigation() {
 function ModusQuizNavigation() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ModusTypeQuizIntro" options={{ headerTitle: "", title: "", headerShown: false }} component={ModusTypeQuizIntroScreen} />
+      <Stack.Screen
+        name="ModusTypeQuizIntro"
+        options={{ headerTitle: "", title: "", headerShown: false }}
+        component={ModusTypeQuizIntroScreen}
+      />
       <Stack.Screen name="QuizHeight" options={{ headerTitle: "", title: "", headerShown: false }} component={QuizHeightScreen} />
-      <Stack.Screen
-        name="QuizLimbLength"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizLimbLengthScreen}
-      />
-      <Stack.Screen
-        name="QuizClothing"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizClothingScreen}
-      />
-      <Stack.Screen
-        name="QuizAsymmetry"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizAsymmetryScreen}
-      />
-      <Stack.Screen
-        name="QuizRestricted"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizRestrictedScreen}
-      />
-      <Stack.Screen
-        name="QuizSilhouette"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizSilhouetteScreen}
-      />
-      <Stack.Screen
-        name="QuizOrnateDetails"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizOrnateDetailsScreen}
-      />
-      <Stack.Screen
-        name="QuizThickMaterials"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizThickMaterialsScreen}
-      />
-      <Stack.Screen
-        name="QuizSuccess"
-        options={{ headerTitle: "", title: "" }}
-        component={QuizSuccessScreen}
-      />
+      <Stack.Screen name="QuizLimbLength" options={{ headerTitle: "", title: "" }} component={QuizLimbLengthScreen} />
+      <Stack.Screen name="QuizClothing" options={{ headerTitle: "", title: "" }} component={QuizClothingScreen} />
+      <Stack.Screen name="QuizAsymmetry" options={{ headerTitle: "", title: "" }} component={QuizAsymmetryScreen} />
+      <Stack.Screen name="QuizRestricted" options={{ headerTitle: "", title: "" }} component={QuizRestrictedScreen} />
+      <Stack.Screen name="QuizSilhouette" options={{ headerTitle: "", title: "" }} component={QuizSilhouetteScreen} />
+      <Stack.Screen name="QuizOrnateDetails" options={{ headerTitle: "", title: "" }} component={QuizOrnateDetailsScreen} />
+      <Stack.Screen name="QuizThickMaterials" options={{ headerTitle: "", title: "" }} component={QuizThickMaterialsScreen} />
+      <Stack.Screen name="QuizSuccess" options={{ headerTitle: "", title: "" }} component={QuizSuccessScreen} />
     </Stack.Navigator>
   );
 }
 
-function LogoTitle({index}: any) {
+function LogoTitle({ index }: any) {
   return (
     <View style={styles.onboardingHeaderTitle}>
       {new Array(4).fill(0).map((_, i) => (
-      <View key={i} style={[styles.onboardingHeaderBars, index === i ? styles.activeHeader : undefined]}></View>
+        <View key={i} style={[styles.onboardingHeaderBars, index === i ? styles.activeHeader : undefined]}></View>
       ))}
     </View>
   );
 }
 function OnboardingQuizNavigation() {
-  const index = useNavigationState(state => state?.routes[0]?.state?.index);
+  const index = useNavigationState((state) => state?.routes[0]?.state?.index);
   return (
     <Stack.Navigator
-      screenOptions={{ headerShown: true, headerStyle: styles.onboardingHeader, headerTitle: () => <LogoTitle index={index} />, headerLeft: () => null, }}
+      screenOptions={{
+        headerShown: true,
+        headerStyle: styles.onboardingHeader,
+        headerTitle: () => <LogoTitle index={index} />,
+        headerLeft: () => null,
+      }}
     >
       <Stack.Screen name="QuizMainGoal" options={{}} component={QuizMainGoalScreen} />
       <Stack.Screen name="QuizShoppingExperience" options={{}} component={QuizShoppingExperienceScreen} />
@@ -323,11 +319,12 @@ function HomeTabs() {
         mixpanel.getPeople().set("email", data.email);
         mixpanel.getPeople().set("name", data.firstName + " " + data.lastName);
         mixpanel.getPeople().set("modusType", data.modusType);
-        if (user?.uid) Smartlook.setUserIdentifier(user?.uid, {
-          email: data.email,
-          name: data.firstName + " " + data.lastName,
-          modusType: data.modusType,
-        });
+        if (user?.uid)
+          Smartlook.setUserIdentifier(user?.uid, {
+            email: data.email,
+            name: data.firstName + " " + data.lastName,
+            modusType: data.modusType,
+          });
       }
     },
   });
@@ -390,9 +387,9 @@ function HomeTabs() {
 }
 
 const styles = StyleSheet.create({
-  onboardingHeaderBars: { 
-    height: 4, 
-    width: Dimensions.get("window").width / 4 - 7, 
+  onboardingHeaderBars: {
+    height: 4,
+    width: Dimensions.get("window").width / 4 - 7,
     backgroundColor: "#e0e0e0",
     marginHorizontal: 2.5,
   },
@@ -402,7 +399,7 @@ const styles = StyleSheet.create({
   onboardingHeaderTitle: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   onboardingHeader: {
     borderBottomWidth: 0,

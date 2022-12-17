@@ -161,7 +161,7 @@ export default function ViewProfileScreen({ navigation, route }: any) {
             ) : null}
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate("ModusDescription", { modusType: userData?.modusType })}
+            onPress={() => navigation.navigate("ModusDescription", { modusType: userData?.modusType, seasonalColor:userData?.seasonalColor })}
             style={{ flexDirection: "row", alignSelf: "center", marginBottom: 8 }}
           >
             <Text style={styles.modusTypeText}>{modusTypes[userData?.modusType]}{ userData?.seasonalColor ? " • " + userData?.seasonalColor : ''}</Text>

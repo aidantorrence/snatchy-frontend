@@ -153,20 +153,20 @@ export default function HomeScreen({ navigation }: any) {
         </View>
               <View style={styles.tagsContainer}>
                 {item.kibbeTypes.length
-                  ? [item.kibbeTypes[0]].map((item: any, index: number) => {
+                  ? [item.kibbeTypes[0]].map((kibbeType: any, index: number) => {
                       return (
                         <TouchableOpacity
-                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[item] })}
+                          onPress={() => navigation.navigate("ModusDescription", { modusType: modusTypesReverse[kibbeType], seasonalColor: item?.seasonalColors?.at(0).split(' ')?.at(-1) })}
                           key={index}
                           style={[styles.tags, styles.kibbeTypes]}
                         >
-                          <Text style={styles.tagsText}>{item}</Text>
+                          <Text style={styles.tagsText}>{kibbeType}</Text>
                         </TouchableOpacity>
                       );
                     })
                   : null}
                 {item.seasonalColors.length
-                  ? [item.seasonalColors[0]].map((item: any, index: number) => {
+                  ? [item?.seasonalColors[0]].map((item: any, index: number) => {
                       return (
                         <View key={index} style={[styles.tags, styles.seasonalColors]}>
                           <Text style={styles.tagsText}>{item}</Text>

@@ -16,8 +16,6 @@ import { useQuery } from "react-query";
 import { fetchUser } from "../data/api";
 import { useUpdateUser } from "../data/mutations";
 import { useStore } from "../utils/firebase/useAuthentication";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import analytics from "@react-native-firebase/analytics";
 import FastImage from "react-native-fast-image";
 
 export const modusTypes = {

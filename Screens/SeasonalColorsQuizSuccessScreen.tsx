@@ -15,26 +15,52 @@ import {
 import FastImage from "react-native-fast-image";
 
 export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: any) {
-  const {seasonalColor} = route?.params
+  const { seasonalColor } = route?.params;
 
   const seasonalColorSwitch = (seasonalColor: string) => {
     switch (seasonalColor) {
-      case 'Summer':
-        return require("../assets/summer-season.jpeg")
-      case 'Winter':
-        return require("../assets/winter-season.jpeg")
-      case 'Spring':
-        return require("../assets/spring-season.jpeg")
-      case 'Autumn':
-        return require("../assets/autumn-season.jpeg")
+      case "Summer":
+        return require("../assets/summer.png");
+      case "Winter":
+        return require("../assets/winter.png");
+      case "Spring":
+        return require("../assets/spring.png");
+      case "Autumn":
+        return require("../assets/autumn.png");
       default:
-        return require("../assets/summer-season.jpeg")
+        return require("../assets/summer.png");
     }
-  }
+  };
+
+  const seasonalColorDescriptions = {
+    Spring: `You are warm-toned with a fresh and clear complexion. Your appearance evokes freshness and vitality, and reminds people of spring in full bloom. You may be naturally outgoing, adventurous, confident, and optimistic. You look great in warm-toned colors reminiscent of a tropical island surrounded by turquoise water, a spring garden filled with beautiful flowers, and bright, colorful fruits such as limes, peaches, and bananas. `,
+    Summer: `You are cool-toned with a light and soft complexion. Your appearance evokes serenity, and reminds people of chill summer days. You may be naturally calm, gentle, efficient, and diplomatic. You look great in cool-toned colors reminiscent of a Monet garden with a pond and water lilies, summer twilight skies filled with beautiful pastel shades, and refreshing rivers, lakes, and oceans.`,
+    Autumn: `You are warm-toned with a muted and dark complexion. Your appearance evokes passion and mystery, and reminds people of the depths of autumn. You may be naturally passionate, earthy, reliable, and loyal. You look great in warm-toned colors reminiscent of late autumn evenings when the last rays of the sun dapple the land, misty forests with colorful, crackling leaves falling from thinning treetops, and ripe produce, flowers, and nuts overflowing from a cornucopia.`,
+    Winter: `You are cool-toned with a bright and dark complexion. Your appearance evokes drama and elegance, and reminds people of icy winter days. You may be naturally refined, stately, perfectionist, and a little aloof. You look great in cool-toned colors reminiscent of snow-capped mountains covered with evergreen trees, crisp midnight skies dotted with silver-white stars, and intense, brilliant flowers such as roses, fuchsias, and poinsettias.`,
+  } as any;
 
   return (
     <>
-        <SafeAreaView style={styles.profileScreenContainer}>
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View>
+            <Text style={styles.introText}>We found your Seasonal Color!</Text>
+          </View>
+          <View>
+            <FastImage source={seasonalColorSwitch(seasonalColor)} style={styles.image} />
+          </View>
+          <View>
+            <Text style={styles.headerText}>You're a{seasonalColor === 'Autumn' ? 'n' : ''} {seasonalColor}!</Text>
+          </View>
+          <View style={styles.description}>
+            <Text style={styles.descriptionText}>{seasonalColorDescriptions[seasonalColor]}</Text>
+          </View>
+        </ScrollView>
+        <TouchableOpacity onPress={() => navigation.navigate('HomeTabs')} style={styles.continueButton}>
+          <Text style={styles.continueButtonText}>Finish</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+      {/* <SafeAreaView style={styles.profileScreenContainer}>
           <View style={styles.buttonsContainer}>
             <Text style={styles.congratsText}>Congrats, your seasonal color is {seasonalColor}!</Text>
             <FastImage source={seasonalColorSwitch(seasonalColor)} style={styles.uploadedImage} />
@@ -42,7 +68,7 @@ export default function SeasonalColorsQuizSuccessScreen({ navigation, route }: a
                 <Text style={styles.continueButtonText}>COMPLETE</Text>
               </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </SafeAreaView> */}
     </>
   );
 }
@@ -56,118 +82,87 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
   },
   continueButtonText: {
+    textTransform: 'uppercase',
     fontSize: 16,
     textAlign: "center",
   },
-  uploadedImage: {
-    marginTop: 20,
+  descriptionText: {
+    marginHorizontal: 30,
+    marginVertical: 15,
+    fontSize: 16,
+    textAlign: "auto",
+  },
+  image: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").width,
-    marginBottom: 5,
+    height: 300,
+    resizeMode: "cover",
   },
-  congratsText: {
-    fontSize: 20,
-  },
-  buttonsContainer: {
+  headerText: {
+    fontSize: 30,
     marginTop: 20,
-    alignItems: 'center',
   },
-  styleProfileButton: {
-    alignSelf: 'center',
-    borderWidth: 1,
-    padding: 4,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    borderColor: '#d7d7d7',
+  introText: {
+    fontSize: 30,
+    margin: 20,
     marginBottom: 20,
+    textAlign: "center",
   },
-  screenAreaView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  unselected: {
+    backgroundColor: "gray",
   },
-  userImage: {
-    borderRadius: 50,
-    width: 20,
-    height: 20,
-    marginRight: 5,
-  },
-  sellerName: {
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-  modusTypeText: {
-    fontSize: 14,
-  },
-  listingsHeader: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    padding: 20,
-    marginHorizontal: 20,
-  },
-  profileScreenContainer: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  userImagesContainer: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-  },
-  userImages: {
-    width: Dimensions.get("window").width * 0.315,
-    height: Dimensions.get("window").width * 0.315,
-  },
-  imagesContainer: {
-    marginRight: Dimensions.get("window").width * 0.03,
-    marginBottom: Dimensions.get("window").width * 0.03,
-  },
-  noOutfitsImage: {
-    width: 200,
-    height: 200,
+  selected: {
+    backgroundColor: "#111111",
   },
   title: {
-    fontWeight: "bold",
-    fontSize: 20,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  header: {
-    fontWeight: "bold",
-    fontSize: 22,
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  body: {
-    fontSize: 22,
-  },
-  bio: {
-    fontSize: 17,
-  },
-  buttons: {
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
     alignItems: "center",
+    marginVertical: 20,
+  },
+  titleText: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
   },
   button: {
-    backgroundColor: "white",
-    borderWidth: 0.5,
-    borderRadius: 30,
-    padding: 4,
-    paddingTop: 1,
-    paddingBottom: 1,
-    marginTop: 5,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 1,
-    elevation: 2,
-    marginRight: 15,
+    marginTop: 30,
+    backgroundColor: "#2b414d",
+    borderRadius: 50,
+    padding: 10,
+    width: 250,
+  },
+  container: {
+    flex: 1,
+    paddingTop: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  scrollContainer: {
+    alignItems: "center",
+  },
+  controls: {
+    flex: 1,
+    width: "80%",
+  },
+
+  control: {
+    paddingVertical: 10,
+    borderColor: "#2b414d",
+    borderBottomWidth: 1,
+    fontSize: 20,
+  },
+
+  error: {
+    marginTop: 10,
+    padding: 10,
+    color: "#fff",
+    backgroundColor: "#D54826FF",
   },
 });

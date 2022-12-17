@@ -35,10 +35,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to allow users to upload pictures to the app"
       },
-      "buildNumber": "32",
-      "runtimeVersion": {
-        "policy": "sdkVersion"
-      }
+      "buildNumber": "33",
+      "runtimeVersion": "exposdk:47.0.0"
     },
     "plugins": [
       "@react-native-firebase/app",
