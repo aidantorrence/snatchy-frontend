@@ -1,31 +1,9 @@
 import axios from "axios";
 import Constants from "expo-constants";
+import { themePrompts } from "../utils/themePrompts";
 
-export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
-// export const API_URL = 'https://a61b-104-139-116-146.ngrok.io'
-
-export async function postSeasonalColorInputsk(imageUrl: string) {
-  try {
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-
-    const formData = new FormData();
-    // formData.append('image', response.data, 'image.png');
-    // console.log('image url: ', imageUrl)
-    // const formData = new FormData();
-    // const file = new File([imageUrl], 'image.png', { type: 'image/png' });
-    // formData.append('image', file);
-    const file = new File([imageUrl], 'image.png', { type: 'image/png' });
-    formData.append('image', response as any);
-    const headers = {
-      'Content-Type': undefined as any,
-    }
-
-    const { data } = await axios.post('http://54.193.65.224/classify', formData, { headers });
-    return data;
-  } catch (e: any) {
-    console.log(`${API_URL}/classify failed`, e?.response?.data);
-  }
-}
+// export const API_URL = Constants?.expoConfig?.extra?.apiUrl;
+export const API_URL = 'https://46b6-104-139-116-146.ngrok.io'
 
 export async function postSeasonalColorInput(uid: string, imageUrl: string) {
   try {
@@ -43,6 +21,35 @@ export async function fetchOutfits(uid: string | undefined) {
     return data;
   } catch (e: any) {
     console.log(`${API_URL}/outfits failed`, e?.response?.data);
+  }
+}
+
+export async function fetchResults(ids: number[]) {
+  try {
+    const { data } = await axios.get(`${API_URL}/prediction-results`, { params: { ids } });
+    return data;
+  } catch (e: any) {
+    console.log(`${API_URL}/prediction-results failed`, e?.response?.data);
+  }
+}
+
+export async function postPrediction({ outfit, themes, celebrity, uid }: any) {
+  const prompts = themes.map((theme: any) => themePrompts[theme.name]);
+  try {
+    const { data } = await axios.post(`${API_URL}/stable-diffusion-predict`, { outfit, prompts, themes, celebrity, uid});
+    return data;
+  } catch (e: any) {
+    console.log(`${API_URL}/stable-diffusion-predict failed`, e?.response?.data);
+  }
+}
+
+export async function postTraining({ outfit, themes, celebrity, uid, images }: any) {
+  const prompts = themes.map((theme: any) => themePrompts[theme.name]);
+  try {
+    const { data } = await axios.post(`${API_URL}/dreambooth-training`, { outfit, prompts, themes, celebrity, uid, images});
+    return data;
+  } catch (e: any) {
+    console.log(`${API_URL}/dreambooth-training failed`, e?.response?.data);
   }
 }
 
@@ -73,6 +80,16 @@ export async function fetchUser(uid: string | undefined) {
   }
 }
 
+export async function fetchUserPredictionImages(uid: string | undefined) {
+  console.log('uid', uid)
+  try {
+    const { data } = await axios.get(`${API_URL}/prediction-images/${uid}`);
+    return data;
+  } catch (e: any) {
+    console.log(`${API_URL}/prediction-images/${uid} failed`, e?.response?.data);
+  }
+}
+
 export async function blockUser(uid: string | undefined, blockedUid: string | undefined) {
   try {
     const { data } = await axios.post(`${API_URL}/block-user`,  { uid, blockedUid });
@@ -92,7 +109,6 @@ export async function postOutfit(outfit: any) {
 }
 
 export async function postComment(comment: any) {
-  console.log('comment', comment)
   try {
     const { data } = await axios.post(`${API_URL}/comment`, comment);
     return data;
@@ -144,6 +160,14 @@ export async function updateOffer(offer: any) {
     return data;
   } catch (e: any) {
     console.log(`${API_URL}/offer failed`, e?.response?.data);
+  }
+}
+export async function updatePredictionImages(ids: any, data: any) {
+  try {
+    const { data: imagesData } = await axios.patch(`${API_URL}/prediction-images`, { ids, data } );
+    return imagesData;
+  } catch (e: any) {
+    console.log(`${API_URL}/prediction-images failed`, e?.response?.data);
   }
 }
 export async function updateTrade(trade: any) {

@@ -78,11 +78,6 @@ export default function ViewOutfitScreen({ navigation, route }: any) {
     },
   });
 
-  // useLayoutEffect (() => {
-  //   console.log('outfit?.postVote', outfit?.postVote.vote);
-  //   setCurrentVote(voteMapping[outfit?.postVote?.vote?.toString()])
-  // }, [outfit]);
-
   const handleProfilePress = (uid: any) => {
     navigation.navigate("ViewProfile", {
       ownerId: uid,

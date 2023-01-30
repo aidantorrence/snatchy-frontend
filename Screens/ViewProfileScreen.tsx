@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { mixpanel } from "../utils/mixpanel";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { blockUser, deleteUser, fetchUser } from "../data/api";
+import { blockUser, deleteUser, fetchUser, fetchUserPredictionImages } from "../data/api";
 import useAuthentication, { useStore } from "../utils/firebase/useAuthentication";
 import * as WebBrowser from "expo-web-browser";
 import { modusTypes } from "./QuizSuccessScreen";
@@ -29,8 +29,12 @@ export default function ViewProfileScreen({ navigation, route }: any) {
   const user = useStore((state) => state.user);
   let userData: any;
   let isLoading;
+  let userImages: any;
+  let isLoadingImages;
   const { data: currentUserData, isLoading: isCurrentUserLoading } = useQuery("currentUser", () => fetchUser(user?.uid));
   const { data: ownerData, isLoading: isOwnerLoading } = useQuery(`user-${ownerId}`, () => fetchUser(ownerId));
+  const { data: currentUserImages, isLoading: isCurrentUserImagesLoading } = useQuery("currentUserImages", () => fetchUserPredictionImages(user?.uid));
+  const { data: ownerImages, isLoading: isOwnerImagesLoading } = useQuery(`user-${ownerId}`, () => fetchUserPredictionImages(ownerId));
   if (ownerId) {
     isLoading = isOwnerLoading;
     userData = ownerData;
@@ -38,6 +42,15 @@ export default function ViewProfileScreen({ navigation, route }: any) {
     userData = currentUserData;
     isLoading = isCurrentUserLoading;
   }
+
+  if (ownerId) {
+    isLoadingImages = isOwnerImagesLoading;
+    userImages = ownerImages;
+  } else {
+    userImages = currentUserImages;
+    isLoadingImages = isCurrentUserImagesLoading;
+  }
+
   const isCurrentUser = !ownerId || user?.uid === ownerId;
 
   const mutateBlockUser: any = useMutation(() => blockUser(user?.uid, ownerId), {
@@ -174,14 +187,14 @@ export default function ViewProfileScreen({ navigation, route }: any) {
             <Text style={styles.modusTypeText}>Find Your Style Profile</Text>
           </TouchableOpacity> : null}
           <View>
-            {userData?.outfits?.length ? (
+            {userImages?.length ? (
               <FlatList
                 horizontal={false}
                 numColumns={3}
-                data={userData?.outfits}
+                data={userImages}
                 renderItem={({ item }: any) => (
                   <TouchableOpacity style={styles.imagesContainer} onPress={() => handlePress(item.id)}>
-                    <FastImage source={{ uri: item.imagesThumbnails[0] || item.images[0]}} style={styles.userImages} />
+                    <FastImage source={{ uri: item.imageUrl}} style={styles.userImages} />
                   </TouchableOpacity>
                 )}
                 keyExtractor={(item) => item.id}
@@ -192,22 +205,6 @@ export default function ViewProfileScreen({ navigation, route }: any) {
                 <Text style={{ textAlign: "center", fontSize: 18 }}>No Outfits Yet!</Text>
               </View>
             )}
-            {/* {userData?.outfits?.length ? (
-              <>
-                <ScrollView contentContainerStyle={styles.userImagesContainer}>
-                  {userData?.outfits.map((outfit: any, index: number) => (
-                    <TouchableOpacity onPress={() => handlePress(outfit.id)} key={index}>
-                      <FastImage source={{ uri: outfit.images[0] }} style={styles.userImages} />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            ) : (
-              <View style={{ alignItems: "center" }}>
-                <FastImage source={require("../assets/Banana_Logo.png")} style={styles.noOutfitsImage} />
-                <Text style={{ textAlign: "center", fontSize: 20 }}>No Outfits Yet!</Text>
-              </View>
-            )} */}
           </View>
         </SafeAreaView>
       )}

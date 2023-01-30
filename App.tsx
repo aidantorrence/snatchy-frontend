@@ -64,6 +64,12 @@ import StyleProfileScreen from "./Screens/StyleProfileScreen";
 import SeasonalColorsQuizIntroScreen from "./Screens/SeasonalColorsQuizIntroScreen";
 import SeasonalColorsQuizSuccessScreen from "./Screens/SeasonalColorsQuizSuccessScreen";
 import SeasonalColorDescriptionScreen from "./Screens/SeasonalColorDescriptionScreen";
+import GenerateOutfitIntroScreen from "./Screens/GenerateOutfitIntroScreen";
+import GenerateOutfitTryOnScreen from "./Screens/GenerateOutfitTryOnScreen";
+import GenerateOutfitChooseSelfiesScreen from "./Screens/GenerateOutfitChooseSelfiesScreen";
+import GenerateOutfitLoadingScreen from "./Screens/GenerateOutfitResultsScreen";
+import GenerateOutfitResultsScreen from "./Screens/GenerateOutfitResultsScreen";
+import GenerateOutfitViewOutfitScreen from "./Screens/GenerateOutfitViewOutfitScreen";
 
 if (Constants?.expoConfig?.extra?.env !== "development") {
   mixpanel.init();
@@ -74,7 +80,7 @@ const queryClient = new QueryClient();
 
 Sentry.init({
   dsn: "https://c777f53f2cd94a8198526620d7d373fb@o1411142.ingest.sentry.io/4504101948948480",
-  enableInExpoDevelopment: true,
+  // enableInExpoDevelopment: true,
   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
 });
 
@@ -91,9 +97,7 @@ const Stack = createStackNavigator();
 export function CreateScreenStackNavigation() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="PostOutfit" options={{ headerTitle: "" }} component={PostOutfitScreen} />
-      <Stack.Screen name="ViewProfile" options={{ headerTitle: "", title: "" }} component={ViewProfileScreen} />
-      <Stack.Screen name="Settings" options={{ headerTitle: "", title: "" }} component={SettingsScreen} />
+      <Stack.Screen name="GenerateOutfitIntro" options={{ headerTitle: "" }} component={GenerateOutfitIntroScreen} />
     </Stack.Navigator>
   );
 }
@@ -147,32 +151,33 @@ export default function App({ navigation, route }: any) {
         >
           <Stack.Screen
             name="HomeTabs"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: false }}
             component={HomeTabs}
           />
           <Stack.Screen
             name="Settings"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={SettingsScreen}
           />
           <Stack.Screen
             name="StyleProfile"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={StyleProfileScreen}
           />
+          <Stack.Screen name="GenerateOutfitIntro" options={{ headerTitle: "" }} component={GenerateOutfitIntroScreen} />
           <Stack.Screen
             name="SeasonalColorsQuizNavigation"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={SeasonalColorsQuizNavigation}
           />
           <Stack.Screen
             name="ModusQuizNavigation"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={ModusQuizNavigation}
           />
           <Stack.Screen
             name="ViewOutfit"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={ViewOutfitScreen}
           />
           <Stack.Screen name="EditListing" options={{ headerTitle: "Edit Listing", title: "" }} component={EditListingScreen} />
@@ -185,19 +190,19 @@ export default function App({ navigation, route }: any) {
           <Stack.Screen name="Filter" options={{ headerTitle: "", headerShown: true }} component={FilterScreen} />
           <Stack.Screen
             name="ModusTypeFilter"
-            options={{ headerTitle: "LooksMax", headerShown: true }}
+            options={{ headerTitle: "Snatchy", headerShown: true }}
             component={ModusTypeFilterScreen}
           />
           <Stack.Screen name="QuizSuccessStack" options={{ headerTitle: "", title: "" }} component={QuizSuccessStackNavigation} />
           <Stack.Screen
             name="SeasonalColorFilter"
-            options={{ headerTitle: "LooksMax", headerShown: true }}
+            options={{ headerTitle: "Snatchy", headerShown: true }}
             component={SeasonalColorFilterScreen}
           />
           <Stack.Screen
             name="ModusDescription"
             options={{
-              headerTitle: "LooksMax",
+              headerTitle: "Snatchy",
               headerShown: true,
               headerRight: () => <Button title="Seasonal Color >" />,
             }}
@@ -205,8 +210,13 @@ export default function App({ navigation, route }: any) {
           />
           <Stack.Screen
             name="SeasonalColorDescription"
-            options={{ headerTitle: "LooksMax", title: "", headerShown: true }}
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
             component={SeasonalColorDescriptionScreen}
+          />
+          <Stack.Screen
+            name="GenerateScreenStackNavigation"
+            options={{ headerTitle: "Snatchy", title: "", headerShown: true }}
+            component={GenerateScreenStackNavigation}
           />
           {/* <Stack.Screen name="Sign In" component={SignInScreen} />
           <Stack.Screen name="Sign Up" component={SignOutScreen} /> */}
@@ -221,6 +231,41 @@ function SignupStackNavigation() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SignUp" options={{ headerTitle: "", title: "", headerShown: false }} component={SignUpScreen} />
       <Stack.Screen name="SignIn" options={{ headerTitle: "Sign In", title: "", headerShown: false }} component={SignInScreen} />
+    </Stack.Navigator>
+  );
+}
+
+export function GenerateScreenStackNavigation() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerBackTitleVisible: false,
+        headerBackImage: () => (
+          <FastImage style={{ height: 30, width: 30, marginLeft: 10 }} source={require("./assets/Header_Back_Logo.png")} />
+        ),
+        headerTitleStyle: {
+          fontWeight: "bold",
+          fontSize: 18,
+        },
+      }}
+    >
+      <Stack.Screen name="GenerateOutfitIntro" options={{ headerTitle: "Snatchy" }} component={GenerateOutfitIntroScreen} />
+      <Stack.Screen name="GenerateOutfitTryOn" options={{ headerTitle: "Snatchy" }} component={GenerateOutfitTryOnScreen} />
+      <Stack.Screen
+        name="GenerateOutfitChooseSelfies"
+        options={{ headerTitle: "" }}
+        component={GenerateOutfitChooseSelfiesScreen}
+      />
+      <Stack.Screen name="GenerateOutfitResults" options={{ headerTitle: "Snatchy" }} component={GenerateOutfitResultsScreen} />
+      <Stack.Screen
+        name="GenerateOutfitViewOutfit"
+        options={{ headerTitle: "Snatchy" }}
+        component={GenerateOutfitViewOutfitScreen}
+      />
+      <Stack.Screen name="PostOutfit" options={{ headerTitle: "Snatchy" }} component={PostOutfitScreen} />
+      <Stack.Screen name="ViewProfile" options={{ headerTitle: "Snatchy", title: "" }} component={ViewProfileScreen} />
+      <Stack.Screen name="Settings" options={{ headerTitle: "Snatchy", title: "" }} component={SettingsScreen} />
     </Stack.Navigator>
   );
 }
@@ -355,6 +400,7 @@ function HomeTabs() {
     <QuizSuccessScreen />
   ) : (
     <Tab.Navigator
+     initialRouteName="CreateStack"
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
@@ -365,12 +411,14 @@ function HomeTabs() {
         name="Home"
         component={HomeScreen}
         options={{
+          headerShown: true,
+          headerTitle: 'Snatchy',
           tabBarIcon: ({ focused }) => <Icon style={styles.leftIcon} imgSrc={focused ? icons.homeFocused : icons.home} />,
         }}
       />
       <Tab.Screen
         name="CreateStack"
-        component={CreateScreenStackNavigation}
+        component={GenerateScreenStackNavigation}
         options={{
           tabBarIcon: ({ focused }) => <Icon style={styles.centerIcon} imgSrc={focused ? icons.createFocused : icons.create} />,
         }}
@@ -379,6 +427,8 @@ function HomeTabs() {
         name="Profile"
         component={ProfileScreenStackNavigation}
         options={{
+          headerShown: true,
+          headerTitle: 'Snatchy',
           tabBarIcon: ({ focused }) => <Icon style={styles.rightIcon} imgSrc={focused ? icons.profileFocused : icons.profile} />,
         }}
       />

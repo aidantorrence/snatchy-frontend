@@ -246,6 +246,7 @@ export default function EditListingScreen({ navigation, route }: any) {
                 horizontal={true}
               />
               <FlatList
+                columnWrapperStyle={{ marginLeft: 30, justifyContent: "space-between" }}
                 data={photoArr}
                 horizontal={true}
                 keyExtractor={(_, index) => index.toString()}

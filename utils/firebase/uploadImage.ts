@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import { API_URL } from "../../data/api";
 
 export default async function uploadImageAsync(uri: string) {
-  // console.log("uploadImageAsync", uri);
   const img = await fetch(uri);
   const blob = await img.blob();
 

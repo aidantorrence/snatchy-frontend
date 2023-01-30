@@ -9,6 +9,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@expo-google-fonts/lobster-two": "^0.2.2",
     "@react-native-async-storage/async-storage": "~1.17.3",
     "@react-native-firebase/analytics": "^16.4.6",
     "@react-native-firebase/app": "^16.4.6",
@@ -33,6 +34,7 @@
     "expo-constants": "~14.0.2",
     "expo-dev-client": "~2.0.1",
     "expo-device": "~5.0.0",
+    "expo-font": "~11.0.1",
     "expo-image-picker": "~14.0.2",
     "expo-linear-gradient": "~12.0.1",
     "expo-linking": "~3.2.3",

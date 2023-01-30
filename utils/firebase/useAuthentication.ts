@@ -13,6 +13,8 @@ import firebase, { ReactNativeFirebase } from "@react-native-firebase/app";
 export const useStore = create((set: any) => ({
   user: undefined as any,
   setUser: (input: any) => set({ user: input }),
+  selected: [] as any,
+  setSelected: (input: any) => set({ selected: input }),
 }));
 
 export default function useAuthentication() {
